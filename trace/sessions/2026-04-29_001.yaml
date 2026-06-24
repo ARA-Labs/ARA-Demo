@@ -1,0 +1,228 @@
+session:
+  id: "2026-04-29_001"
+  date: "2026-04-29"
+  started: "2026-04-29T05:51"
+  last_turn: "2026-04-29T00:00"
+  turn_count: 2
+  summary: >
+    Turn v1-001 — wave v1 opens for real. Mission folder + AGENTS/goal/plan/THREAD created;
+    worktree/remotes convention set (push to eliebak fork, never to origin). 193 runs in the
+    window (136 completed, 57 incomplete). Baseline-Muon stat-verification confirms the 3500-step
+    bar (final 3.27658). The dominant campaign is the normuon (normalized-Muon) family: a
+    beta/lr/horizon-stop/beta-warmdown sweep that produces 2-seed reproductions reaching 3.28
+    below 3500 (3375/3375, 3350/3350, 3345/3345) plus a non-reproducing single-seed 3325. Three
+    observations staged (O01 normuon-below-3500 claim-candidate, O02 horizon/stop-decoupling
+    heuristic, O03 stop3325 non-reproduction constraint). NO claim crystallized: the THREAD body
+    is the mission-scoped opener (no result commented on), no pruning/submission occurred, and the
+    step counts are entangled with the early-stop knob. Default to non-promotion.
+    Turn v1-002 — long autonomous hill-climb (302 runs: 232 completed / 39 incomplete / 30
+    canceled / 1 timeout). THREAD body DOES comment on results throughout. The agent exploits the
+    normuon corridor and walks the decoupled WSD horizon/stop frontier downward 3400 -> 3375 ->
+    3350 -> 3345 -> 3296, each gated by a 2nd-seed reproduction; the 2-seed reproduced frontier is
+    h3375-stop3296 (seed0 3.27914 / seed1 3.27872). Adam-mini optimizer1 is the one surviving
+    non-NorMuon optimizer signal (hits 3296..3277 but seed-splits below ~3280). ~20 other
+    optimizer families wash out (N15). Below ~3296 the crossing is seed-fragile (N14). Empirical
+    resolution fired -> crystallized O01 -> C01 (NorMuon+decoupled-WSD reaches 3.28 below 3500,
+    2-seed reproduced; status supported), keeping the absolute step count UNcrystallized (still
+    moving, entangled with the stop knob). 6 trace nodes added (N11-N16), 4 observations staged
+    (O04-O07), 1 claim crystallized. User mid-turn constraints captured (N16): stricter arch
+    boundary (GPT.forward byte-identical; optimizer/schedule/state/run-control only), stretch
+    target < 2800 steps, Slurm preempt 'codex-'/'claude-code' ownership policy.
+
+# NOTE ON DATING: turn v1-001's packet narration_clock is 2026-04-29 (runs span 2026-04-29 ->
+# 2026-04-30). This is the first real-dated turn; it opens a new session 2026-04-29_001. The
+# prior record 2025-01-01_001 is the synthetic v1-000 handoff, whose date was a placeholder (the
+# frame year) explicitly flagged as not contradicting a later real-dated turn.
+
+events_logged:
+  - turn: 1
+    type: decision
+    id: "N07"
+    routing: direct
+    provenance: ai-executed
+    summary: "Open with two parallel loops: Loop B (launcher + baseline noise-floor calibration) realized; Loop A (2 Opus subagents propose optimizer-literature taxonomy) stated as next."
+  - turn: 1
+    type: experiment
+    id: "N08"
+    routing: direct
+    provenance: ai-executed
+    summary: "baseline-muon-3500-seed0 (stat_verify) reaches 3.28 @ 3500, final 3.27658 — confirms the t=0 bar; noise floor itself not yet measured (N06 open)."
+  - turn: 1
+    type: experiment
+    id: "N09"
+    routing: direct
+    provenance: ai-executed
+    summary: "normuon family campaign — beta/lr/horizon-stop/beta-warmdown sweep; 2-seed reproductions at 3375/3350/3345 (<3500); non-reproducing single-seed 3325; '3345 wall'."
+  - turn: 1
+    type: experiment
+    id: "N10"
+    routing: direct
+    provenance: ai-executed
+    summary: "Other-lever screening probes (ema, cautious-Muon, horizon3500, marsm) — exploratory readings of the lever surface; none promoted."
+  - turn: 1
+    type: observation
+    id: "O01"
+    routing: staged
+    provenance: ai-suggested
+    summary: "normuon (beta~0.90, lr~0.30) under decoupled horizon/stop WSD reaches 3.28 below 3500, 2-seed reproduced — staged, NOT crystallized (no comment/pruning/submission)."
+  - turn: 1
+    type: observation
+    id: "O02"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Horizon/stop decoupling is the lever behind sub-3500 counts; '3345 wall' shows the stop knob (not pure optimizer quality) sets the headline step. Staged as heuristic."
+  - turn: 1
+    type: observation
+    id: "O03"
+    routing: staged
+    provenance: ai-suggested
+    summary: "stop3325's single-seed 3325 did NOT reproduce (other seeds incomplete / did not reach 3.28) — noise-floor gate in action; boundary on how early stop can push. Staged as constraint."
+  - turn: 2
+    type: decision
+    id: "N11"
+    routing: direct
+    provenance: ai-executed
+    summary: "Execution mode: exploit the normuon corridor by hill-climbing the WSD horizon/early-stop boundary downward, each step gated by a 2nd-seed reproduction; optimizer-family screens run as side probes."
+  - turn: 2
+    type: experiment
+    id: "N12"
+    routing: direct
+    provenance: ai-executed
+    summary: "normuon horizon/stop hill-climb — 2-seed reproduced frontier walks 3400 -> 3296 (h3375-stop3296 seed0 3.27914 / seed1 3.27872). Empirical-resolution signal that crystallizes O01 -> C01."
+  - turn: 2
+    type: experiment
+    id: "N13"
+    routing: direct
+    provenance: ai-executed
+    summary: "Adam-mini optimizer1 replacement — real optimizer1 signal (hits 3296/3289/3280/3278/3277, beats parent-AdamW control) but seed-splits below ~3280 (3250 seed1 hit / seed0 miss). Staged O04."
+  - turn: 2
+    type: experiment
+    id: "N14"
+    routing: direct
+    provenance: ai-executed
+    summary: "Lower-stop seed-fragility map (3275-3296): many 2-hit/1-miss splits; single-seed 3296 scratch did not reproduce; best lower 2-seed (stop3284) broken by seed2 miss. Corroborates O03; staged O06."
+  - turn: 2
+    type: dead_end
+    id: "N15"
+    routing: direct
+    provenance: ai-executed
+    summary: "Broad optimizer washout — ~20 post-Muon/older families fail to beat the NorMuon WSD-boundary corridor (Adam-mini opt1 the only survivor). Clean negatives (G1/G2). Staged O07."
+  - turn: 2
+    type: decision
+    id: "N16"
+    routing: direct
+    provenance: user
+    summary: "User mid-turn constraints: stricter arch boundary (GPT.forward byte-identical; optimizer/schedule/state/run-control only), stretch < 2800 steps, Slurm 'codex-'/'claude-code' preempt ownership policy."
+  - turn: 2
+    type: observation
+    id: "O04"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Adam-mini optimizer1 is a real signal but not seed-stable below ~3280. Staged as claim-candidate."
+  - turn: 2
+    type: observation
+    id: "O05"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Operative methodology (refines O02): hill-climb stop at fixed schedule horizon, reproduce on 2nd seed, kill on early/mid-curve gates; colder horizon (h<stop) recovers narrow misses. Staged as heuristic."
+  - turn: 2
+    type: observation
+    id: "O06"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Seed-fragility boundary just below the reproduced frontier (~3296): single-seed wins below it are noise artifacts; formally reproducible frontier this turn is 3296. Generalizes O03. Staged as constraint."
+  - turn: 2
+    type: observation
+    id: "O07"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Broad optimizer-replacement washout is the verification contribution (clean negatives on ~20 families; most single-seed screens). Staged as claim-candidate."
+  - turn: 2
+    type: crystallization
+    id: "C01"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "O01 -> C01 via empirical-resolution: NorMuon + decoupled-WSD reaches 3.28 below 3500, 2-seed reproduced (status supported). Absolute step count NOT crystallized (still moving / stop-knob entangled)."
+
+ai_actions:
+  - turn: 1
+    action: "Created mission folder records/track_3_optimization/ai/ with AGENTS.md, goal.md, plan.md, THREAD.md; symlinked records/track_3_optimization/CLAUDE.md -> ai/AGENTS.md so Claude Code picks up the rules."
+    provenance: ai-executed
+    files_changed:
+      - "records/track_3_optimization/ai/AGENTS.md"
+      - "records/track_3_optimization/ai/goal.md"
+      - "records/track_3_optimization/ai/plan.md"
+      - "records/track_3_optimization/ai/THREAD.md"
+      - "records/track_3_optimization/CLAUDE.md (symlink)"
+  - turn: 1
+    action: "Set worktree/remotes convention: worktree at /beegfs/elie/modded-nanogpt-agent/ on branch agent/track_3_speedrun; origin=KellerJordan upstream (read-only), upstream=eliebak fork (push agent work here, never to origin). Worktree not yet created at narration time (first pickup action)."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Launched 193 runs this window (completed=136, incomplete=57): baseline-Muon stat-verification + normuon family campaign + ema/cautious/horizon3500/marsm/lr-floor screening probes."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Built Loop B plumbing: scratchpad/launch.sh (enforces current git worktree + single active track_3 torchrun) and scratchpad/parse_log.py (extracts first val hit of 3.28; later extended with --metric for ema_val_loss/fwa_val_loss). Validated parser against existing result logs (Muon best 3500/3.27673; AdamW 5625/3.27903)."
+    provenance: ai-executed
+    files_changed:
+      - "scratchpad/launch.sh"
+      - "scratchpad/parse_log.py"
+  - turn: 2
+    action: "Authored seed-control + variant tooling and synthesized subagent returns: scratchpad/tools/make_seed_variant.py (inserts torch.manual_seed/cuda.manual_seed before model construction), scratchpad/clusters.md + scratchpad/picklist.md (conservative ranked optimizer picklist), scratchpad/candidates/*.md, and dozens of scratchpad/variants/train_gpt_simple_*.py (all py_compile-checked)."
+    provenance: ai-executed
+    files_changed:
+      - "scratchpad/tools/make_seed_variant.py"
+      - "scratchpad/clusters.md"
+      - "scratchpad/picklist.md"
+      - "scratchpad/variants/ (many train_gpt_simple_*.py)"
+  - turn: 2
+    action: "Launched 302 runs this window (completed=232, incomplete=39, canceled=30, timeout=1): the normuon horizon/stop hill-climb + Adam-mini optimizer1 brackets + ~20 optimizer-family screens, on a local 8xH200 node and Slurm 'preempt' (codex- prefixed)."
+    provenance: ai-executed
+    files_changed: ["scratchpad/runs.jsonl"]
+  - turn: 2
+    action: "Fixed multiple infra/correctness bugs surfaced by the run loop: launch.sh post-run log-copy (use awk to locate raw logs; preserve pipeline status); accidental gradient all-reduce unindent in state-refresh variants (only last grad reduced); BB-calibration divide-by-already-lifted-LR; sbatch /bin/sh rejecting 'set -o pipefail' (switch to explicit #!/bin/bash stubs); torchrun PATH; missing 'import math' in OneCycle variant. Set Requeue=0 on codex preempt jobs to stop silent auto-requeue."
+    provenance: ai-executed
+    files_changed: ["scratchpad/launch.sh", "scratchpad/variants/ (state-refresh + BB variants)", "scratchpad/sbatch-stubs/"]
+
+claims_touched:
+  - id: C01
+    action: crystallized
+    turn: 2
+
+logic_revisions: []
+# Stage-4 no-op: C01 was CREATED this turn (Stage-3 crystallization); its birth IS the record.
+# No other crystallized logic entry existed to reconcile. C01 born `supported` because its closure
+# signal is empirical-resolution backed by a 2-seed reproduction (the lawful core) that the
+# narrator commented on + committed as the working corridor — this is crystallization status, not
+# a Stage-4 hypothesis->supported transition (which would need empirical + verbal in one turn).
+
+key_context:
+  - turn: 1
+    excerpt: "Mission folder created at records/track_3_optimization/ai/. Goal: beat Muon at 3500 steps on track_3_optimization; open-ended, unlimited compute on 1 node. Next: Loop B (build launcher + parse, calibrate baseline noise floor) and Loop A Step 1 (spawn 2 Opus subagents to propose cluster taxonomy) in parallel."
+  - turn: 1
+    excerpt: "best step_to_3.28 this window: 3325 (normuon-beta090-lr030-horizon3375-stop3325-seed1) — but a SINGLE-seed result whose sibling seeds were incomplete or did not reach 3.28; the reproduced bests are 3345/3350/3375 (2-seed). The narrator did not interpret any of this; THREAD is the mission-scoped opener."
+  - turn: 2
+    excerpt: "Main-thread residual-stack h3375-stop3296-seed1 reproduced the seed0 frontier and hit target: final 3296 / 3.27872. Together with seed0 3296 / 3.27914, this makes ...-h3375-stop3296 the current two-seed frontier, pending seed2/noise-floor handling. (-> empirical-resolution: crystallized O01 -> C01.)"
+  - turn: 2
+    excerpt: "The single-seed residual-RMS stop3296 win did not reproduce at the same stop: seed1 3.28009, seed2 3.28078. Keep the seed0 3296/3.27987 run as a scratch frontier only; it is not a formal promotion. (-> the seed-fragility map, O06 / N14.)"
+  - turn: 2
+    excerpt: "User: stretch target is below 2800 steps. The 3290-range work remains useful for rigorous seed/noise-floor handling and understanding optimizer-state mechanisms, but it is not strategically enough. Also: do not modify GPT.forward/logits/loss/data/batch/train-eval/architecture — optimizer/schedule/state/run-control only; preempt 'claude-code'-prefixed jobs belong to a different agent. (-> N16.)"
+
+open_threads:
+  - "N06: noise floor STILL not measured — frame calls for >=3 baseline seeds; C01's seed0/seed1-over-3500 margin is not yet checked against a re-measured 2x-noise gate."
+  - "C01 rigor follow-ups: (a) a clean baseline-Muon-vs-NorMuon control at matched step counts to attribute the gain; (b) a mandatory pre-submission pruning round; (c) re-clear the noise-floor gate as a submission. None done yet."
+  - "O02: how much of the sub-3500 step count is the horizon/stop knob vs the normuon optimizer change? Still entangled (the '3345 wall' / stop-walls persist). Disentangle."
+  - "O06/N14: the seed-fragile region below ~3296 — is there ANY 2-seed-stable stop below 3296, or is 3296 the real floor for this corridor? (stop3284 looked 2-seed but seed2 missed.)"
+  - "O04/N13: Adam-mini optimizer1 seed-splits below ~3280 — can a different seed/knob make a <3280 stop 2-seed-stable, or is it the same noise floor as the NorMuon corridor?"
+  - "N16 strategic gap: stretch target is < 2800 steps but the reproduced frontier is 3296; the high-ambition optimizer-family sidecar has not yet found a route to large step compression (3000-step compression cells missed, e.g. 3000/3.29661)."
+  - "N07 Loop A: the 2-Opus-subagent optimizer-literature taxonomy informed the picklist but the broad screen mostly washed out (N15)."
+  - "Carried: N01/N02 partly addressed by N15 negatives; N03 (do levers stack) and N05 (bin-vs-loss-curve) still open."
+
+ai_suggestions_pending:
+  - "O02 (horizon/stop decoupling is the operative lever) — corroborated heavily this turn but still NOT crystallized: disentanglement from optimizer quality is unresolved; awaiting a control or affirmation."
+  - "O03 (stop3325 non-reproduction) — corroborated + generalized by O06; staged, not closed (seed-fragility actively explored)."
+  - "O04 (Adam-mini optimizer1 real but seed-unstable <3280) — awaiting a 2-seed stop below 3280 or a clean negative."
+  - "O05 (the hill-climb-stop + 2nd-seed-gate methodology) — awaiting verbal affirmation or further corroboration before crystallizing as a heuristic."
+  - "O06 (seed-fragility floor ~3296) — awaiting confirmation that no 2-seed stop exists below 3296 for this corridor."
+  - "O07 (broad optimizer washout / clean negatives) — mostly single-seed screens; awaiting any 2-seed certification before treating individual family refutations as settled."

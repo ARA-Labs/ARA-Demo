@@ -1,0 +1,62 @@
+session:
+  id: "2026-05-03_001"
+  date: "2026-05-03"
+  started: "2026-05-03T00:00"
+  last_turn: "2026-05-03T00:00"
+  turn_count: 1
+  summary: >
+    SEAL — Era 1 -> Era 2 boundary link (NOT a research turn; no runs, no new search). Runs once,
+    after both the v1 chain (ends at N59/C02, v1-007) and the hard-isolated novelty wave (NV## subtree,
+    ends negative at novelty-002) finished, and BEFORE the first v2 turn. Recorded the single integrative
+    fact that v2 legitimately inherits at the era boundary: by the time the human ran v2, the
+    contemporaneous novelty wave — run hard-isolated from this lineage, under the extra novelty bar (>=1
+    non-arXiv idea per submission, dual-gated by a rule/architecture compliance check + an arXiv
+    novelty-existence check before any code) — had concluded with NO promotable submission (a genuine
+    negative result). Added ONE lineage-visible node (N60, decision, provenance ai-executed) carrying that
+    inherited conclusion, with the ONLY cross-subtree edge in the whole ara: also_depends_on: [NV08] (the
+    novelty subtree's terminal dead_end). The edge points lineage -> novelty-CONCLUSION, never lineage ->
+    novelty-internals. Did NOT import novelty's per-mechanism dead-ends, staged observations, or recipe
+    detail; the full novelty journey stays in the isolated NV## subtree. NO claim crystallized; NO
+    observation staged; Stage-4 NO-OP on logic/ (C01/C02 unchanged); 1 trace node added (N60).
+
+events_logged:
+  - turn: 1
+    type: decision
+    id: "N60"
+    routing: direct
+    provenance: ai-executed
+    seal_link: era1_to_era2
+    summary: "Era-1->Era-2 inherited context: the contemporaneous hard-isolated novelty wave produced NO promotable recipe (genuine negative). The single cross-subtree edge (also_depends_on: [NV08], the novelty terminal dead_end) carries lineage -> novelty-CONCLUSION only; mechanism-level internals deliberately NOT imported. Inherited figures (from the novelty final-summary turn): ~40 dual-gated mechanisms / 254 runs, all negative under the 2-seed/noise-floor gate; best single-seed step_to_3.28 = 3375 (NGI n0875/m1125/t3450) FAILED 2-seed reproduction; only 2-seed-reproduced crossing VFG @3475 sat below the ~2x noise floor."
+
+ai_actions:
+  - turn: 1
+    action: "SEAL link only (no search, no runs). Added the single lineage-visible boundary node N60 (decision, ai-executed, 2026-05-03) to trace/exploration_tree.yaml after N59, marking the fact v2 inherits: 'the contemporaneous novelty wave (hard-isolated) produced no promotable recipe.' Added exactly one cross-subtree edge, also_depends_on: [NV08] (the novelty subtree's terminal dead_end), pointing lineage -> novelty-conclusion. Pulled the inherited figures from the novelty final-summary turn (trace/novelty/sessions/2026-05-03_001.yaml), not from memory."
+    provenance: ai-executed
+    files_changed: ["trace/exploration_tree.yaml"]
+  - turn: 1
+    action: "Held the isolation boundary in the OTHER direction: did NOT copy any of novelty's per-mechanism dead-ends, its staged observations (staging/novelty/observations.yaml), its constraints/heuristics (logic/novelty/), or any recipe detail into the lineage — NV08 (the terminal dead_end) is the SINGLE novelty id the lineage references, and only as the edge target. v2 inherits the FACT 'novelty produced no win,' not novelty's private search history; the full novelty journey stays in the isolated NV## subtree. No logic/ edit; no observation staged; C01/C02 untouched."
+    provenance: ai-executed
+    files_changed: []
+
+claims_touched: []
+
+logic_revisions: []
+
+key_context:
+  - turn: 1
+    excerpt: >
+      Seal procedure (driver/seal_novelty.md): "Add one lineage-visible node marking the inherited fact,
+      dated 2026-05-03, provenance: ai-executed ... with an also_depends_on edge to the novelty subtree's
+      terminal dead_end. This is the ONLY edge that crosses between the isolated subtree and the lineage,
+      and it points lineage->novelty-conclusion (v2 may know novelty failed), never lineage->novelty-internals."
+  - turn: 1
+    excerpt: >
+      Inherited conclusion (novelty final-summary turn, 2026-05-03): ~40 dual-gated novel mechanisms, 254
+      runs, ALL negative under the 2-seed / noise-floor gate; best single-seed step_to_3.28 = 3375 (NGI
+      n0875/m1125/t3450) FAILED reproduction; VFG @3475 reproduced but below the ~2x noise floor. No
+      promotable submission. (Conclusion read from the novelty subtree's terminal state; edge target NV08.)
+
+open_threads:
+  - "Ordering guard (driver/seal_novelty.md): this link must exist BEFORE v2-000 (driver.py next warns when v2-000 is the next main turn). With N60 in place, the v2 chain may begin; v2 inherits 'novelty produced no win' as starting context."
+
+ai_suggestions_pending: []

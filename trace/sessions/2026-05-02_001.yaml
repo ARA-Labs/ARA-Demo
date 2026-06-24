@@ -1,0 +1,907 @@
+session:
+  id: "2026-05-02_001"
+  date: "2026-05-02"
+  started: "2026-05-02T00:00"
+  last_turn: "2026-05-02T15:55"
+  turn_count: 5
+  summary: >
+    Turn v1-003 — "Codex continuation after policy refresh." 870 runs in the window
+    (completed=619, canceled=113, incomplete=128, failed=5, preempted=1, timeout=4). The agent
+    operates UNDER the v1-002 user policy refresh (N16) — no user message this turn — re-confirming
+    the strict architecture boundary (GPT.forward byte-identical; optimizer/schedule/state/run-control
+    only) and the preempt ownership policy (codex- names, --no-requeue / Requeue=0) at the top. THREAD
+    body is a dense first-person narrative that comments on results throughout. Multi-front
+    preempt-parallel search (N17): (1) the Adam-mini optimizer1 seed2 boundary squeeze near stop3280 —
+    seed2 misses stop3281/3283/3285 (3.28050/3.28004/3.28026), confirming "seed2 is the limiter" so the
+    Adam-mini opt1 corridor has NO 2-seed stop below ~3296 (N18, empirically resolves O04's boundary
+    half); (2) Adam-mini+AdaGO matrix-state-scaling = weak local modifier (stop3275 seed0 3.28063 worse
+    than parent 3.28010, N19); (3) AdaBound opt1 early-killed (500/4.01511, N20); (4) main-slot PIVOT
+    from optimizer1-replacement to a pure run-control schedule test h3375->h3500 at fixed train_steps,
+    on an over-decay hypothesis (N21, tests O02/O09; result pending); (5) continued broad washout —
+    MVR-NorMuon (betas 0.90/0.75/0.50), QHAdam opt1, SM3 opt1, Scion-LMO, NovoGrad, MADGRAD all closed
+    as clean negatives (N22, extends N15). CRUCIAL anti-peeking call: the runs table's best
+    step_to_3.28 this window is 3192 from a muon2f-hidden + EMA corridor with 2-seed-looking
+    stat_verify=True crossings at stop3192-3200 — but the THREAD body NEVER mentions it. Recorded as
+    UNCOMMENTED evidence (the v1-001 pattern): journey fact N23 + staged O10, NOT crystallized. NO claim
+    crystallized this turn; NO logic edit (C01 stays supported; uncommented sub-3296 evidence does NOT
+    license a rewrite — Stage-4 near-miss logged). 7 trace nodes added (N17-N23), 3 observations staged
+    (O08-O10).
+
+    Turn v1-004 — "Continued Codex autonomous run-control and optimizer screens." 557 runs in the
+    window (canceled=49, completed=381, failed=3, incomplete=122, preempted=1, timeout=1); still no
+    user message (operating under N16). DECISIVE crystallization: the v1-003 over-decay hypothesis
+    (O09 / N21 pivot) is CLOSED via empirical-resolution as a REFUTATION — the main h3500 run-control
+    test finished a clean MISS (stop3250 seed0 3.28405, WORSE than the h3375 miss 3.28010), its support
+    cells reproduced the regression, and the narrator says "the schedule-horizon hypothesis is closed";
+    so O09 crystallizes to a dead_end (N25), NOT a claim (a refuting resolution promotes to dead_end).
+    Closed alongside: AdaGO support (N26; seed1 hit but seed0+seed2 miss -> did not fix the limiter);
+    SWATS optimizer1 (N27; blew up to val ~12 AT the handoff); ADOPT-mini (N28; trailed parent mid-run);
+    row-age embedding bias correction (N29; trailed, killed); lr-floor 0.04 seed2 rescue (N30; missed
+    3.28010 -> schedule floor does not rescue the seed2 boundary); Padam p=0.25 (N31; early-gate fail).
+    Still OPEN: AdamW->Adam-mini warm-in (N32; mixed non-failing early curve, kept running, warmadamw750
+    ablation queued) and AdamO-mini (N33; submitted, running). Anti-peeking (repeat of v1-001/v1-003):
+    the runs-table best drops to 3150 from a NEW v12musched/v12iso family + the continuing muon2f/
+    tailresrmsstack stat-verify corridor (stop3150-3196, stat_verify=True) — but the THREAD NEVER
+    mentions any of it -> journey fact N34 + staged O14, NOT crystallized. Stage-4 NO-OP on logic/
+    (C01 unchanged; the over-decay refutation closes a SUB-line as a dead_end, not a C01 transition;
+    the uncommented lower frontier is a near-miss, not a rewrite). 11 trace nodes added (N24-N34),
+    O09 crystallized to N25 (dead_end), 4 observations staged (O11-O14).
+
+    Turn v1-005 — "Codex continuation after compaction." 9 runs in the window (incomplete=9, all
+    stat_verify=True); still no user message (operating under N16). After a context compaction the agent
+    re-reads AGENTS.md/goal.md/plan.md + the thread tail and re-confirms the strict architecture boundary.
+    Two CARRIED-OVER open optimizer1 experiments CLOSE — the AdamW->Adam-mini warm-in (N32) closes as a
+    NON-improving trail (warmadamw750 trails matched Adam-mini, killed 2750/3.32643; stale warmadamw500
+    stopped 2750/3.32672; "warm-in is closed without more switch-step brackets" -> N36) and AdamO-mini
+    (N33) "failed early and is closed without radial-scale tuning" (-> N37). Both are NEGATIVE journey
+    facts -> dead_ends, NOT claims; they corroborate the staged O11 (Adam-mini's own update-geometry
+    doesn't beat plain Adam-mini) + O12 (handoff fragility), which STAY staged as single-seed screens. The
+    search then BROADENS from optimizer1 update-geometry toward MATRIX preconditioning (optimizer2/3,
+    hidden + MLP-proj): the scout's first two matrix optimizers wash out off-family — OLion trails the
+    clean parent >0.03 at 500/1000 (7783 cancelled) and DION (low-rank rank-16/r8/r32/blend1.0) is
+    pathological (4.69796 at 500), "DION is closed" (-> N38; the washout extends to the matrix side ->
+    staged O15). LAUNCHED OPEN: LaProp-mini opt1 (momentum averages the NORMALIZED adaptive gradient;
+    slightly ahead early then trailing by 1500/2000, held to a 2500/2875 gate, N39), MLP-SOAP-Muon (block
+    SOAP before MLP-proj NorMuon; neutral-to-ahead through 1250 but high-overhead, judge 1500/2000, N40),
+    a compliant Muon2F/APOLLO factorized LOCUS screen-set (7795-7804: hidden vs MLP-proj vs both, eps +
+    beta2 brackets, N41), and NAdam-mini opt1 (7801, N42). Diagonal Newton-Muon is LOGGED but NOT
+    implemented (needs read-only activation hooks; deferred until the matrix screens are judged) ->
+    open_threads, not a node. Every launch was py_compile + GPT.forward-identity-gated. Anti-peeking
+    (4th turn running, same as v1-001/v1-003/v1-004): ALL 9 attached runs are uncommented
+    v12/v12iso/v12musched stat-verification runs — but this turn they are INCOMPLETE (stops s2975-s3185,
+    best in-progress 3.31596, two diverged at 10.82584), so STRICTLY WEAKER than v1-004 (uncommented AND
+    no certified crossing) -> journey fact N43 + note on O14, NOT crystallized. NO claim crystallized;
+    Stage-4 NO-OP on logic/ (C01 unchanged — its existence claim is untouched; the new closures bear on
+    sub-lines O11/O12; the uncommented+incomplete v12 runs are a near-miss, not a rewrite). 9 trace nodes
+    added (N35 decision; N39/N40/N41/N42/N43 experiments; N36/N37/N38 dead_ends), 1 observation staged
+    (O15), notes appended to O07/O11/O12/O14. C01 remains the ONLY crystallized claim through 5 turns.
+
+    Turn v1-006 — "Stack-level Muon2F and AdamS-mini fanout." 0 runs in the window (no runs launched);
+    still no user message (operating under N16). UNLIKE v1-003/v1-004/v1-005 there is NO runs table, so
+    the anti-peeking [UNCOMMENTED-IN-THREAD] pattern does NOT recur (no tabular evidence to diverge from
+    the narration; O14's uncommented corridor simply does not appear this turn). Two carried/support OPEN
+    lines CLOSE, both NEGATIVE journey facts -> dead_ends (not claims): (1) the carried NAdam-mini
+    optimizer1 numerator fallback (N42) finishes a MISS on the main path (3250 / 3.28275, roughly
+    tied/slightly behind early at 1000 / 3.60062), "closed without beta/numerator tuning" (-> N45,
+    resolves N42; corroborates O11); (2) the APOLLO hidden-only arm of the matrix-preconditioning locus
+    screen-set (N41) closes as a failed branch — existing full log misses 3200 / 3.29068 and the duplicate
+    preempt is behind early (250 / 4.10818, 500 / 3.81554) — MATCHING the prior APOLLO hidden+MLP and
+    MLP-only failures, so APOLLO fails at EVERY locus (-> N46; corroborates O15, partially answers the
+    matrix-locus question for APOLLO). Three NEW launches/submits, all OPEN, all GPT.forward-identity-gated:
+    a stack-level Muon2F hidden-only matrix variant (changes ONLY optimizer2 state/update; opt1/opt3 stack
+    intact; train_steps=3250) + a pre_eps=1e-4 bracket, submitted as preempt 7805 / 7807 (N47); the verified
+    AdamS-mini optimizer1 fallback (worker- + orchestrator-verified compile + GPT.forward AST identity),
+    submitted as preempt 7806 (N48); and spectra2d (keeps the Adam-mini opt1 denominator + all matrix/tail
+    stack logic, but for the two 2D opt1 tensors embed.weight + proj.weight damps a rank-4 tracked dominant
+    UPDATE subspace by 0.25 every 16 steps and RMS-matches back), launched as the ACTIVE MAIN run (N49). All
+    new Codex jobs use --no-requeue / Requeue=0. NO claim crystallized; Stage-4 NO-OP on logic/ (C01
+    unchanged — its existence claim is untouched; the two closures bear only on sub-lines O11/O15; and there
+    is NO uncommented lower-frontier near-miss this turn because there is no runs table). 6 trace nodes added
+    (N44 decision; N47/N48/N49 experiments; N45/N46 dead_ends), 0 observations staged, notes appended to
+    O11/O15. C01 remains the ONLY crystallized claim through 6 turns.
+
+    Turn v1-007 — "Muon2F stack-level becomes the active branch." 234 runs in the window (completed=219,
+    incomplete=15); runs span 05-02 -> 05-04. THE decisive turn — the one O10 (v1-003) + O14 (v1-004) were
+    WAITING FOR. Those observations staged the UNCOMMENTED muon2f-hidden + EMA and v12iso/v12musched
+    corridors and BOTH named the exact watch-for signal ("a future turn that COMMENTS on / prunes /
+    seeds-out / commits this corridor"); THIS turn it fires on all counts. Arc (N50): (1) the carried OPEN
+    stack-level Muon2F hidden-only variant (N47) becomes "the only live positive signal" and resolves
+    POSITIVELY as a 3-SEED reproduced stepping stone at stop3237/3250 (N51) — the first commented multi-seed
+    muon2f result and the first matrix preconditioner to HELP (vs APOLLO/OLion/DION washout); raw stop3200
+    misses and a broad Muon2F-internal sub-modifier washout (warm-handoff/maggraft/diagrcov/attn-only/
+    prepow/tailmlplr/grokfast/SPAM/MARS-diff/grad-centralization/schedule-horizon, N52) fails to close the
+    3200 gap. (2) Endpoint EMA is the strongest smoothing signal (N53): .99/.995 start2000/2500 narrow the
+    Muon2F stepping stone to ~stop3195 across seeds, but held below the bar ("gain vs raw 3237 is under the
+    step-noise gate"). (3) Continued broad optimizer/state/init washout (LaProp-Muon, spectral-BB,
+    MARS-M-approx, VAMuon-NSR, NuMuon, resproj/tied-head init, ~20 run-control/state filters, N54).
+    (4) USER MISSION SWITCH #1 (15:05): to a finite pruning/report phase (N55, provenance:user) -> a
+    leave-one-out report on BOTH the active 3195 and formal 3296 stacks (formal can drop late_lr/respulse/
+    resrmsnorm; active can drop mlplr0375/momrefresh/respulse/tailfb/tailrd). (5) USER MISSION SWITCH #2
+    (15:55): restart autonomous search with another agent's v12 recipe ideas (N56, provenance:user). (6) The
+    v12 PIVOT (N57): the full/simplified v12 PACKAGE washes out but the ISOLATED mu_schedule lever HITS ->
+    package stacks rejected, v12iso-musched becomes the live lead. (7) v12iso-musched is a 3-SEED reproduced
+    lead whose practical floor walks 3195 -> 3175 -> 3170 (N58); sub-3170 is seed2-limited. (8) The closing
+    STATISTICAL-RELEVANCE pass (N59, dated 05-04): by the speedrun rule (3.28-mu)*sqrt(n)>=0.004,
+    v12iso-musched-s3220 (n=12, score 0.006720), s3195 (n=39, score 0.005089), and pruned formal
+    norespulse-3296 (n=72, score 0.004494) PASS — the first claimable lower frontiers since C01; the 3-seed
+    s3170 floor is REJECTED (n=15, negative score), vindicating the prior turns' discipline. CRYSTALLIZATION:
+    staged O16 (new) -> C02 via empirical-resolution + artifact-commitment (commented + multi-seed-reproduced
+    + n-scaled-verified + pruned + committed). O10 + O14 ALSO marked promoted -> C02 (their watch-for signal
+    fired; raw->typed trail preserved). C02 = "muon2f-hidden + endpoint-EMA + v12-mu_schedule corridor reaches
+    step_to_3.28 ~3195-3220, statistically verified, below the C01 3296 frontier"; born `supported`,
+    depends on [C01], provenance ai-suggested (user redirected the mission + suggested +25 steps, but did NOT
+    affirm the claim verbatim -> no provenance upgrade). 3 concepts ADDED (Muon2F, endpoint EMA, v12
+    mu_schedule — now adopted terms in the verified C02 frontier, per the "concepts on a 2-seed frontier"
+    policy). Stage 4: C01 reviewed + CORROBORATED (the corridor it asserts the existence of now has a
+    statistically-verified lower frontier); left `supported`, ONE content edit to its Interpretation field
+    (cross-reference C02 for the lower frontier + note the pruning round is now done), recorded in
+    logic_revisions; C01's Statement + "frontier this turn is stop3296" wording untouched. 10 trace nodes
+    added (N50 decision; N55/N56 user-decisions; N57 pivot; N51/N53/N58/N59 experiments; N52/N54 dead_ends),
+    O16 crystallized to C02, O10/O14 promoted to C02, 1 observation staged (O16), 1 logic edit (C01
+    Interpretation). C01+C02 = 2 crystallized claims through 7 turns — the SECOND crystallization is the
+    first positive claim since v1-002, landing exactly at the 2-seed/stat-sig turn the replay protocol
+    expects.
+
+events_logged:
+  - turn: 1
+    type: decision
+    id: "N17"
+    routing: direct
+    provenance: ai-executed
+    summary: "Continuation under refreshed policy: multi-front preempt-parallel search (Adam-mini seed2 boundary squeeze + run-control schedule pivot + isolated optimizer1 screens via a disjoint-scope worker), every launch GPT.forward-identity-gated; bad screens cancelled to free nodes."
+  - turn: 1
+    type: experiment
+    id: "N18"
+    routing: direct
+    provenance: ai-executed
+    summary: "Adam-mini opt1 seed2 boundary squeeze near 3280 — seed2 misses stop3281/3283/3285 (3.28050/3.28004/3.28026); narrator: 'seed2 is the limiter'. No 2-seed stop below ~3296. Empirically resolves O04's boundary half (a NEGATIVE journey fact)."
+  - turn: 1
+    type: experiment
+    id: "N19"
+    routing: direct
+    provenance: ai-executed
+    summary: "Adam-mini + AdaGO matrix-state-scaling window (2000..3124, clamp [0.94,1.06]) = weak local modifier: stop3275 seed0 3.28063 vs parent 3.28010. Preempt full; no nested AdaGO submissions."
+  - turn: 1
+    type: dead_end
+    id: "N20"
+    routing: direct
+    provenance: ai-executed
+    summary: "AdaBoundW on opt1 groups (gamma=1e-3) tripped early kill gate (500/4.01511); terminated+parsed. Compliance checks passed -> optimization failure, not a rule break. Scout re-armed with the negative."
+  - turn: 1
+    type: pivot
+    id: "N21"
+    routing: direct
+    provenance: ai-executed
+    summary: "Main-slot pivot optimizer1-replacement -> pure run-control: copy verified Adam-mini stop3250 seed0, change ONLY schedule_steps 3375->3500 at fixed train_steps. Over-decay hypothesis (O09). Support cells h3500 stop3275 s0/s2, stop3285 s2; read-only explorer top-ranked them. Result pending."
+  - turn: 1
+    type: dead_end
+    id: "N22"
+    routing: direct
+    provenance: ai-executed
+    summary: "Continued broad washout: MVR-NorMuon (betas 0.90/0.75/0.50), QHAdam opt1 (375/3.92161), SM3 opt1 (2875/3.32060), Scion all-groups LMO (250/4.97865), NovoGrad (1375/6.00463), MADGRAD (625/4.07577) all closed. Clean single-seed negatives; extends N15."
+  - turn: 1
+    type: experiment
+    id: "N23"
+    routing: direct
+    provenance: ai-executed
+    summary: "[UNCOMMENTED-IN-THREAD] runs-table-only muon2f-hidden + EMA corridor reaches 3.28 at stop3192-3200 (best 3192), stat_verify=True, 2-seed-looking crossings — but THREAD never mentions it. Journey fact; interpretation staged O10; NOT crystallized."
+  - turn: 1
+    type: observation
+    id: "O08"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Adam-mini+NorMuon corridor 2-seed floor is ~3296: sub-3296 stops lose on a ROTATING single seed (seed0 at 3250/3275, seed2 at 3281/3283/3285), each by ~0.0002-0.0005 (inside noise). AdaGO/AdaBound/lr-floor/beta knobs don't move it. Sharpens O04. Staged as constraint."
+  - turn: 1
+    type: observation
+    id: "O09"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Working hypothesis (pending): sub-3280 seed misses are an OVER-DECAY artifact of h<stop; lengthening only schedule_steps (h3375->h3500) at fixed train_steps should recover marginal misses. Tested by N21; outcome not yet in. Staged as claim-candidate."
+  - turn: 1
+    type: observation
+    id: "O10"
+    routing: staged
+    provenance: ai-suggested
+    summary: "muon2f-hidden + matrix-EMA corridor reaches stop3192-3237 (<<3296) with 2-seed-looking stat_verify=True crossings (N23) — but UNCOMMENTED in the THREAD (v1-001 pattern). Meets the 2-seed-looking bar; no comment/pruning/commitment -> no closure signal. Staged as claim-candidate."
+
+  - turn: 2
+    type: decision
+    id: "N24"
+    routing: direct
+    provenance: ai-executed
+    summary: "Close the stalled run-control(h3500)/AdaGO fronts + clear the lr-floor seed2 stub, then cycle the idea-scout's optimizer1 ideas one at a time — each from the VERIFIED Adam-mini branch, changing ONLY the optimizer1 update rule/state (SWATS, ADOPT-mini, row-age embed, warm-in, Padam, AdamO-mini), GPT.forward-identity-gated, screened main+duplicate-preempt vs the matched Adam-mini parent."
+  - turn: 2
+    type: dead_end
+    id: "N25"
+    routing: crystallized
+    provenance: ai-executed
+    summary: "h3375->h3500 run-control over-decay test = clean MISS (stop3250 seed0 3.28405, WORSE than h3375 3.28010); support cells reproduced the regression (1750/3.451). Narrator: 'the schedule-horizon hypothesis is closed.' CRYSTALLIZES O09 via empirical-resolution as a REFUTATION -> dead_end (not a claim). Over-decay is NOT the mechanism."
+  - turn: 2
+    type: dead_end
+    id: "N26"
+    routing: direct
+    provenance: ai-executed
+    summary: "Adam-mini + AdaGO-window support closed: seed1 hit (3275/3.27765, target 3250) but seed0+seed2 missed (3.28063-3.28070, 3.28058) -> AdaGO did not fix the limiter. Closes the N19 AdaGO line; corroborates O06/O08."
+  - turn: 2
+    type: dead_end
+    id: "N27"
+    routing: direct
+    provenance: ai-executed
+    summary: "SWATS optimizer1 (Adam->SGD handoff) blew up AT the switch: pre-switch plausible (2000/3.41212), val jumped to ~12 at 2125+. Support 7767/7768/7769 cancelled, main terminated+parsed. Rejected without switch/clamp tuning. Phase-switch failure class (see O12)."
+  - turn: 2
+    type: dead_end
+    id: "N28"
+    routing: direct
+    provenance: ai-executed
+    summary: "ADOPT-mini optimizer1 (update-ordering change on Adam-mini): main run trailed matched Adam-mini parent mid-run (2625/3.34112 vs 3.33909); duplicate preempt cancelled+parsed. Closed. Single-seed Adam-mini-update-geometry negative (O11)."
+  - turn: 2
+    type: dead_end
+    id: "N29"
+    routing: direct
+    provenance: ai-executed
+    summary: "Row-age embedding bias correction (per-row second-moment age on embed.weight): trailed matched parent by 2500/2625, killed on main path, parsed 2875/3.31390. Close without threshold/beta/LR sweeps. Single-seed negative (O11)."
+  - turn: 2
+    type: dead_end
+    id: "N30"
+    routing: direct
+    provenance: ai-executed
+    summary: "LR-floor 0.04 seed2 rescue (prepared stub 7766) for the closest Adam-mini miss (3283 seed2 3.28004): MISSED (3283/3.28010). Schedule floor does not rescue the seed2 boundary. With N25 closes the 'fix sub-3280 misses with a schedule knob' line from both directions; corroborates O06/O08."
+  - turn: 2
+    type: dead_end
+    id: "N31"
+    routing: direct
+    provenance: ai-executed
+    summary: "Padam optimizer1 (partial adaptivity, denom exponent 0.25, AMSGrad max): failed early gate badly (250/4.30149, 500/3.89484); cancelled (7779)+parsed. Compliance checks passed -> optimization failure. Extends washout (O07/O11)."
+  - turn: 2
+    type: experiment
+    id: "N32"
+    routing: direct
+    provenance: ai-executed
+    summary: "AdamW->Adam-mini warm-in (full AdamW moments through step 500, then reduce to Adam-mini): MIXED non-failing early curve (ahead through 500, slightly behind parent at 625/750/1000); KEPT running until >=1500/2000. Later-switch ablation warmadamw750 queued (7782). OPEN — no closure. Same phase-switch class as SWATS but did NOT blow up (O12)."
+  - turn: 2
+    type: experiment
+    id: "N33"
+    routing: direct
+    provenance: ai-executed
+    summary: "AdamO-mini optimizer1 (tangent-space Adam-mini + small radial branch 0.25*G_rad for embed.weight + proj.weight): submitted preempt 7781; syntax + GPT.forward identity passed. OPEN — no result at narration."
+  - turn: 2
+    type: experiment
+    id: "N34"
+    routing: direct
+    provenance: ai-executed
+    summary: "[UNCOMMENTED-IN-THREAD] runs-table best drops to 3150 from a NEW v12musched/v12iso family (s3150-3195) + the continuing muon2f/tailresrmsstack stat-verify corridor (stop3190-3196), all stat_verify=True — but THREAD never mentions any of it. Journey fact; interpretation staged O14; NOT crystallized."
+  - turn: 2
+    type: observation
+    id: "O11"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Perturbing Adam-mini's OWN optimizer1 update geometry (ADOPT ordering, row-age bias-corr, Padam, AdamO pending) also fails to beat plain Adam-mini: ADOPT/row-age trail the matched parent, Padam diverges early. Surviving signal stays PLAIN Adam-mini. Single-seed screens. Staged as claim-candidate (extends O04/O07)."
+  - turn: 2
+    type: observation
+    id: "O12"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Optimizer1 phase-switch/handoff methods are fragile AT the switch step: SWATS jumped to val ~12 at the switch; the AdamW->Adam-mini warm-in (same class) is mixed-but-non-failing (no blow-up). Failure is the switch point needing post-switch state calibrated to pre-switch. Staged as constraint."
+  - turn: 2
+    type: observation
+    id: "O13"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Over-decay REFUTED (residue of closed O09/N25): a longer/colder h3500 horizon makes the seed0 miss worse (3.28405) and lr-floor 0.04 (warmer tail, N30) doesn't rescue the seed2 miss (3.28010) -> neither schedule direction moves the ~3296 floor; sub-3296 misses are intrinsic seed variance, not a schedule artifact. Sharpens O08. Staged as constraint."
+  - turn: 2
+    type: observation
+    id: "O14"
+    routing: staged
+    provenance: ai-suggested
+    summary: "UNCOMMENTED frontier extends (successor to O10): runs-table best drops to 3150; muon2f/tailresrmsstack stat-verify continues at stop3190-3196 AND a BRAND-NEW v12musched/v12iso family reaches stop3150-3195 — none narrated in the THREAD. Meets 2-seed-looking bar; no comment/pruning/commitment -> no closure. Staged as claim-candidate."
+
+  - turn: 3
+    type: decision
+    id: "N35"
+    routing: direct
+    provenance: ai-executed
+    summary: "Continuation after compaction: re-read AGENTS/goal/plan + re-confirm the strict boundary, then CLOSE the two carried OPEN opt1 experiments (warm-in N32->N36, AdamO-mini N33->N37) and BROADEN from opt1 update-geometry to MATRIX preconditioning (hidden+MLP-proj): OLion/DION (N38), MLP-SOAP-Muon (N40), Muon2F/APOLLO locus set (N41), plus LaProp-mini (N39)/NAdam-mini (N42). Every launch GPT.forward-identity-gated. Diag-Newton-Muon logged-not-implemented."
+  - turn: 3
+    type: dead_end
+    id: "N36"
+    routing: direct
+    provenance: ai-executed
+    summary: "AdamW->Adam-mini warm-in CLOSED (resolves the OPEN N32): stale warmadamw500 stopped 2750/3.32672; later-switch warmadamw750 trailed matched Adam-mini mid/late, killed 2750/3.32643. 'Warm-in is closed without more switch-step brackets.' Non-improving (not catastrophic) handoff; single-seed. Corroborates O11/O12."
+  - turn: 3
+    type: dead_end
+    id: "N37"
+    routing: direct
+    provenance: ai-executed
+    summary: "AdamO-mini (adamot2d-r025, tangent+radial radial-scale 0.25) CLOSED (resolves the OPEN N33): failed early; 'closed without radial-scale tuning.' Cancelled partials parsed. Single-seed Adam-mini-update-geometry negative (O11). Compliance had passed (N33) -> optimization failure."
+  - turn: 3
+    type: dead_end
+    id: "N38"
+    routing: direct
+    provenance: ai-executed
+    summary: "OLion + DION matrix-optimizer screens both CLOSED off-family -> the washout extends to the MATRIX (optimizer2/3) side. OLion (Lion-style matrix) trails clean parent >0.03 at 500/1000 (7783 cancelled); DION (low-rank rank-16/r8/r32/blend1.0) off-family 4.69796 at 500, blend1.0 worse at 125. 'DION is closed.' Single-seed negatives; extends N15/N22. Staged O15."
+  - turn: 3
+    type: experiment
+    id: "N39"
+    routing: direct
+    provenance: ai-executed
+    summary: "LaProp-mini opt1 (momentum averages the NORMALIZED adaptive gradient; Adam-mini block 2nd moments kept) -> slightly ahead early (1000/3.59868 vs 3.60016) but trailed by 1500/2000; HELD to the predeclared 2500/2875 gate. OPEN. Adam-mini-update-geometry variant (O11)."
+  - turn: 3
+    type: experiment
+    id: "N40"
+    routing: direct
+    provenance: ai-executed
+    summary: "MLP-SOAP-Muon (block SOAP preconditioning before MLP-proj NorMuon; hidden NorMuon kept) submitted preempt 7794 -> neutral-to-slightly-ahead through 1250 but HIGH-OVERHEAD; judge at 1500/2000. OPEN. Matrix-preconditioning front (N03)."
+  - turn: 3
+    type: experiment
+    id: "N41"
+    routing: direct
+    provenance: ai-executed
+    summary: "Compliant Muon2F/APOLLO matrix-preconditioning LOCUS screen-set (hidden vs MLP-proj vs both; eps+beta2 brackets): jobs 7795/7796 Muon2F hidden+MLP eps, 7797 APOLLO hidden+MLP, 7798 APOLLO MLP-only, 7799 Muon2F MLP-only, 7800 Muon2F hidden-only, 7802 APOLLO hidden-only, 7803/7804 Muon2F beta2. All GPT.forward-identity-gated. OPEN. Factorizes WHERE preconditioning helps (N03)."
+  - turn: 3
+    type: experiment
+    id: "N42"
+    routing: direct
+    provenance: ai-executed
+    summary: "NAdam-mini opt1 (cheap Adam-mini numerator fallback / Nesterov-style numerator) submitted preempt 7801 after checks. OPEN. Adam-mini-update-geometry variant (O11). Diag-Newton-Muon (diag-newtonmuon-rightcov) logged but NOT implemented (needs read-only activation hooks; deferred) -> ai_actions, not a node."
+  - turn: 3
+    type: experiment
+    id: "N43"
+    routing: direct
+    provenance: ai-executed
+    summary: "[UNCOMMENTED-IN-THREAD] all 9 attached runs are INCOMPLETE v12/v12iso/v12musched stat-verification runs (stops s2975-s3185; best in-progress 3.31596; two diverged at 10.82584) the THREAD never mentions. Journey fact; STRICTLY WEAKER than N34 (uncommented AND incomplete -> no certified crossing). Interpretation stays at O14 (note appended); NOT crystallized."
+  - turn: 3
+    type: observation
+    id: "O15"
+    routing: staged
+    provenance: ai-suggested
+    summary: "Washout extends to the MATRIX (optimizer2/3, hidden+MLP-proj) side: OLion (Lion-style matrix) trails clean parent >0.03; DION (low-rank) pathological 4.69796 (N38). Distinct from O07 (cross-family opt1) and O11 (Adam-mini's own opt1) — this is the matrix-group locus. Opens the unresolved 'does matrix preconditioning help hidden/MLP/both?' (N40/N41 pending). Single-seed; staged as claim-candidate."
+
+  - turn: 4
+    type: decision
+    id: "N44"
+    routing: direct
+    provenance: ai-executed
+    summary: "Continuation (0 runs in window): close the carried NAdam-mini opt1 fallback + the APOLLO hidden-only matrix support arm, then fan out a stack-level Muon2F-hidden matrix variant (+pre_eps bracket) and two new Adam-mini opt1 update-geometry screens (AdamS-mini, spectra2d). Every launch GPT.forward-identity-gated; codex- names, --no-requeue/Requeue=0, fresh idle gates."
+  - turn: 4
+    type: dead_end
+    id: "N45"
+    routing: direct
+    provenance: ai-executed
+    summary: "NAdam-mini opt1 (Nesterov-style numerator fallback) CLOSED on the main path (resolves the OPEN N42): roughly tied/slightly behind early (1000/3.60062), finished a MISS (3250/3.28275) trailing matched Adam-mini, 'closed without beta/numerator tuning.' Single-seed Adam-mini-update-geometry negative (O11). Duplicate preempt 7801 cancelled."
+  - turn: 4
+    type: dead_end
+    id: "N46"
+    routing: direct
+    provenance: ai-executed
+    summary: "APOLLO hidden-only matrix-preconditioning support arm CLOSED as a failed branch (resolves the APOLLO arms of N41): existing full log misses (apollonormuon-r16-hidden-...-stop3200 3200/3.29068), duplicate preempt behind early (250/4.10818, 500/3.81554), matching the APOLLO hidden+MLP/MLP-only failures -> APOLLO fails on hidden, MLP, AND both. Single-seed negatives; corroborates O15 (matrix-side washout)."
+  - turn: 4
+    type: experiment
+    id: "N47"
+    routing: direct
+    provenance: ai-executed
+    summary: "Stack-level Muon2F hidden-only matrix variant (changes ONLY optimizer2 state/update on the hidden matrices; opt1/opt3 stack intact; train_steps=3250; GPT.forward identical) on the Adam-mini+tailresrmsstack+hidden-AggMo parent + a pre_eps=1e-4 bracket -> submitted preempt 7805/7807. OPEN. Matrix-preconditioning front (N03). 'muon2fhidden' here = compliant support variant (distinct from the uncommented N23/N34 corridor)."
+  - turn: 4
+    type: experiment
+    id: "N48"
+    routing: direct
+    provenance: ai-executed
+    summary: "AdamS-mini opt1 fallback (idea-scout adamsmini-optimizer1; worker-implemented) -> worker + orchestrator both verified compile + GPT.forward AST identity; submitted preempt 7806 after an idle gate (--no-requeue, Requeue=0). OPEN. Adam-mini-update-geometry variant (O11)."
+  - turn: 4
+    type: experiment
+    id: "N49"
+    routing: direct
+    provenance: ai-executed
+    summary: "Spectra2d opt1 (idea-scout spectra-adamminiopt1): keeps the Adam-mini opt1 denominator + all matrix/tail stack logic, but for the two 2D opt1 tensors (embed.weight, proj.weight) damps a rank-4 tracked dominant UPDATE subspace by 0.25 every 16 steps and RMS-matches back to the parent update. Syntax + GPT.forward AST identity passed; launched as the ACTIVE MAIN run. OPEN. Adam-mini-update-geometry variant (O11), matrix-aware on the 2D tensors."
+
+  - turn: 5
+    type: decision
+    id: "N50"
+    routing: direct
+    provenance: ai-executed
+    summary: "Adopt the carried Muon2F-hidden lead (N47) as the live positive branch + layer endpoint-EMA on it; then (after two USER mission switches) run a pruning/report pass + a v12-idea search, ending in a statistical-verification claim pass. Spectra2d (v1-006 main, N49) closed first as a neutral subspace-dampening screen. Every launch GPT.forward-identity-gated."
+  - turn: 5
+    type: experiment
+    id: "N51"
+    routing: direct
+    provenance: ai-executed
+    summary: "Stack-level Muon2F hidden-only (RESOLVES the OPEN N47): 3-SEED reproduced stepping stone at stop3250 (3.27945/3.27965/3.27897) + stop3237 (3-seed hit); stop3225/3230/3233 miss, raw stop3200 misses (3.28251). First commented multi-seed muon2f result + first matrix preconditioner to HELP (vs APOLLO/OLion/DION). Explicitly NOT promoted (13-step gain over 3250, below noise-floor step gate). The closure O10/O14 awaited, as a stepping stone."
+  - turn: 5
+    type: dead_end
+    id: "N52"
+    routing: direct
+    provenance: ai-executed
+    summary: "Broad Muon2F-internal sub-modifier washout: warm-handoff (3.28341), maggraft05 (3.28311), input-covariance (killed/stalled), attn-only (3.35189), prepow quarter-power (3.28224), tailmlplr (3.28241), grokfast (3.28368), SPAM-reset (cancelled), MARS-diff 0.025/0.010/0.005 (all >raw), gradient-centralization (negative), schedule-horizon squeeze h3200-h3450 (all miss; h3300 best improved-MISS 3.28115) — NONE closes raw Muon2F's stop3200 gap. Extends N15/N22/N38."
+  - turn: 5
+    type: experiment
+    id: "N53"
+    routing: direct
+    provenance: ai-executed
+    summary: "Endpoint EMA (validation-time weight averaging) on the Muon2F-hidden stack = the strongest smoothing signal: ema099s2500 a hit (3.27953), .99/.995 start2000/2500 REPRODUCED across seeds at stop3195-3200 (e.g. start2375 stop3200 seeds 0/1/2 = 3.27967/3.27953/3.27941). Held below the bar ('gain vs raw 3237 under the step-noise gate'). SWA worse than EMA; a SWA no_grad() bug fixed (not evidence)."
+  - turn: 5
+    type: dead_end
+    id: "N54"
+    routing: direct
+    provenance: ai-executed
+    summary: "Continued broad optimizer/state/init washout: LaProp-Muon (3.35402, later found a stale duplicate), spectral-BB (mid-curve-gate fail 2000/3.40934), MARS-M-approx (2000 worse than parent), VAMuon-NSR (killed 500/3.80631), NuMuon-rankcap (overhead gate), resproj/tied-head init family (closed), + ~20 run-control/state filters (rank-PCGrad/MUD/tangent/optimistic/critdamp/cautious-WD/GNS-eta/embed-partition/block-coord/QKV-tensor/TrasEnergy/etc.) all fail. Extends N15/N22/N38/N52."
+  - turn: 5
+    type: decision
+    id: "N55"
+    routing: direct
+    provenance: user
+    summary: "USER MISSION SWITCH #1 (15:05): from open-ended autonomous research to a finite pruning/report phase. Closed the idea scouts; ran a leave-one-out batch on BOTH the active .99/start2000/stop3195 Muon2F/EMA stack (13 scans) + the formal 3296 stack (6 scans). Report: formal can DROP late_lr/respulse/resrmsnorm; active can DROP mlplr0375/momrefresh/respulse/tailfb/tailrd. Satisfies lawful-core rule 6 (pruning)."
+  - turn: 5
+    type: decision
+    id: "N56"
+    routing: direct
+    provenance: user
+    summary: "USER MISSION SWITCH #2 (15:55): restart autonomous search with another agent's v12 recipe ideas (mu schedule, attention LR 0.6x, cooldown floor, pre-NS row L2 norm, embed init scale 0.7, Contra-Muon). Generated 21 compliant v12-inspired variants from the active 3195 EMA parent. Origin of the v12iso-musched lead (N58)."
+  - turn: 5
+    type: pivot
+    id: "N57"
+    routing: direct
+    provenance: ai-executed
+    summary: "v12 pivot (17:49): the full/simplified v12 PACKAGE washes out (v12pack-hbin all miss: 3050/3.29119 ... 3195/3.28425) but the ISOLATED mu_schedule lever HITS (v12iso-musched-s3195-seed1 3.27794). Package stacks rejected; v12iso-musched becomes the live lead. A bin-vs-package factorization win (N03): the gain is one lever, not the stack."
+  - turn: 5
+    type: experiment
+    id: "N58"
+    routing: direct
+    provenance: ai-executed
+    summary: "v12iso-musched (isolated v12 mu_schedule lever on the Muon2F/EMA parent) = a 3-SEED reproduced lead, practical floor walked 3195 (3.27917/3.27794/3.27894) -> 3175 (3-seed) -> 3170 (3-seed 3.27916/3.27881/3.27953). Sub-3170 seed2-limited (3165/3160/3150 seed2 miss; 3125 miss). EMA-thaw rescue of 3150 seed2 missed. The strongest commented multi-seed compression of the run; the v12iso/v12musched family that was UNCOMMENTED at N34/N43, now committed."
+  - turn: 5
+    type: experiment
+    id: "N59"
+    routing: crystallized
+    provenance: ai-executed
+    summary: "Statistical-relevance pass (05-04): speedrun rule (3.28-mu)*sqrt(n)>=0.004. PASS: v12iso-musched-s3220 n=12 mu=3.278060 score 0.006720; s3195 n=39 mu=3.279185 score 0.005089; formal norespulse-3296 n=72 mu=3.279470 score 0.004494 (+ older conservative h3450-stop3400 / h3500-stop3450). REJECTED: s3170 n=15 mu=3.280266 negative. The first claimable lower frontiers since C01. CRYSTALLIZES O16 -> C02 via empirical-resolution + artifact-commitment. (runs.jsonl had 1 corrupt line, repaired; backup .bak-20260504T0155Z.)"
+  - turn: 5
+    type: observation
+    id: "O16"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: "The muon2f-hidden + endpoint-EMA + v12-mu_schedule corridor compresses step_to_3.28 to ~3195-3220, COMMENTED + PRUNED + 3-seed-reproduced + STATISTICALLY VERIFIED (n=12/39/72 pass the gate; 3170 floor rejected at n=15) — far below C01's 3296 but still above <2800. CRYSTALLIZED to C02 via empirical-resolution + artifact-commitment (the matured form of O10/O14's uncommented corridor; O10/O14 also promoted to C02)."
+
+ai_actions:
+  - turn: 1
+    action: "Re-read AGENTS.md / goal.md / plan.md from records/track_3_optimization/ai/; re-confirmed the strict architecture boundary (optimizer/schedule/state/run-control only; no GPT.forward/arch/data/loss/batch changes) and the preempt policy (preempt aggressively after the idle-node gate; codex- job names; --no-requeue / Requeue=0). No file changes (re-read of existing policy)."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Cancelled bad running preempt screens to free nodes: MADGRAD optimizer1 (off-family/unstable, parsed partial 625/4.07577) and NovoGrad matrix groups (pathological, parsed 1375/6.00463). Left SM3 optimizer1 running as job 7742 (weak but not the same immediate instability; later closed from partial 2875/3.32060)."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Retried the preempt-cancelled MVR-NorMuon beta0.90 cell on the main/cluster path (policy), killed it after early failure (1125/3.74307); created+submitted MVR beta0.75 and beta0.50 preempt brackets (both failed early ~375/4.10, cancelled+parsed). MVR closed without further beta tuning."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Re-armed the permanent idea scout (twice): after it returned sm3-optimizer1, and again after the AdaBound negative — each rearm requires root ideas.md plus a deep scratchpad/ideas/<idea-id>.md with math, references, ablation plan, and kill criteria. The scout later returned swats-optimizer1."
+    provenance: ai-executed
+    files_changed: ["records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/"]
+  - turn: 1
+    action: "Delegated Scion implementation to a worker with a DISJOINT write scope; worker produced train_gpt_simple_scion_lmo_signspectral_lr003_h3375_stop3200_seed0.py; py_compile passed and both source + AST checks showed GPT.forward identical to baseline. Submitted to preempt as job 7750 (codex-t3-scionlmo3200s0) after a fresh idle gate. (Closed early: all-groups LMO 250/4.97865.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/train_gpt_simple_scion_lmo_signspectral_lr003_h3375_stop3200_seed0.py"]
+  - turn: 1
+    action: "Created the conservative Adam-mini + AdaGO-window variant from the verified Adam-mini stack (matrix optimizer-state scaling active steps 2000..3124, clamp [0.94,1.06], GPT.forward identical); launched it as the active main run. Also created+submitted stop3250 seed0 (job 7751) and stop3285 seed2 (job 7753) to preempt after compile + GPT.forward checks."
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/train_gpt_simple_normuon_b090to080_mlpprojlr124375_adamminiopt1_adagowin2000to3125c094106_tailresrmsstack_aggmom3hidden_h3375_stop3275_seed0.py"]
+  - turn: 1
+    action: "Submitted an unrun QHAdam optimizer1 screen to preempt as job 7752 after compile + GPT.forward checks (a distinct optimizer1 geometry screen, not a boundary squeeze). Failed its early screen (375/3.92161), cancelled+parsed."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Created the AdaBoundW opt1 variant from the verified AdamW opt1 control (AdamW moments + AdaBound effective-LR bounds, gamma=1e-3, GPT.forward identical via py_compile + AST true); launched as the main run. Tripped the early kill gate (500/4.01511); terminated+parsed."
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/train_gpt_simple_normuon_b090to080_mlpprojlr124375_adaboundopt1_g1e3_tailresrmsstack_aggmom3hidden_h3375_stop3250_seed0.py"]
+  - turn: 1
+    action: "Launched the run-control-ONLY schedule test: copied the verified Adam-mini stop3250 seed0 variant and changed ONLY schedule_steps 3375->3500 (kept train_steps=3250); syntax + GPT.forward identity passed. Run ID normuon-...-adamminiopt1-...-h3500-stop3250-seed0. On a later 3-idle-node gate, submitted h3500 support cells: stop3275 seed0 (7761), stop3275 seed2 (7762), stop3285 seed2 (7763), all only-schedule_steps=3500 copies of verified variants."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 1
+    action: "Prepared but did NOT launch two stubs: (a) adamminiopt1-lrfloor004 at h3375-stop3283-seed2 (cooldown eta = max((1-progress)/cooldown_frac, 0.04)); stub lrfloor004s3283s2.sh ready. (b) swats-optimizer1 (Adam-mini estimates groupwise SGD LR over steps 1500..2000, then opt1 switches to calibrated momentum SGD; matrix NorMuon unchanged); train_gpt_simple_..._swatsopt1s2000_..._stop3250_seed0.py + stub swatsopt1s2000s3250s0.sh ready, held while preempt full and the main horizon test runs. Both passed syntax + GPT.forward identity."
+    provenance: ai-executed
+    files_changed:
+      - "scratchpad/sbatch-stubs/lrfloor004s3283s2.sh"
+      - "scratchpad/sbatch-stubs/swatsopt1s2000s3250s0.sh"
+      - "scratchpad/variants/train_gpt_simple_normuon_b090to080_mlpprojlr124375_adamminiopt1_swatsopt1s2000_tailresrmsstack_aggmom3hidden_h3375_stop3250_seed0.py"
+  - turn: 1
+    action: "Launched/parsed 870 runs this window (completed=619, canceled=113, incomplete=128, failed=5, preempted=1, timeout=4) across the local node and Slurm preempt (codex- prefixed): the Adam-mini boundary squeeze, AdaGO/AdaBound probes, the broad optimizer1 washout screens, the run-control h3500 cells, AND a large muon2f-hidden + EMA stat-verification corridor (stop3192-3237) that the THREAD body does not narrate (see N23)."
+    provenance: ai-executed
+    files_changed: ["scratchpad/runs.jsonl"]
+
+  - turn: 2
+    action: "Parsed/closed the carried run-control front: the main h3500 (schedule_steps=3500) finished a clean miss at stop3250 seed0 (3.28405); cancelled the h3500 preempt support jobs 7761/7762/7763 (reproducing the same regression, parsed 1750 / 3.451-3.452). (-> N25, crystallizes O09 as a refutation.)"
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Parsed/closed the AdaGO-window support: seed1 hit (3275/3.27765, target 3250), seed0+seed2 missed (3.28063-3.28070, 3.28058). Closed AdaGO (did not fix the limiter). (-> N26.)"
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Launched the scout's SWATS optimizer1 handoff as the main run + submitted support cells to preempt after fresh idle gates; it blew up at the handoff (2000/3.41212 -> val ~12 at 2125+). Cancelled SWATS support jobs 7767/7768/7769, terminated the main run, parsed partial logs. (-> N27.)"
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Permanent idea scout returned adoptmini-optimizer1; wrote root ideas.md + scratchpad/ideas/adoptmini-optimizer1.md; rearmed the scout with the new h3500/AdaGO/SWATS negative evidence."
+    provenance: ai-executed
+    files_changed: ["records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/adoptmini-optimizer1.md"]
+  - turn: 2
+    action: "Implemented ADOPT-mini from the verified Adam-mini branch (changed ONLY optimizer1 update ordering; preserved Adam-mini grouping/LRs/WD/betas, residual stack, hidden AggMo, data, loss, batch, GPT.forward). Syntax passed; GPT.forward AST identity true. Submitted preempt 7770, then moved the freed main slot to the same seed0 screen (-main suffix). Closed: main trailed parent 2625/3.34112 vs 3.33909; duplicate preempt cancelled+parsed. (-> N28.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/"]
+  - turn: 2
+    action: "Implemented row-age embedding bias correction from the verified Adam-mini branch (changed ONLY optimizer1 state for model.embed.weight: per-row second-moment age on active rows; head/norm/bias groups, matrix NorMuon, schedule, data, loss, batch, GPT.forward unchanged). Syntax + GPT.forward identity passed. Launched rowageembed...stop3250-seed0-main + duplicate preempt 7777; cancelled the duplicate once main clearly faster. Killed on main path, parsed 2875/3.31390. (-> N29.) Scout returned rowage-adamminiopt1 + adammini-warmin-opt1; both written to root ideas.md + deep scratchpad/ideas/ notes."
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/", "records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/"]
+  - turn: 2
+    action: "Submitted the prepared LR-floor seed2 rescue lrfloor004...stop3283-seed2 as Codex preempt job 7766 after a fresh idle gate (pure schedule-floor test for the closest seed2 Adam-mini miss 3283/3.28004; architecture/loss/data/batch unchanged). Completed + missed (3283/3.28010). (-> N30.)"
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: "Idea scout returned padam-optimizer1; wrote ideas.md + scratchpad/ideas/padam-optimizer1.md; rearmed for the next non-duplicate idea. Implemented Padam optimizer1 partial adaptivity padamopt1-p025...stop3250-seed0 (ONLY optimizer1 -> AdamW-style moments with AMSGrad max and denominator exponent 0.25; optimizer2/3 NorMuon, residual stack, hidden AggMo, schedule, data, loss, batch, GPT.forward unchanged). Syntax + GPT.forward identity passed; submitted preempt 7779 (codex- name, --no-requeue). Failed early gate (250/4.30149, 500/3.89484); cancelled (7779)+parsed. (-> N31.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/", "records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/padam-optimizer1.md"]
+  - turn: 2
+    action: "Implemented the AdamW->Adam-mini warm-in warmadamw500...stop3250-seed0 (optimizer1 uses full AdamW second moments through update 500, reduces that state into Adam-mini block moments, then continues as Adam-mini). Syntax + GPT.forward identity passed; submitted preempt 7778 (codex- name, --no-requeue). Mixed non-failing early curve -> kept running. Created a later-switch ablation warmadamw750...stop3250-seed0 (syntax + GPT.forward identity passed; submitted preempt 7782). (-> N32, open.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/"]
+  - turn: 2
+    action: "Permanent idea scout returned adamomini-optimizer1; wrote root + deep idea notes. Implemented AdamO-mini from the verified Adam-mini branch (changed ONLY optimizer1 for the two 2D matrices embed.weight + proj.weight: Adam-mini on tangential gradients, adaptive update projected back to tangent space, small radial branch 0.25*G_rad; all 1D optimizer1 + optimizer2/3 unchanged). Syntax + GPT.forward identity passed; submitted preempt 7781. (-> N33, open.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/", "records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/"]
+  - turn: 2
+    action: "Launched/parsed 557 runs this window (canceled=49, completed=381, failed=3, incomplete=122, preempted=1, timeout=1) across the local node and Slurm preempt (codex- prefixed): the run-control h3500 closure cells, the AdaGO/SWATS/ADOPT-mini/row-age/lr-floor/Padam screens, the warm-in + AdamO-mini submissions, AND a large statistical_verification corridor — the continuing muon2f/tailresrmsstack cluster at stop3190-3196 plus a NEW v12musched/v12iso family at stop3150-3195 (best 3150) — that the THREAD body does not narrate (see N34)."
+    provenance: ai-executed
+    files_changed: ["scratchpad/runs.jsonl"]
+
+  - turn: 3
+    action: "After a context compaction, re-read AGENTS.md / goal.md / plan.md + the thread tail from records/track_3_optimization/ai/; re-confirmed the strict architecture boundary (no GPT.forward / loss / data / batch / architecture / extra fwd-bwd / train-eval changes; only optimizer / schedule / state / run-control). No file changes (re-read of existing policy)."
+    provenance: ai-executed
+    files_changed: []
+  - turn: 3
+    action: "Closed the carried warm-in line: stopped the stale warmadamw500 main run (missed the warm-in kill rule; parsed 2750/3.32672); ran the queued later-switch ablation warmadamw750 after its duplicate preempt job was cancelled (in-family but trailed matched Adam-mini mid/late; killed/parsed 2750/3.32643); parsed the cancelled warmadamw750 preempt partials. (-> N36, resolves N32.)"
+    provenance: ai-executed
+    files_changed: []
+  - turn: 3
+    action: "Parsed the cancelled AdamO-mini partials (adamot2d-r025): failed early, closed without radial-scale tuning. (-> N37, resolves N33.)"
+    provenance: ai-executed
+    files_changed: []
+  - turn: 3
+    action: "Permanent idea scout returned olion-normuon-matrix then dion-normuon-matrix; wrote both to root ideas.md + deep scratchpad/ideas/<idea>.md. Implemented + submitted OLion as a clean-parent matrix screen (trailed clean parent >0.03 at 500/1000 -> job 7783 cancelled+parsed); implemented DION rank-16 blend-0.5 + grid support cells r8/r32/blend1.0 (first rank-16 cell off-family 500/4.69796, blend1.0 worse at 125 -> all DION cells cancelled/parsed or cancelled before useful validation). DION closed. (-> N38.)"
+    provenance: ai-executed
+    files_changed: ["records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/", "scratchpad/variants/"]
+  - turn: 3
+    action: "Implemented LaProp-mini from the verified Adam-mini optimizer1 branch by changing ONLY the optimizer1 update ordering (keep Adam-mini block second moments, but momentum averages the NORMALIZED adaptive gradient). Syntax + GPT.forward identity passed; launched as the main run. Slightly ahead early (1000/3.59868 vs 3.60016), trailed by 1500/2000; holding to the predeclared 2500/2875 gate. (-> N39, open.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/"]
+  - turn: 3
+    action: "Submitted MLP-SOAP-Muon from the prepared compliant variant as preempt job 7794 (keeps hidden NorMuon; applies block SOAP-style preconditioning before MLP-proj NorMuon). Early curve neutral-to-slightly-ahead through 1250 but high-overhead; judge at 1500/2000. (-> N40, open.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/"]
+  - turn: 3
+    action: "Used idle preempt nodes for compliant Muon2F/APOLLO matrix-preconditioning support screens to factorize WHERE preconditioning helps (hidden / MLP-proj / both): submitted jobs 7795/7796 (Muon2F hidden+MLP eps variants), 7797 (APOLLO hidden+MLP), 7798 (APOLLO MLP-only), 7799 (Muon2F MLP-only), 7800 (Muon2F hidden-only), 7802 (APOLLO hidden-only), 7803/7804 (Muon2F beta2 brackets). All syntax-checked + GPT.forward identity-checked true before submit. (-> N41, open.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/"]
+  - turn: 3
+    action: "Idea scout returned lapropmini-optimizer1, nadammini-optimizer1, and diag-newtonmuon-rightcov; wrote all to ideas.md + deep idea files. Implemented NAdam-mini as a cheap Adam-mini numerator fallback and submitted as preempt job 7801 after syntax + GPT.forward identity checks. Diagonal Newton-Muon logged but NOT implemented (needs read-only activation hooks; deferred until the active matrix-preconditioner screens are judged). (-> N42 for NAdam-mini; Diag-Newton-Muon -> open_threads only, prepared-not-launched.)"
+    provenance: ai-executed
+    files_changed: ["records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/", "scratchpad/variants/"]
+  - turn: 3
+    action: "Launched/parsed 9 runs this window (incomplete=9, all stat_verify=True) — ALL in the v12/v12iso/v12musched statistical_verification family (stops s2975-s3185), which the THREAD body does not narrate (see N43). The narrated optimizer screens (warm-in/AdamO-mini/OLion/DION/LaProp-mini/MLP-SOAP-Muon/Muon2F-APOLLO/NAdam-mini) are the work; the attached runs are the uncommented stat-verify corridor."
+    provenance: ai-executed
+    files_changed: ["scratchpad/runs.jsonl"]
+
+  - turn: 4
+    action: "Moved the carried NAdam-mini optimizer1 fallback to the main path and cancelled its duplicate preempt job 7801; it was roughly tied/slightly behind the matched Adam-mini curve early (1000/3.60062) so it stayed alive only to the next mid-curve gate, then finished a MISS on the main path (3250/3.28275), closing the numerator-only fallback without beta/numerator tuning. (-> N45, resolves N42.)"
+    provenance: ai-executed
+    files_changed: []
+  - turn: 4
+    action: "Closed the APOLLO hidden-only matrix-preconditioning support arm: parsed the existing full apollonormuon-r16-hidden-h3375-stop3200-seed0 log (misses 3200/3.29068) and the duplicate current preempt attempt (behind early: 250/4.10818, 500/3.81554); matches the prior APOLLO hidden+MLP and MLP-only failures -> APOLLO closed at every locus. (-> N46.)"
+    provenance: ai-executed
+    files_changed: []
+  - turn: 4
+    action: "Permanent idea scout returned adamsmini-optimizer1; wrote root ideas.md + a deep scratchpad/ideas/ note. A worker implemented the variant (train_gpt_simple_normuon_b090to080_mlpprojlr124375_adamsminiopt1_tailresrmsstack_aggmom3hidden_h3375_stop3250_seed0.py); both worker and orchestrator verified py_compile success and GPT.forward AST identity. Submitted the verified AdamS-mini fallback as preempt job 7806 after its own idle gate (--no-requeue, Requeue=0). (-> N48, open.)"
+    provenance: ai-executed
+    files_changed: ["records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/", "scratchpad/variants/train_gpt_simple_normuon_b090to080_mlpprojlr124375_adamsminiopt1_tailresrmsstack_aggmom3hidden_h3375_stop3250_seed0.py"]
+  - turn: 4
+    action: "Created a stack-level Muon2F hidden-only variant on the actual Adam-mini + tailresrmsstack + hidden-AggMo parent (changes ONLY optimizer2 state/update construction on the hidden matrices; opt1/opt3 stack logic intact; train_steps=3250; GPT.forward identical); submitted as preempt job 7805 after a fresh idle gate. Also created the pre_eps=1e-4 bracket (py_compile + GPT.forward identity verified) and submitted it as job 7807 after a separate idle gate. All --no-requeue / Requeue=0. (-> N47, open.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/train_gpt_simple_normuon_b090to080_mlpprojlr124375_adamminiopt1_muon2fhidden_b2p095_eps1e3_tailresrmsstack_aggmom3hidden_h3375_stop3250_seed0.py"]
+  - turn: 4
+    action: "Idea scout returned spectra-adamminiopt1; wrote it to root ideas.md + scratchpad/ideas/spectra-adamminiopt1.md. Implemented the first screen (spectra2d-r4a025k16): keeps the Adam-mini opt1 denominator + all matrix/tail stack logic, but for the two 2D opt1 tensors (embed.weight, proj.weight) damps a rank-4 tracked dominant update subspace by 0.25 every 16 steps and RMS-matches back to the parent update. Syntax check + GPT.forward AST identity passed; launched as the ACTIVE MAIN run (run id normuon-...-spectra2d-r4a025k16-...-stop3250-seed0-main). (-> N49, open.)"
+    provenance: ai-executed
+    files_changed: ["records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/spectra-adamminiopt1.md", "scratchpad/variants/train_gpt_simple_normuon_b090to080_mlpprojlr124375_adamminiopt1_spectra2d_r4a025k16_tailresrmsstack_aggmom3hidden_h3375_stop3250_seed0.py"]
+  - turn: 4
+    action: "No runs launched/parsed-as-completed in this window (0 runs attached): the work this turn is the NAdam-mini main-path close + the APOLLO hidden-only close (both parsed from existing/partial logs) plus three new submissions/launches (Muon2F-hidden 7805/7807, AdamS-mini 7806, spectra2d main) whose results are pending. No runs.jsonl additions reported."
+    provenance: ai-executed
+    files_changed: []
+
+  - turn: 5
+    action: "Closed spectra2d (the v1-006 active main run, N49) as a neutral subspace-dampening screen: it collapsed back to the matched Adam-mini parent (2000/3.41268, 2125/3.39627 vs parent ~3.41256/3.39715). Adopted the carried stack-level Muon2F-hidden variant (N47) as the live positive branch and reproduced its boundary across seeds (N51). Submitted focused Codex preempt support (7811-7817 etc.) for Muon2F boundary/timing; all optimizer/schedule/state-only, GPT.forward-identity-gated, --no-requeue."
+    provenance: ai-executed
+    files_changed: ["scratchpad/runs.jsonl"]
+  - turn: 5
+    action: "Screened a large set of Muon2F-internal sub-modifiers against the reproduced raw Muon2F stepping stone (all GPT.forward-identity-gated, codex- names, fresh idle gates): warm-handoff2500, magnitude-graft05, input-right-covariance (diagrcov hidden/mild/attn + clean-parent diagnewtonmuonrcov), attention-only Muon2F, quarter/softer preconditioner exponents (prepow025/015/035), late-MLP-LR pulse (tailmlplr102), grokfast gradient-EMA, SPAM spike-clip+reset, MARS-diff gamma 0.025/0.010/0.005, gradient-centralization row/col/2d, and a dense schedule-horizon sweep (h3200-h3450 + h3260-h3315 curve mapping). All missed at stop3200 or failed mid-curve gates (-> N52). Also implemented the muon2f-hidden-warmhandoff2500 + muon2f-attn-only scratch variants from the idea scout. (-> N52.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/", "records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/muon2f-hidden-warmhandoff.md", "scratchpad/runs.jsonl"]
+  - turn: 5
+    action: "Documented + implemented endpoint-smoothing (tail EMA + uniform SWA validation-time averaging; online weights restored) on the Muon2F-hidden stack; GPT.forward-identity-gated. Caught + fixed a mechanical bug (a first SWA run used p.copy_ on leaf params outside torch.no_grad(); patched every EMA/SWA variant to swap+restore under no_grad(), relaunched) — a run-control bug, NOT evidence. Ran a wide EMA beta/start/stop map (.985-.9975, start1500-3000, stop3175-3200) + extrapolated-eval (alpha 1.25/1.50) + matrix-only/MLP-only EMA attribution splits. EMA was the strongest signal (ema099s2500 hit 3.27953; .99/.995 reproduced at ~3195-3200). (-> N53.) Wrote matrix-only-tail-ema.md to ideas.md/scratchpad."
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/", "scratchpad/candidates/ema.md", "records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/matrix-only-tail-ema.md", "scratchpad/runs.jsonl"]
+  - turn: 5
+    action: "Screened ~20+ further optimizer/state/init/run-control families against the corridor (all GPT.forward-identity-gated): LaProp-Muon (later found a stale duplicate of a prior rejected screen), spectral-BB matrix LR, MARS-M-approx (marsmapprox g025/g010), VAMuon-NSR, NuMuon rank-cap, residual-proj/tied-head/semi-orth init, rank-PCGrad, MUD, tangent-hidden, optimistic-NorMuon, critically-damped-beta, cautious-WD/cautious-matrix, role-consensus, SSO-lite, GNS-eta, embed-partition NorMuon, block-coordinate Muon, QKV-tensor Muon, TrasEnergy-gate, zeroproj-wakeup, subset-norm, RolePhase, Loss-Surprise-Brake, OrthoWarm, meanboot, init-anchor-decay, depthphase, normgain-thermostat, PRP-conjugate, CAME. ALL failed early/overhead/mid-curve gates. Rejected on rules grounds (not implemented): postlocal-elastic-muon (desyncs ranks) and BranchRMS (forward-hook activation feedback). (-> N54.) Many idea-scout rearms (Plato/Russell/Copernicus/Sartre) with the write-to-ideas.md requirement."
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/", "records/track_3_optimization/ai/ideas.md", "scratchpad/ideas/vamuon-nsr-hidden.md", "scratchpad/ideas/cautious-muon-fullrun.md", "scratchpad/ideas/marsm-normuon-approx.md", "scratchpad/ideas/trasmuon-energygate-normuon.md", "scratchpad/candidates/normuon.md", "scratchpad/runs.jsonl"]
+  - turn: 5
+    action: "[USER mission switch #1, 15:05] Per the user's switch to a finite pruning/report phase: closed the permanent idea scouts, did NOT submit the staged FISMO diagnostic, and ran a parallel leave-one-out pruning batch — 13 seed0 scans from the active .99/start2000/stop3195 Muon2F/EMA stack + 6 seed0 scans from the formal 3296 stack (jobs 8444-8478, borderline removals taken to seed1), all GPT.forward-identity-gated. Wrote records/track_3_optimization/ai/report-2026-05-02-pruning-and-search.md and stopped the autonomous loop. Pruning verdicts: formal 3296 can drop late_lr/respulse/resrmsnorm; active 3195 EMA can drop mlplr0375/momrefresh/respulse/tailfb/tailrd. (-> N55.)"
+    provenance: ai-executed
+    files_changed: ["records/track_3_optimization/ai/report-2026-05-02-pruning-and-search.md", "scratchpad/variants/", "scratchpad/runs.jsonl"]
+  - turn: 5
+    action: "[USER mission switch #2, 15:55] Per the user's restart with another agent's v12 recipe ideas: generated 21 compliant v12-inspired variants (pruned-stack controls, isolated lever tests, h3375/bin-horizon compressed packages, Contra package diagnostics, simplified-tail packages at 3175/3125/3050/3025), jobs 8508-8533, all py_compile + GPT.forward-identity-gated, --no-requeue. Triaged: LR/WD-retuned package cells and exact spectral Contra were too slow / behind and cancelled; fixed a v12simp-hbin generator bug (optimizer2_attn referenced before the attention split) -> v12simpfix-*. Also staged TEON-QKV pair-stacked Muon as lower priority. (-> N56/N57.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/", "scratchpad/runs.jsonl"]
+  - turn: 5
+    action: "Pivoted to the v12iso-musched lead (17:49) after the package washed out and the isolated mu_schedule lever hit; pruned stale v12-package leftovers; launched a tight low-stop mu_schedule boundary sweep (seeds 0/1/2 at 3125/3150/3175/3185 then 3152-3170 fill, jobs 8592-8640) + pruning-derived mu_schedule sub-stack combinations (8611-8620) + schedule-shape probes (warmup/plateau/tail cooldown, 8605-8610) + a terminal-EMA-beta-thaw rescue of the weak 3150 seed2 (8642, missed). Walked the promoted practical floor 3195 -> 3175 -> 3170. (-> N57/N58.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/variants/", "scratchpad/runs.jsonl"]
+  - turn: 5
+    action: "[Statistical-relevance pass, 05-03->05-04] Computed the speedrun claim score (3.28-mu)*sqrt(n) from runs.jsonl, then RE-computed from individual trainer .log files because concurrent Slurm appends produced one corrupt runs.jsonl line (backup runs.jsonl.bak-20260504T0155Z; repaired by removing the single invalid line). Submitted seed fanout to reach n: s3195 seeds 3-9/10-39, s3170 seeds 3-23, s3220 seeds 0-11, formal norespulse seeds 2-9 (jobs 9180-9215+), all --no-requeue. Result: s3220 (n=12)/s3195 (n=39)/formal norespulse-3296 (n=72) PASS; s3170 (n=15) REJECTED (negative score). (-> N59; crystallizes O16 -> C02.)"
+    provenance: ai-executed
+    files_changed: ["scratchpad/runs.jsonl", "scratchpad/runs.jsonl.bak-20260504T0155Z"]
+  - turn: 5
+    action: "Launched/parsed 234 runs this window (completed=219, incomplete=15; runs span 05-02 -> 05-04) across the local node + Slurm preempt (codex- prefixed): the Muon2F-hidden boundary reproduction, the Muon2F-internal sub-modifier washout, the endpoint-EMA map, the broad optimizer/state/init washout, the leave-one-out pruning batch, the v12 fanout + mu_schedule boundary sweep, and the closing statistical-verification seed fanout. Best step_to_3.28 in window = 3150 (v12iso-musched-h3375-s3150-seed0), but the statistically CLAIMABLE frontiers are s3195/s3220 (the 3150/3170 stops fail the n-scaled gate)."
+    provenance: ai-executed
+    files_changed: ["scratchpad/runs.jsonl"]
+
+claims_touched:
+  - id: C02
+    action: crystallized
+    turn: 5
+  - id: C01
+    action: revised
+    turn: 5
+# Turns 1-4 (v1-003/004/005/006): NO claim crystallized or edited (see below). Turn 5 (v1-007): the SECOND
+# crystallization of the artifact and the FIRST positive claim since v1-002 — O16 (new) crystallized to C02
+# (the muon2f-hidden + EMA + v12-mu_schedule corridor reaches step_to_3.28 ~3195-3220, statistically
+# verified, below the C01 3296 frontier; born `supported`, depends on [C01]); O10 + O14 also promoted to
+# C02 (their watch-for signal fired). C01 was REVISED (one content edit to its Interpretation field —
+# cross-reference C02 + note the pruning round is done; Statement + status unchanged; see logic_revisions).
+# Turn 1 (v1-003): no claim crystallized or edited. Turn 2 (v1-004): no claim crystallized or edited
+# EITHER — the one crystallization this turn was O09 -> N25, which is a dead_end in the TRACE (an
+# empirical REFUTATION), not a claim (no logic/claims.md entry). C01 (the only crystallized claim) was
+# reviewed in Stage 4 both turns and left unchanged (see logic_revisions note).
+# Turn 3 (v1-005): no claim crystallized or edited. The two carried OPEN opt1 experiments (warm-in N32,
+# AdamO-mini N33) RESOLVED, but as NEGATIVE journey facts -> dead_ends N36/N37 in the TRACE (not claims;
+# they corroborate the staged O11/O12, which stay staged as single-seed screens). C01 reviewed in Stage 4
+# and left unchanged (see logic_revisions note).
+# Turn 4 (v1-006): no claim crystallized or edited. Two lines CLOSED — the carried NAdam-mini opt1 fallback
+# (N42 -> N45) and the APOLLO hidden-only matrix support arm (N41 arm -> N46) — but BOTH as NEGATIVE journey
+# facts -> dead_ends in the TRACE (not claims; single-seed screened-out negatives that corroborate the
+# staged O11 and O15 respectively, which stay staged). No staged observation crystallized (no 2-seed
+# reproduction, no first-person affirmation, no abandonment, no artifact-commitment of an observation).
+# C01 reviewed in Stage 4 and left unchanged (see logic_revisions note).
+
+logic_revisions:
+  - turn: 5
+    entry: C01
+    field: Interpretation
+    before: "...so the formally reproduced frontier this turn is 3296, not the lower single-seed scratch hits. A clean baseline-Muon-vs-NorMuon control at matched step counts, a re-measured noise floor (N06 still open), and a pruning round are the outstanding rigor steps."
+    after: "...so the formally reproduced frontier *at v1-002* was 3296, not the lower single-seed scratch hits. **As of v1-007 the lower frontier is carried by the dependent claim C02** (a statistically-verified muon2f-hidden + EMA + v12-mu_schedule corridor at step_to_3.28 ~3195-3220); C01 itself remains the *existence/seed-reproducibility of a sub-3500 NorMuon+decoupled-WSD recipe* and is unchanged. A clean baseline-Muon-vs-NorMuon control at matched step counts and a re-measured noise floor (N06 still open) are the outstanding rigor steps; the mandatory pruning round is now done for the C02 corridor (N55)."
+    signal: dependency-change
+    provenance: ai-suggested
+    note: "C02 was created this turn depending on C01; updated C01's Interpretation to cross-reference C02 for the now-lower frontier and to mark the pruning round (N55) done. C01 Statement + Status (`supported`) UNCHANGED — its scope is the existence of a sub-3500 recipe, not a step value; no demotion (C02 corroborates, does not contradict)."
+# Turn 5 (v1-007) Stage-4 summary: see the dedicated comment block below (after the v1-006 block). The
+# ONE edit above is the C01 cross-reference; the new claim C02 was CRYSTALLIZED (not a Stage-4 edit of an
+# existing entry — its creation is recorded via O16->C02 in staging + claims_touched). 3 concepts added.
+#
+# Turns 1-4 (v1-003/004/005/006) below were all Stage-4 NO-OPs. The only crystallized entry through those
+# turns was C01 (NorMuon + decoupled-WSD reaches 3.28 below 3500, 2-seed, supported). Signals checked:
+#   - empirical-resolution on C01's bound_to (N12): the corridor keeps producing crossings (the
+#     muon2f/ema rows even cross far below 3296); CORROBORATING, not contradicting -> no demotion,
+#     and C01 is already `supported`, so no transition.
+#   - verbal-declaration: no user message this turn -> none.
+#   - dependency-change: C01 has no dependencies -> none.
+#   - artifact-commitment: the normuon-...-tailresrmsstack corridor remains the working base; already
+#     supported -> no change.
+#   - terminology-drift: no new concept added this turn -> none.
+#   - contradicting-evidence: none (corridor keeps crossing).
+# NEAR-MISS (logged in pm_reasoning_log): the runs table shows 2-seed-looking crossings at stop3192-
+# 3200 (muon2f/ema), BELOW C01's stated "frontier this turn is stop3296." This is NOT used to rewrite
+# C01 because (a) C01's statement is a point-in-time record accurate at v1-002 and its SCOPE is the
+# EXISTENCE of a sub-3500 recipe (not a fixed step value), and (b) the new lower crossings are
+# UNCOMMENTED in the THREAD -> no closure signal; rewriting on uncommented evidence would be hindsight.
+# Conservatism rule honored: default to no change.
+#
+# Turn 2 (v1-004) Stage-4 NO-OP on logic/ as well. Signals checked against C01:
+#   - empirical-resolution on C01's bound_to (N12): the corridor keeps crossing (uncommented runs now
+#     down to stop3150); CORROBORATING, not contradicting -> no demotion; C01 already `supported`.
+#   - the over-decay REFUTATION (N25) bears on a SUB-line (Adam-mini sub-3280 seed misses / O09), NOT on
+#     C01's existence claim -> no C01 transition. It crystallizes as a dead_end in the trace, not a claim.
+#   - verbal-declaration: no user message -> none. dependency-change: C01 has no deps -> none.
+#   - artifact-commitment: normuon/tailresrmsstack corridor still the working base; already supported.
+#   - terminology-drift: the new optimizer names (SWATS, ADOPT-mini, row-age, Padam, AdamO-mini, warm-in)
+#     are REJECTED/pending variants, NOT adopted terms refining C01's vocabulary, and none were added to
+#     concepts.md -> no drift edit.
+#   - contradicting-evidence: none (uncommented 3150 corroborates the existence claim).
+# NEAR-MISS (turn 2): the uncommented frontier dropped further (3192 -> 3150) and gained a NEW family
+# (v12musched/v12iso). Still NOT used to rewrite C01 — same reasoning as turn 1 (point-in-time scope +
+# uncommented evidence = hindsight). Default to no change.
+#
+# Turn 3 (v1-005) Stage-4 NO-OP on logic/ as well. Signals checked against C01:
+#   - empirical-resolution on C01's bound_to (N12): no new event on the NorMuon/decoupled-WSD hill-climb
+#     corridor itself this turn; the matrix screens (DION/OLion/MLP-SOAP/Muon2F/APOLLO) + update-geometry
+#     variants (warm-in/AdamO/LaProp/NAdam) are all BUILT ON / SCREENED AGAINST the corridor but none
+#     challenge its existence claim. The uncommented v12 runs are INCOMPLETE -> not even a crossing to read.
+#     No transition; C01 already `supported`.
+#   - the warm-in/AdamO-mini closures (N36/N37) bear on SUB-lines (O11/O12), NOT on C01's existence claim
+#     -> no C01 transition. They land as dead_ends in the trace, not claims.
+#   - verbal-declaration: no user message -> none. dependency-change: C01 has no deps -> none.
+#   - artifact-commitment: the verified NorMuon/Adam-mini corridor is still the parent every new variant
+#     (LaProp-mini, NAdam-mini, Muon2F/APOLLO screens) is built from; already supported -> no change.
+#   - terminology-drift: the new names (OLion, DION, LaProp-mini, NAdam-mini, MLP-SOAP-Muon) are
+#     REJECTED/pending variants, NOT adopted terms refining C01's vocabulary, and none were added to
+#     concepts.md -> no drift edit.
+#   - contradicting-evidence: none.
+# NEAR-MISS (turn 3): the uncommented v12/v12iso/v12musched runs sit at stops s2975-s3185, BELOW C01's
+# stated "frontier this turn is stop3296" — but this turn they are BOTH uncommented AND incomplete (no
+# certified crossing; some diverged to 10.82584), so the evidence is even weaker than v1-003/v1-004. NOT
+# used to rewrite C01 (same point-in-time-scope + uncommented reasoning, now reinforced by incompleteness).
+# Default to no change. C01 stays the ONLY crystallized claim through 5 turns.
+#
+# Turn 4 (v1-006) Stage-4 NO-OP on logic/ as well. Signals checked against C01:
+#   - empirical-resolution on C01's bound_to (N12): no new event on the NorMuon/decoupled-WSD hill-climb
+#     corridor itself this turn; the new variants (Muon2F-hidden N47, AdamS-mini N48, spectra2d N49) are all
+#     BUILT ON / SCREENED AGAINST the corridor but none challenge its existence claim; the two closures
+#     (NAdam-mini N45, APOLLO hidden-only N46) are sub-line negatives. No transition; C01 already `supported`.
+#   - the NAdam-mini / APOLLO closures (N45/N46) bear on SUB-lines (O11 / O15+N03), NOT on C01's existence
+#     claim -> no C01 transition. They land as dead_ends in the trace, not claims.
+#   - verbal-declaration: no user message -> none. dependency-change: C01 has no deps -> none.
+#   - artifact-commitment: the verified NorMuon/Adam-mini + tailresrmsstack + hidden-AggMo corridor is still
+#     the parent every new variant (Muon2F-hidden, AdamS-mini, spectra2d) is built from; already supported.
+#   - terminology-drift: the new names (NAdam-mini, AdamS-mini, spectra2d, stack-level Muon2F-hidden) are
+#     REJECTED/pending variants, NOT adopted terms refining C01's vocabulary, and none were added to
+#     concepts.md -> no drift edit.
+#   - contradicting-evidence: none.
+# NO NEAR-MISS this turn: unlike v1-003/v1-004/v1-005 there is NO runs table (0 runs attached), so there is
+# no uncommented lower-frontier crossing to tempt a C01 rewrite. The only quantitative results this turn are
+# the two sub-line MISSES (NAdam-mini 3250/3.28275, APOLLO hidden-only 3200/3.29068), which corroborate (do
+# not contradict) the existing picture. Default to no change. C01 stays the ONLY crystallized claim through
+# 6 turns.
+#
+# Turn 5 (v1-007) Stage 4 — the FIRST non-no-op since v1-002. One CRYSTALLIZATION (O16 -> C02) + one EDIT
+# (C01 Interpretation, recorded above) + 3 concept additions. Signals checked:
+#   - empirical-resolution: O16's bound_to (N59 statistical pass + N51/N53/N58) produced a multi-seed,
+#     n-scaled-VERIFIED, COMMENTED lower frontier (s3220 n=12, s3195 n=39, norespulse-3296 n=72 all pass the
+#     (3.28-mu)*sqrt(n)>=0.004 gate) -> the closure signal O10/O14 named ("a future turn that comments on /
+#     prunes / seeds-out / commits this corridor") FIRES. Crystallized O16 -> C02 (supported, depends [C01]).
+#   - artifact-commitment: a mandatory-style leave-one-out PRUNING report (N55, lawful-core rule 6) was
+#     written on the corridor and the statistical pass adopts s3220/s3195/norespulse-3296 as the claimable
+#     results -> the corridor is committed. (Reinforces the empirical-resolution crystallization of C02.)
+#   - C01 review: empirical-resolution on C01's bound_to (N12) -> the corridor C01 asserts the existence of
+#     now has a statistically-verified LOWER frontier; CORROBORATING, not contradicting. C01 already
+#     `supported` and its scope is EXISTENCE (not a step value) -> NO status change, NO demotion. Made ONE
+#     content edit to C01.Interpretation (cross-reference C02 + pruning-done), signal=dependency-change
+#     (C02 created depending on C01), provenance=ai-suggested. C01.Statement + "frontier this turn is
+#     stop3296" wording left intact (point-in-time record; the lower frontier lives in C02).
+#   - terminology-drift / concept additions: Muon2F, endpoint EMA, and v12 mu_schedule are now ADOPTED terms
+#     (they form the statistically-verified C02 frontier) -> added to concepts.md per the established policy
+#     ("concepts get added if/when a variant survives to a 2-seed frontier"). This is the FIRST time
+#     discovered-method concepts enter the artifact (prior turns' rejected/pending variants did not qualify).
+#   - verbal-declaration: there ARE two user messages this turn (N55 pruning-phase switch, N56 v12-restart)
+#     + a "+25 steps" suggestion, but NONE affirms C02's content verbatim (they redirect the MISSION, not
+#     endorse the claim) -> NO provenance upgrade; C02 stays ai-suggested. dependency-change: C02 depends on
+#     C01 (newly created); C01 has no deps. contradicting-evidence: none (C02 corroborates + extends C01).
+#   - SELF-FALSIFICATION baked into C02: the 3-seed v12iso-musched floor at stop3170 FAILED the same gate at
+#     n=15 (negative score) and is REJECTED -> C02 lands on the n-verified s3195/s3220, NOT the raw best, and
+#     any claim of a frontier below ~3195 is currently false. This is the noise-floor discipline of O06/O08/
+#     N06 finally paying off as a quantitative gate, and it is why prior turns correctly held the uncommented
+#     sub-3296 crossings as stepping stones, not promotions.
+# C01 + C02 = 2 crystallized claims through 7 turns. Healthy replay shape: the second crystallization is the
+# first POSITIVE claim, landing exactly at the 2-seed/stat-sig turn the replay protocol expects.
+
+key_context:
+  - turn: 1
+    excerpt: "Re-read AGENTS.md/goal.md/plan.md; confirmed the hard boundary (optimizer/schedule/state/run-control only; no GPT.forward/arch/data/loss/batch/extra-fwd-bwd) and the preempt policy (preempt aggressively after the idle-node gate; codex- names; --no-requeue/Requeue=0). [Operating UNDER the v1-002 N16 policy refresh; no new user message this turn.]"
+  - turn: 1
+    excerpt: "Parsed Adam-mini seed2 boundary jobs: stop3281 seed2 missed (3.28050), stop3283 seed2 missed by only 0.00004 (3.28004), parent stop3285 seed2 missed (3.28026). 'This confirms seed2 is the limiter near the 3280 boundary; seed2 remains unsupported even above the closest 3283/3.28004 miss.' (-> N18; empirically resolves O04's boundary half as a NEGATIVE; O08 sharpens it.)"
+  - turn: 1
+    excerpt: "Main Adam-mini+AdaGO conservative window stop3275 seed0 completed as a miss (3.28063), worse than the Adam-mini parent 3275 seed0 miss (3.28010). 'This makes AdaGO a weak local modifier unless already-running preempt support cells show an unexpected seed-specific rescue.' (-> N19.)"
+  - turn: 1
+    excerpt: "Pivoted the main slot to a run-control-only schedule test: copied the verified Adam-mini stop3250 seed0 variant and changed ONLY schedule_steps 3375->3500, keeping train_steps=3250. 'seed0 misses at 3250/3275 might be over-decayed under the shorter 3375 horizon; this tests that directly without changing model/loss/data/batch or optimizer geometry.' A read-only schedule explorer independently top-ranked h3500-stop3285-seed2 and h3500-stop3275-seed0. (-> N21 pivot; O09 over-decay hypothesis, result pending.)"
+  - turn: 1
+    excerpt: "Runs-in-window evidence: 870 runs; best step_to_3.28 this window = 3192 (muon2fema099s2500h3375s3192s2). The visible runs table is dominated by a normuon-...-adamminiopt1-muon2fhidden + EMA corridor crossing at stop3192-3237, stat_verify=True. The THREAD body does NOT mention muon2f/ema/stop319x. (-> UNCOMMENTED evidence: N23 + staged O10, NOT crystallized.)"
+
+  - turn: 2
+    excerpt: "'Main h3500 schedule_steps=3500 finished as a clean miss at stop3250 seed0 (3.28405), so the schedule-horizon hypothesis is closed. The h3500 preempt support jobs 7761/7762/7763 were cancelled and parsed at 1750 / 3.451-3.452 because they were reproducing the same regression.' (-> N25; CRYSTALLIZES O09 via empirical-resolution as a REFUTATION -> dead_end, not a claim. Over-decay is not the mechanism behind the sub-3280 seed misses; O13 carries the residue.)"
+  - turn: 2
+    excerpt: "'AdaGO-window support also resolved enough to close: seed1 hit (3275 / 3.27765, target 3250), but seed0 and seed2 still missed (3275 / 3.28063-3.28070, 3.28058). AdaGO did not fix the limiter even though the easy seed remains strong.' (-> N26; closes the N19 AdaGO line; corroborates O06/O08's ~3296 floor.)"
+  - turn: 2
+    excerpt: "'Launched the scout's SWATS optimizer1 handoff as the main run... It failed exactly at the handoff: pre-switch was plausible (2000 / 3.41212), then validation loss jumped to about 12 at 2125+. SWATS is rejected without switch-step or clamp tuning.' (-> N27; phase-switch failure class O12.)"
+  - turn: 2
+    excerpt: "'ADOPT-mini was closed after the main run trailed the matched Adam-mini parent by the mid-run (2625 / 3.34112 vs parent 2625 / 3.33909)... row-age embedding bias correction trailed the matched parent by 2500/2625, was killed, and parsed at 2875 / 3.31390; close row-age without threshold/beta/LR sweeps. Padam optimizer1 failed its early gate badly (250 / 4.30149, 500 / 3.89484).' (-> N28/N29/N31; even Adam-mini's own update-geometry knobs don't beat plain Adam-mini, O11.)"
+  - turn: 2
+    excerpt: "'LR-floor seed2 rescue completed and missed (3283 / 3.28010), so schedule floor 0.04 does not rescue the closest seed2 boundary.' (-> N30; with N25 closes the schedule-knob rescue line from both directions; the sub-3296 misses are intrinsic, O13.)"
+  - turn: 2
+    excerpt: "'The main AdamW-to-Adam-mini warm-in run has a mixed but non-failing early curve: ahead through 500, then slightly behind the matched Adam-mini parent at 625/750/1000. Keep it until at least 1500/2000 before deciding.' Created a later-switch ablation warmadamw750. (-> N32, OPEN; same phase-switch class as SWATS but no blow-up, O12.)"
+  - turn: 2
+    excerpt: "Runs-in-window evidence: 557 runs; best step_to_3.28 this window = 3150 (v12musched-mup096lo085tail050lo085-h3375-s3150-seed1). The visible runs table is dominated by statistical_verification runs: the continuing muon2f/tailresrmsstack cluster at stop3190-3196 AND a NEW v12musched/v12iso family at stop3150-3195 (v12iso-musched s3170 3.27881, s3195 3.27894). The THREAD body mentions NONE of it. (-> UNCOMMENTED evidence: N34 + staged O14, NOT crystallized; the uncommented frontier extended 3192 -> 3150 + gained a new family.)"
+
+  - turn: 3
+    excerpt: "Continuation after compaction: 'Re-read AGENTS.md, goal.md, plan.md, and the thread tail. Confirmed the current hard constraint: no GPT.forward, loss, data, batch, architecture, extra fwd/bwd, or train/eval semantic changes; only optimizer/schedule/state/run-control variants count.' [Operating UNDER the v1-002 N16 policy; no new user message this turn.]"
+  - turn: 3
+    excerpt: "'Started warmadamw750 on the main path after its duplicate preempt job was cancelled. It remained in-family but trailed matched Adam-mini by the mid/late curve and was killed/parsed at 2750 / 3.32643. Warm-in is closed without more switch-step brackets.' (Plus the stale warmadamw500 stopped at 2750/3.32672.) (-> N36; RESOLVES the OPEN N32 as a NEGATIVE journey fact; corroborates O11/O12.)"
+  - turn: 3
+    excerpt: "'Parsed cancelled adamot2d-r025 and warmadamw750 preempt partials. AdamO-mini failed early and is closed without radial-scale tuning.' (-> N37; RESOLVES the OPEN N33 as a NEGATIVE journey fact; corroborates O11.)"
+  - turn: 3
+    excerpt: "'The permanent idea scout returned olion-normuon-matrix and then dion-normuon-matrix... Implemented and submitted OLion as a clean-parent matrix screen; it trailed clean parent by more than 0.03 at 500/1000, so job 7783 was cancelled and parsed. Implemented DION rank-16 blend-0.5 and small grid support cells (r8, r32, blend1.0); the first rank-16 cell was off-family by 500 / 4.69796 and blend1.0 was even worse at 125, so all DION cells were cancelled... DION is closed.' (-> N38; the washout extends to the MATRIX/optimizer2-3 side; staged O15.)"
+  - turn: 3
+    excerpt: "'Implemented LaProp-mini from the verified Adam-mini optimizer1 branch by changing only the optimizer1 update ordering: keep Adam-mini block second moments, but momentum averages the normalized adaptive gradient... It was slightly ahead early (1000 / 3.59868 vs matched Adam-mini 3.60016) but trailed matched Adam-mini by 1500/2000; hold only until the predeclared 2500/2875 gate.' (-> N39, OPEN; Adam-mini-update-geometry variant, O11.)"
+  - turn: 3
+    excerpt: "'Submitted MLP-SOAP-Muon... It keeps hidden NorMuon and applies block SOAP-style preconditioning before MLP-proj NorMuon. Early curve is neutral-to-slightly-ahead through 1250 but high-overhead; judge at 1500/2000.' Plus compliant Muon2F/APOLLO support screens (7795-7804) 'to identify whether matrix preconditioning helps hidden, MLP-proj, or both.' All GPT.forward-identity-checked true before submit. (-> N40/N41, OPEN; the matrix-preconditioning LOCUS front, bears on N03; staged O15.)"
+  - turn: 3
+    excerpt: "'The scout returned lapropmini-optimizer1, nadammini-optimizer1, and diag-newtonmuon-rightcov... Implemented NAdam-mini as a cheap Adam-mini numerator fallback and submitted it as preempt job 7801... Diagonal Newton-Muon is logged but not implemented yet because it needs read-only activation hooks and should wait until the active matrix preconditioner screens are judged.' (-> N42 OPEN; Diag-Newton-Muon = prepared-not-launched -> open_threads, not a node.)"
+  - turn: 3
+    excerpt: "Runs-in-window evidence: 9 runs, ALL incomplete (stat_verify=True), ALL in the v12/v12iso/v12musched stat-verification family at stops s2975-s3185 (best in-progress v12simpfix-hbin-s2975-seed0 3.31596; two diverged v12lrwdpack cells at 10.82584). The THREAD body mentions NONE of it. (-> UNCOMMENTED + INCOMPLETE evidence: N43 + note on O14, NOT crystallized; strictly weaker than v1-004 — no certified crossing to read.)"
+
+  - turn: 4
+    excerpt: "'NAdam-mini moved to the main path and is roughly tied/slightly behind the matched Adam-mini curve by 1000 / 3.60062, so it remains alive only to the next mid-curve gate. Its duplicate preempt job 7801 was cancelled.' Later: 'NAdam-mini finished on the main path as a miss (3250 / 3.28275), trailing matched Adam-mini and closing the numerator-only fallback without beta/numerator tuning.' (-> N45; RESOLVES the OPEN N42 as a NEGATIVE journey fact; corroborates O11.)"
+  - turn: 4
+    excerpt: "'Closed APOLLO hidden-only as a failed support branch. The existing full log for apollonormuon-r16-hidden-h3375-stop3200-seed0 misses at 3200 / 3.29068, and the duplicate current preempt attempt was already behind early (250 / 4.10818, 500 / 3.81554), matching the hidden+MLP/MLP-only APOLLO failures.' (-> N46; APOLLO fails at EVERY locus -> partial answer to the matrix-locus question; corroborates O15.)"
+  - turn: 4
+    excerpt: "'Created a stack-level Muon2F hidden-only variant on top of the actual Adam-mini + tailresrmsstack + hidden-AggMo parent... It changes only optimizer2 state/update construction, leaves optimizer1/optimizer3 stack logic intact, sets train_steps=3250, and keeps GPT.forward identical. Submitted as preempt job 7805... Also created the pre_eps=1e-4 bracket, verified compile and GPT.forward identity, and submitted it as job 7807.' (-> N47, OPEN; matrix-preconditioning front, bears on N03.)"
+  - turn: 4
+    excerpt: "'The permanent idea scout returned adamsmini-optimizer1 and wrote root/deep idea notes; a worker implemented the variant... The worker and orchestrator both verified compile success and GPT.forward AST identity.' 'Submitted the verified AdamS-mini fallback as job 7806 after its own idle gate. All new Codex jobs use --no-requeue and were explicitly set Requeue=0.' (-> N48, OPEN; Adam-mini-update-geometry variant, O11.)"
+  - turn: 4
+    excerpt: "'The idea scout returned spectra-adamminiopt1... Implemented the first screen... It keeps the Adam-mini optimizer1 denominator and all matrix/tail stack logic, but for the two 2D optimizer1 tensors (embed.weight, proj.weight) damps a rank-4 tracked dominant update subspace by 0.25 every 16 steps and RMS-matches back to the parent update. Syntax check and GPT.forward AST identity passed. Launched as the active main run.' (-> N49, OPEN; Adam-mini-update-geometry variant on the 2D tensors, O11.)"
+  - turn: 4
+    excerpt: "Runs-in-window evidence: 0 runs (no runs launched in this window). So there is NO runs table this turn and the anti-peeking [UNCOMMENTED-IN-THREAD] pattern does NOT recur (no tabular evidence to diverge from the narration; the v1-003/004/005 uncommented muon2f/v12iso corridor simply does not appear). The quantitative results are the two narrated sub-line MISSES (NAdam-mini 3250/3.28275, APOLLO hidden-only 3200/3.29068). NO claim crystallized; Stage-4 NO-OP on logic/."
+
+  - turn: 5
+    excerpt: "'Stack-level Muon2F hidden-only on the actual Adam-mini + tailresrmsstack + hidden-AggMo parent is now the only live positive signal.' Raw Muon2F hidden h3375-stop3250 is a reproduced 3-seed hit (seed0 3.27945, seed1 3.27965, seed2 3.27897); stop3237 a 3-seed hit; raw stop3200 misses (3.28251). 'A rigorous stepping stone below the formal 3296 frontier, but not enough for the user's stretch target' + 'not a formal promoted frontier ... below the noise-floor step gate.' (-> N51 RESOLVES the OPEN N47; the first commented multi-seed muon2f result — the closure O10/O14 awaited, as a stepping stone.)"
+  - turn: 5
+    excerpt: "Endpoint EMA emerged as the strongest smoothing signal: 'ema099s2500-h3375 seed0 completed stronger than the .995 cell (3200/3.27953, the best seed0 EMA beta)'; exact .99/.995 start2000/2500 reproduced across seeds at stop3195-3200. Repeatedly: 'a reproduced stepping stone ... NOT a formal frontier promotion because the gain versus raw Muon2F 3237 is under the step-noise gate.' A SWA p.copy_-outside-no_grad() bug was caught + fixed ('a run-control implementation bug, not experimental evidence'). (-> N53.)"
+  - turn: 5
+    excerpt: "[USER MISSION SWITCH #1, 15:05] 'User switched the mission from open-ended autonomous research to a finite pruning/report phase. Closed the permanent idea scouts...' Ran a leave-one-out batch on BOTH the active 3195 EMA stack + the formal 3296 stack and wrote report-2026-05-02-pruning-and-search.md: 'formal 3296 can drop late_lr, respulse, resrmsnorm; active 3195 EMA can drop mlplr0375, momrefresh, respulse, tailfb, tailrd.' (-> N55, provenance:user; satisfies lawful-core rule 6.)"
+  - turn: 5
+    excerpt: "[USER MISSION SWITCH #2, 15:55] 'User restarted autonomous search using another agent's v12 recipe ideas: mu schedule, attention LR 0.6x, cooldown floor, pre-NS row L2 normalization, embedding init scale 0.7, and Contra-Muon.' Generated 21 compliant v12-inspired variants from the active 3195 EMA parent. (-> N56, provenance:user; origin of the v12iso-musched lead.)"
+  - turn: 5
+    excerpt: "v12 PIVOT: 'Important pivot signal: isolated v12iso-musched-h3375-s3195-seed1 completed as a clear hit (3195/3.27794), while full and simplified packages missed... This is now the live lead; package stacks are rejected unless a diagnostic reveals a better sub-stack.' (-> N57; the gain is the isolated mu_schedule lever, not the v12 package — a bin-vs-package factorization win, N03.)"
+  - turn: 5
+    excerpt: "v12iso-musched walked its floor: 's3175 is now a reproduced three-seed hit ... promote the current practical low-stop point from 3195 to 3175'; then 'v12iso-musched-h3375-s3170 is a reproduced three-seed hit: seed0 3.27916, seed1 3.27881, seed2 3.27953 ... Current promoted practical floor: 3170.' Lower stops seed2-limited (3165/3160/3150 seed2 miss); an EMA-thaw rescue of 3150 seed2 also missed. (-> N58; the strongest commented multi-seed compression of the run.)"
+  - turn: 5
+    excerpt: "[Statistical-relevance pass, 05-04] 'Claimable by ((3.28 - mu) * sqrt(n) >= 0.004): v12iso-musched-h3375-s3220 n=12, mu=3.278060, score 0.006720; v12iso-musched-h3375-s3195 n=39, mu=3.279185, score 0.005089; formal norespulse 3296 n=72, mu=3.279470, score 0.004494 ... Rejected: v12iso-musched-h3375-s3170 n=15, mu=3.280266, negative score. User suggested +25 steps; s3220 worked and is the cleaner v12 claim.' (runs.jsonl had 1 corrupt line, repaired; backup .bak-20260504T0155Z.) (-> N59; CRYSTALLIZES O16 -> C02 — the first claimable lower frontiers since C01; the 3-seed 3170 floor FAILS the n=15 gate, vindicating the prior turns' noise-floor discipline.)"
+
+open_threads:
+  - "O14 / N34 / N43 (carried, turn 4): no recurrence this turn — 0 runs attached, so there is NO runs table and the uncommented v12/v12iso/v12musched corridor does not appear. Still the biggest latent step-compression evidence toward <2800 from the prior turns (uncommented frontier ~3150 / s2975 unverified). Does a later turn (with a runs table) comment on / prune / seed-out / commit the muon2f or v12iso/v12musched corridor?"
+  - "MATRIX-PRECONDITIONING LOCUS (UPDATED, turn 4 — N40/N41/N46/N47): does matrix preconditioning of the 2D groups help on HIDDEN, MLP-proj, or BOTH? APOLLO is now CLOSED at EVERY locus (hidden-only N46 misses 3200/3.29068, matching the prior hidden+MLP/MLP-only failures). Still in flight: MLP-SOAP-Muon (7794; neutral-to-ahead through 1250, high-overhead, judge 1500/2000), the Muon2F arms of the N41 screen-set, and a NEW stack-level Muon2F hidden-only variant + pre_eps bracket (7805/7807, N47). Live front; results pending. Bears on N03."
+  - "N39 (carried, turn 4): LaProp-mini opt1 (momentum averages the NORMALIZED adaptive gradient) is OPEN — slightly ahead early then trailing by 1500/2000; held to the predeclared 2500/2875 gate. Does it cross the gate or trail like the other Adam-mini-update-geometry variants?"
+  - "N47 (NEW, turn 4): stack-level Muon2F hidden-only matrix variant (changes ONLY optimizer2 state/update; opt1/opt3 stack intact) + pre_eps=1e-4 bracket, submitted preempt 7805/7807. OPEN, no result. Does preconditioning the hidden group via Muon2F help, or wash out like APOLLO/OLion/DION? Part of the matrix-locus front."
+  - "N48 (NEW, turn 4): AdamS-mini opt1 fallback submitted preempt 7806 (worker+orchestrator-verified compile + GPT.forward identity). OPEN, no result. Pending — another Adam-mini-update-geometry screen (O11)."
+  - "N49 (NEW, turn 4): spectra2d opt1 (rank-4 dominant-update-subspace damping by 0.25 every 16 steps + RMS-match on the two 2D opt1 tensors) launched as the ACTIVE MAIN run. OPEN, no result. Does the dominant-subspace damping beat plain Adam-mini, or trail like the rest of the O11 family?"
+  - "Diag-Newton-Muon (carried, turn 4 — prepared-not-launched): diag-newtonmuon-rightcov is LOGGED but NOT implemented (needs read-only activation hooks; deferred until the active matrix-preconditioner screens are judged). Pick up after the matrix-locus front (N40/N41/N47) resolves."
+  - "O11 (UPDATED, turn 4): NAdam-mini — a v1-005 pending variant — CLOSED NEGATIVELY (N45, miss 3250/3.28275). The trailing/failing tally is now ADOPT/row-age/Padam/warm-in/AdamO/NAdam; THREE MORE are in flight (LaProp-mini N39, AdamS-mini N48, spectra2d N49). Does ANY Adam-mini opt1 variant beat plain Adam-mini, or is plain Adam-mini the ceiling? (Still single-seed screens -> not crystallized; family verdict not sealed.)"
+  - "O12 (carried, turn 4): no handoff event this turn (NAdam-mini is a numerator fallback, not a phase-switch). Across the class so far: SWATS = blow-up AT the switch, warm-in = trail; neither wins. Is the whole phase-switch/handoff class out, or would a different switch step / clamp still work? (Agent closed only the switch-step-bracket sub-line.)"
+  - "O15 (UPDATED, turn 5): the matrix-locus question is now PARTLY ANSWERED POSITIVELY — the stack-level Muon2F hidden-only variant (N47) RESOLVED as a 3-seed stepping stone (N51), the FIRST matrix preconditioner to HELP (vs APOLLO/OLion/DION washout); that positive finding split off into O16 -> C02. O15's residual scope is the NEGATIVE matrix-side washout (now also spectral-BB/NuMuon/MARS-M etc., N54). MLP-SOAP-Muon (N40) + the Muon2F arms of N41 were not separately resolved in this packet's narration (still latent open)."
+  - "O08 / N18 (RESOLVED-ish, turn 5): the question 'does the uncommented muon2f/v12iso corridor break the ~3296 floor on its own merits?' is ANSWERED YES this turn — the muon2f/EMA/v12iso corridor reaches a statistically-verified step_to_3.28 ~3195-3220 (C02), well below 3296. NOTE the floor's noise-floor character is vindicated: the v12iso 3170 floor FAILED the n=15 gate. The ~3296 floor was specific to the Adam-mini+NorMuon corridor WITHOUT muon2f/EMA/mu_schedule; with them, the frontier moves. (O08 itself stays staged as the Adam-mini-corridor-specific constraint.)"
+  - "N06 / G5 (carried, turn 5 — now MORE urgent): noise floor STILL not formally measured (>=3 baseline seeds). C02 leans HARD on the n-scaled (3.28-mu)*sqrt(n)>=0.004 gate — which certifies reproducibility of the MEAN, not a large per-seed margin (s3170 with a 3-seed hit failed at n=15). A formally measured per-seed noise floor would either firm up or qualify C02's lower frontier. Re-measure."
+  - "C01 rigor follow-ups (UPDATED, turn 5): (b) the mandatory pre-submission PRUNING ROUND is now DONE for the C02 corridor (N55 report: formal 3296 + active 3195 stacks both pruned). STILL open: (a) a clean baseline-Muon-vs-NorMuon control at matched step counts; (c) the noise-floor gate as a formal SUBMISSION (the statistical pass N59 is the gate-equivalent, but a formal submission/seal is not recorded)."
+  - "N16 strategic gap (UPDATED, turn 5): stretch target < 2800 steps; the now-VERIFIED frontier is step_to_3.28 ~3195-3220 (C02) — a real advance over 3296 but still ~400 steps above <2800. The gains are schedule/state-level (Muon2F-direction on hidden + EMA + v12 mu_schedule), NOT a new optimizer family — the broad optimizer/state/init washout still holds (N52/N54 extend N15/N22/N38). The v12 mu_schedule came from another agent's ideas (user, N56). Reaching <2800 remains open."
+  - "v1-006 OPEN experiments (status, turn 5): N47 (stack-level Muon2F hidden-only) RESOLVED POSITIVELY -> N51/C02. N39 (LaProp-mini), N48 (AdamS-mini), N49 (spectra2d) — spectra2d was CLOSED this turn as a neutral subspace-dampening screen that collapsed to the matched parent (folded into N50/N54); LaProp-mini (N39) + AdamS-mini (N48) are NOT separately narrated this turn (the search moved to muon2f/EMA/v12), so they remain latent-open (likely subsumed by the user's pruning/v12 pivot)."
+  - "Carried open questions: N03 (do levers stack) — ANSWERED constructively this turn: the muon2f-direction + EMA + mu_schedule levers DO stack to compress below 3296 (C02), while the v12 PACKAGE did NOT (the gain was one isolated lever, N57). N05 (bin-vs-loss-curve) still open. N01/N02 further addressed by this turn's broad washout (N52/N54; still single-seed screens)."
+  - "POST-CLAIM watch (NEW, turn 5): C02 is supported on an n-scaled statistical gate. Does a later turn (a) re-measure the per-seed noise floor (N06) and confirm/qualify C02, (b) push the verified frontier lower (toward <2800) with a new lever, or (c) submit/seal C02 formally? And does the mu_schedule lever (now an adopted concept) combine with anything else for further compression?"
+
+ai_suggestions_pending:
+  - "O02 (horizon/stop decoupling is the operative lever) — further engaged by the run-control work (h3500 N25) but still NOT crystallized: disentanglement from optimizer quality is still the open thread; no first-person affirmation."
+  - "O04 (Adam-mini opt1 real but seed-unstable <3280) — boundary half empirically resolved (N18); the run-control rescue is now also refuted (N25) and the lr-floor rescue fails (N30); still not crystallized (no 2-seed positive frontier). O08/O13 carry the sharpened restatement."
+  - "O05 (the hill-climb-stop + 2nd-seed-gate methodology) — in heavy use again this turn (every Adam-mini variant killed on mid-curve trail vs the matched parent); awaiting verbal affirmation or further corroboration before crystallizing as a heuristic."
+  - "O06 (seed-fragility floor ~3296) — further corroborated this turn (AdaGO N26 inherits the same rotating-seed split; lr-floor N30 can't move it); awaiting confirmation that no 2-seed stop exists below 3296 for ANY corridor (the uncommented muon2f / v12iso O14 may challenge this if it later reproduces)."
+  - "O07 (broad optimizer washout / clean negatives) — extended this turn by SWATS (N27), Padam (N31); still mostly single-seed screens; awaiting any 2-seed certification before treating individual family refutations as settled."
+  - "O08 (no 2-seed stop below ~3296 for the Adam-mini+NorMuon corridor; rotating seed misses inside noise) — SHARPENED this turn by O13 (both schedule directions ruled out); awaiting a re-measured noise floor (N06)."
+  - "O09 (over-decay -> h3500 recovers marginal misses) — CLOSED this turn: empirically REFUTED (h3500 miss 3.28405, worse), crystallized to dead_end N25. No longer pending."
+  - "O10 (muon2f-hidden + EMA corridor ~3192) — CLOSED this turn (v1-007): the watch-for signal fired (commented + pruned + 3-seed-reproduced + statistically verified), promoted -> C02. No longer pending."
+  - "O11 (Adam-mini's own update-geometry variants don't beat plain Adam-mini) — NAdam-mini CLOSED NEGATIVELY this turn (N45, miss 3250/3.28275), corroborating; but THREE MORE are in flight (LaProp-mini N39 held to a gate, AdamS-mini N48 submitted, spectra2d N49 launched as the main run) and all are single-seed screens, so NOT crystallized — the lawful core needs a 2-seed reproduction and the family verdict isn't sealed."
+  - "O12 (optimizer1 phase-switch/handoff methods fragile AT the switch) — the warm-in (its live test) CLOSED this turn (N36) as a NON-improving trail (not a blow-up). Across the class: SWATS = blow-up, warm-in = trail; neither wins. Still single-seed + only the switch-step-bracket sub-line closed; awaiting certification before treating the class as settled."
+  - "O13 (over-decay refuted; sub-3296 misses are intrinsic seed variance, not schedule-fixable) — carried; awaiting a re-measured noise floor (N06) to settle the 'intrinsic variance' reading."
+  - "O14 (uncommented frontier ~3150 + v12musched/v12iso family) — CLOSED this turn (v1-007): the v12iso/v12musched family it tracked became the NARRATED live lead (package washes out, isolated mu_schedule lever hits, N57/N58), reproduced 3-seed + statistically verified at s3195/s3220, promoted -> C02. No longer pending. (Rigor coda: its lower runs-table slugs s2975-s3150 did NOT all survive — the 3170 floor was rejected at n=15.)"
+  - "O15 (washout extends to the MATRIX/optimizer2-3 side) — PARTLY RESOLVED this turn (v1-007): the Muon2F-hidden arm of the matrix-locus question resolved POSITIVELY (N51, first matrix preconditioner to help) and split into O16 -> C02; O15's residual scope is the matrix-side NEGATIVE washout (now also spectral-BB/NuMuon/MARS-M, N54), still staged as single-seed screens. MLP-SOAP-Muon (N40) + the Muon2F arms of N41 not separately resolved this packet."
+  - "O16 (NEW, turn 5) — muon2f-hidden + endpoint-EMA + v12-mu_schedule corridor reaches step_to_3.28 ~3195-3220, statistically verified. CRYSTALLIZED this turn -> C02 (empirical-resolution + artifact-commitment). No longer pending; it is the matured form of O10/O14."

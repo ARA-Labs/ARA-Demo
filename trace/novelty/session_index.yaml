@@ -1,0 +1,26 @@
+# Session index — NOVELTY LANE (isolated). wave: novelty | isolation: hard.
+sessions:
+  - id: "2025-01-01_001"
+    date: "2025-01-01"
+    wave: novelty
+    isolation: hard
+    summary: >
+      novelty-000 mission-start: novelty wave opened (hard-isolated from v1). Floor = Muon@3500.
+      Novelty bar + pre-runtime arXiv check staged; explained negative counts. 0 runs.
+    turn_count: 1
+    events_count: 4
+    claims_touched: []
+    open_threads: 3
+  - id: "2026-05-03_001"
+    date: "2026-05-03"
+    wave: novelty
+    isolation: hard
+    summary: >
+      novelty-002 first run-bearing turn: ~40 dual-gated novel ideas, 254 runs, all NEGATIVE
+      under the 2-seed/noise-floor gate (best single-seed 3375 = NGI, failed reproduction).
+      User set two-gate protocol + tightened novelty bar to non-additive only. Crystallized
+      NVC01-04 (constraints), CV01-02 (claims), HV01 (heuristic); logic/novelty/ created.
+    turn_count: 1
+    events_count: 11
+    claims_touched: [CV01, CV02]
+    open_threads: 4

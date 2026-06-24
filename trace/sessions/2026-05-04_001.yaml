@@ -1,0 +1,956 @@
+session:
+  id: "2026-05-04_001"
+  date: "2026-05-04"
+  started: "2026-05-04T00:00"
+  last_turn: "2026-05-04T16:33"
+  turn_count: 6
+  summary: >
+    Day 2026-05-04 (Era 2). Turn v2-000 (skipped synthetic handoff) + turn v2-001 (FIRST real v2
+    research turn). v2-000 — wave-v2 MISSION-START / HANDOFF (synthetic; 0 runs; frame: user): SKIPPED
+    as a research turn like the v1-000 opener; every handoff fact is already in the artifact (the v2
+    seed = C02's ~3195-3220 corridor materialized at src/configs/v12iso_musched_v1_stop3220.py; the
+    'novelty produced no promotable submission' = seal node N60; 'optimizer-only mechanisms plateaued
+    near a ~3000-step floor' = the existing washout O07/O11/O15 / N15/N22/N38/N52/N54; the binding
+    rules + stretch <2800 = the time-invariant frame / N16). NO node, NO observation, Stage-3/Stage-4
+    NO-OP; new-day session record initialized. v2-001 — the wave-MISSION-SCOPED OPENER (direct
+    parallel to v1-001's N07 opening-strategy decision) but with ZERO runs, so NO experiment nodes and
+    NO empirical-resolution signals. The agent read the mission files + cc/codex reports and set the v2
+    strategy: ADOPT THE cc (Claude-Code, the OTHER agent) v12 step-3025 PARENT as the backbone — over
+    the public baseline AND over Codex's own crystallized C02 ~3195-3220 corridor — because v12 is the
+    only known 3025 parent and (per the prior reports) Codex's 3195 EMA branch does NOT stack on v12;
+    screen candidates at train_steps=3000 first on preempt (single-seed hits -> reseeds -> lower-step
+    pressure); isolate every Slurm job in its own detached `v2cx`-prefixed worktree; spawned 4 subagents
+    (idea shortlist, launch/logistics, v12/current diff, literature scout). Recorded as ONE decision
+    node N61 (the worktree/ownership convention folded in, like the v1 `codex-` plumbing). Staged TWO
+    forward-looking working beliefs (UNVERIFIED, 0 runs): O17 (ts=3000 is the real floor on the cc-v12
+    parent, so 3025-parity tweaks are low-leverage unless they open a margin) and O18 (Codex's own 3195
+    EMA branch does NOT stack on the cc-v12 parent — a cross-track non-stacking premise, bears on N03).
+    NO crystallization (0 runs => no empirical resolution; no first-person user affirmation — the agent
+    talks to itself; no artifact commitment; no abandonment). Stage-4 NO-OP on C01/C02: the backbone
+    pivot to cc-v12 does NOT contradict/demote C02 (C02 = the standalone existence of Codex's 3195-3220
+    corridor; O18's non-stacking is about a NEW untested cc-v12 x Codex-3195 combination), so no
+    contradiction trigger and no edit. STALE-WATCH (carried from v1-007 / v2-000): O02-O07 last
+    referenced 2026-05-02; the pre-computed trip point is a 2026-05-05+ turn; today is still 2026-05-04,
+    so the 3+ session-day threshold is NOT yet met — NOT flagged stale (and this turn does not reference
+    them, so the clock keeps running). Tally v2-001: 1 trace node (N61 decision), 2 observations staged
+    (O17/O18), 0 crystallized, 0 logic edits, 0 concepts. C01 + C02 remain the only claims.
+    --- v2-002 (FIRST v2 turn WITH runs; 7 attached, all completed; narration 2026-05-04T00:10): the
+    EXECUTION of N61's opening strategy. The agent stood up the scratchpad launcher/parser, patched Slurm
+    hygiene (logistics subagent: explicit --nodes=1 / --cpus-per-task=64 / venv PATH inheritance; then a
+    submit attempt found local Slurm rejects `#SBATCH --requeue=0` -> patched to `#SBATCH --no-requeue`),
+    and fired the first two `v2cx`-prefixed preempt waves of CHEAP orthogonal init/optimizer screens at
+    train_steps=3000 on the cc-v12 parent. FIRST WAVE = the 7 completed runs: v12-ts3000 (LOCAL FAILURE
+    CONTROL, 3.28104), pmi02/05/10-ts3000 (3.28154/3.28105/3.28207), ag1e6/1e4/1e2-ts3000
+    (3.28986/3.28731/3.28877). DECISIVE FACT: ALL 7 MISS 3.28 (step_to_3.28 = —, stat_verify=False) — no
+    crossing at all, so no 2-seed reproduction to recognize — and the THREAD narrates only the LAUNCHES +
+    rationale, commenting on NO result (the v1-001 silent-opener pattern). SECOND WAVE launched while the
+    first ran (pmi01; SVC b={0.70..1.05}; VFG same-gain control; QKP shared c={0.50..2.00}; asymmetric Q/K
+    controls) — NONE in the completed table (pending). A code-comparison subagent flagged cc-v12 differs
+    from the public script in ARCHITECTURE/NUMERICS (RMSNorm helper, q/k norm casting), not only
+    optimizer/init -> agent adopts a provisional-win / port-or-justify posture (N64). A literature scout
+    queued Mousse/Mousse-Lite / PSGD-Kron / NAMO-D as higher-effort optimizers; decision = don't block on
+    them before the cheap init screens, Mousse-Lite is the next implementation target if no init signal
+    (persistent Kronecker pre-NS geometry); the worker's row-side Mousse-Lite was switched to one-sided
+    smaller-axis preconditioning for the 45-min preempt cap, launched mousse-lite-ts3000 (9438, pending)
+    (N66). Routed as 4 nodes: N62 (operating-mode decision) with children N63 (first-wave results, all
+    miss) + N65 (second-wave launches, pending); N64 (compliance-caveat decision); N66 (literature-queue
+    decision). Staged THREE observations: O19 (the cc-v12 local-reproduction gap at ts3000 — but CONSISTENT
+    with the inherited 3025 belief, not a refutation), O20 (PMI at parity / AdaGrad-Muon worse — cheap
+    levers don't open a margin), O21 (cc-v12 may sit outside the hard-rule surface -> compliance risk on the
+    whole v2 line). NO crystallization (all runs miss; a zero-crossing single-seed result is not a closure
+    signal; the lawful core needs a 2-seed reproduction; narrator interprets nothing). Stage-4 NO-OP on
+    C01/C02: the v12-ts3000 miss does NOT contradict C02 (independent corridor) NOR the inherited cc-v12-3025
+    belief (a ts3000-stopped run at 3.281 is consistent with a ~3025 crossing) -> no contradiction trigger,
+    no edit; no new concept (no lever reached a 2-seed frontier). STALE-WATCH unchanged: O02-O07 last
+    referenced 05-02; today is still 05-04, so the 3+ session-day threshold is still NOT met (trip = a
+    2026-05-05+ turn); v2-002 did not reference them either, so the clock keeps running. Tally v2-002: 4
+    trace nodes (N62 decision; N63/N65 experiments; N64/N66 decisions), 3 observations staged (O19/O20/O21),
+    0 crystallized, 0 logic edits, 0 concepts. C01 + C02 remain the only claims through 9 turns.
+    --- v2-003 (FIRST v2 turn with a COMMENTED search arc; 945 runs attached, canceled=52/completed=893;
+    narration 2026-05-04T03:12): THE qualitative break from v2-002. UNLIKE the v1-001 silent-opener pattern,
+    the THREAD COMMENTS on results throughout (explicit hit/miss calls, "First confirmed below-record hit",
+    "promote 2999 as current best final-step count"), pivots on them, and COMMITS idle preempt capacity to
+    the winners — so empirical-resolution + artifact-commitment signals ARE present (contrast v2-002, all
+    miss). DECISIVE ARC: with NO new optimizer/init lever — pure run-control / step-count (schedule-
+    denominator) tuning on the cc-v12 parent — the 3.28 crossing is walked BELOW the inherited 3025 line and
+    2-SEED-REPRODUCED at the same recipe/stop at several step counts: ts3022 (r1 3.27969 / r3 3.27987 / r6
+    3.27971), ts3015 (r5/r7/r8/r10/r12...), ts3012 r2/r3 BOTH crossing at validation step 3000, plain
+    v12-ts3000-r3 (3.27987), and finally plain v12-ts2999 r4 (3.27985) + r7 (3.27996) — the narrator: "2999
+    is a real below-3000 result." This clears the lawful core's rule-5 two-seed bar (commented + committed),
+    the v2 analogue of v1-002's C01 moment. CRYSTALLIZED O17 -> C03 (existence + 2-seed-reproducibility of a
+    sub-3000 crossing on the cc-v12 parent via step-count tuning; supported; dependencies []). RIGOR SCOPE
+    (mirrors C01/C02): C03 is anchored at the reproduced ts2999 and EXCLUDES gate-clearance (every run
+    stat_verify=False; crossings wall at the stop, final ≈ 3.2799, inside the ~0.001 noise floor; NO
+    statistical pass and NO pruning round this turn) and EXCLUDES the lower single-seed scratch numbers
+    (window best 2992 legal-v12opt-ts2992-r28, plus 2993-2998 combo/scalar cells, all single-seed). LEVER
+    SIDE all CLOSES (N69 dead_end): Mousse-Lite ts3000 3.28267, QKT a025 ts3000 3.28271 (slight mid-run lead,
+    miss endpoint), pow1.5+attn0.5 the strongest mid-run shape but >3.285 at every lower-step locator
+    (ts2800-2950) — and the explicit schedule-denominator transfer (_SCHEDULE_STEPS=3012 under an earlier
+    stop) is 0/8 (N70 dead_end), isolating the working lever to the LITERAL train_steps. Routed 5 nodes: N67
+    (operating-mode decision: step-count hill-climb + subagent delegation) with children N68 (the hill-climb
+    experiment -> C03) + N69 (lever washout) + N70 (schedule-denominator negative); N71 (pivot: v2-002
+    lever-screening -> step-count boundary hill-climbing). Staged ONE new observation O22 (the ATTRIBUTION
+    residue: the sub-3000 margin is run-control, not a new lever — mirrors the v1 NorMuon O05 lesson on the
+    cross-track parent; bears on N03; potential_type heuristic). Notes appended to O17 (PROMOTED -> C03),
+    O18 (still untested — no cc-v12 x Codex-3195 run), O19 (direction SUPERSEDED — the parent DOES cross at
+    ts3000 with more seeds), O20 (CORROBORATED + EXTENDED by N69), O21 (now rides on C03 — provisional-until-
+    ported). Stage-4 NO-OP on C01/C02: no experiment in their Proof ran this turn (v2-003 is entirely on the
+    cc-v12 parent, not the NorMuon/Adam-mini lineage); the new C03 is a SIBLING existence claim on a DIFFERENT
+    backbone, does NOT contradict either (the non-stacking premise O18 stays untested), and adds no concept
+    (a run-control existence claim, not a new mechanism — same as C01, which added no concept). STALE-WATCH:
+    O02-O07 last referenced 05-02; today is STILL 05-04, so the 3+ session-day threshold remains NOT met
+    (trip = a 2026-05-05+ turn); v2-003 did not reference them. Tally v2-003: 5 trace nodes (N67 decision;
+    N68 experiment; N69/N70 dead_ends; N71 pivot), O17 CRYSTALLIZED -> C03, 1 new observation staged (O22),
+    1 logic claim crystallized (C03), 0 logic edits to C01/C02, 0 concepts. C01 + C02 + C03 = 3 claims
+    through 10 turns — the FIRST v2 claim, at v2's own first 2-seed/commented frontier turn (the C01-analogue).
+    --- v2-004 (post-compaction continuation of the C03 step-count line; 1622 runs attached, canceled=149/
+    completed=1473; best step_to_3.28 this window = 2963 legal-v12opt-rolewd-rolelr2-lookahead-ts2963-cm0225-
+    attn0625-r11, SINGLE-SEED; narration 2026-05-04T03:12): the v1-001/003/004/005 [UNCOMMENTED-IN-THREAD]
+    anti-peeking pattern RECURS on the v2 line. The THREAD body narrates ONLY plain `v12_ts####` boundary work
+    at 2995-2999 — it polls indexed plain results (v12_ts2999.py n=14 hits=2 best=3.27985 = C03's EXISTING
+    ts2999 anchor; v12_ts3000.py n=25 hits=1; v12_ts2998/2997/2996 best values), fires plain fill waves
+    (v12-ts2999-r24..r47, v12-ts2998-r13..r23, v12-ts2997-r7..r14, v12-ts2996-r5..r10, v12-ts2995-r2), comments
+    on one specific completion v12-ts2999-r23=3.28188 (a MISS, "does not change the frontier ... 2999 is a
+    stochastic-low-tail target"), and has subagents PREPARE (Laplace eta-min, Pascal cooldown-fraction)
+    variants it explicitly DECLINES to launch (Boyle/Descartes read-only passes: prior eta/schedule-denominator/
+    PMI evidence negative; favor plain 2999, lottery 2996, abandon the rest). But the runs table's best is 2963
+    in a `legal-v12opt-rolewd-{combo,rolelr2,lookahead,pmi02,pmiamp,tailroleswap}-cm0225-attn0625` corridor the
+    THREAD NEVER names, with a dense 2982-2991 band and rolewd-rolelr2-lookahead at 2963/2970/2975 — the
+    dominant tabular work, UNCOMMENTED. The only stat_verify=True rows are a rolewd-tailnoise-ts2982 batch that
+    MISSES (3.28028-3.28509, step_to_3.28 = —), also uncommented. DECISIVE: NO closure signal. The THREAD's own
+    commented numbers are CONSOLIDATION of the already-crystallized C03 ts2999 frontier (more single-seed support
+    + a miss, characterizing 2999 as a stochastic-low-tail crossing exactly as C03's noise-floor caveat predicts),
+    NOT a new lower 2-seed stop (2996/2997/2998 all still miss), and there is NO statistical pass and NO pruning
+    round this turn. The uncommented 2963/rolewd corridor draws no researcher comment -> no empirical-resolution
+    (the signal requires a comment). So NOTHING crystallizes: C03 is NOT rewritten (Stage-4 near-miss logged on
+    both the uncommented 2963 evidence AND the corroborating plain-2999 consolidation — C03 is already `supported`
+    at existence/2-seed-reproducibility with the not-yet-gated caveat, so corroboration does not change its status).
+    Routed 4 nodes (N72 operating-mode decision: plain-boundary fill + subagent prep; N73 plain-boundary
+    consolidation experiment -> corroborates C03; N74 [UNCOMMENTED] rolewd/2963 corridor; N75 dead_end: declined/
+    noncompetitive eta/cooldown/schedule-denominator/PMI/pow side-lines). Staged ONE new observation O23 (the
+    UNCOMMENTED v2 frontier-extension evidence — the v2 analogue of O10/O14 on the v1 line; potential_type claim).
+    Notes appended to O22 (corroborated — levers declined-without-launch, run-control stays the lever) and O20
+    (corroborated again by N75). Stage-4 NO-OP on C01/C02/C03: no experiment in C01/C02's Proof ran (v2-004 is
+    entirely on the cc-v12 parent); C03 corroborated-not-changed (no stat pass / no pruning / no 2-seed stop below
+    2999 / uncommented lower corridor); no user msg (no verbal-declaration); no concept (no new mechanism reached a
+    2-seed COMMENTED frontier — rolewd/cm0225/attn0625 are uncommented and would be stepping stones even if
+    commented). STALE-WATCH: O02-O07 last referenced 05-02; today is STILL 05-04, so the 3+ session-day threshold
+    remains NOT met (trip = a 2026-05-05+ turn); v2-004 did not reference O02-O07 by id (though O02 stop-knob wall +
+    O05/O22 schedule-is-the-tunable are thematically alive via the C03 consolidation). Tally v2-004: 4 trace nodes
+    (N72 decision; N73/N74 experiments; N75 dead_end), 0 crystallized, 0 logic edits, 1 observation staged (O23),
+    0 concepts. C01 + C02 + C03 = 3 claims through 11 turns — claims correctly stay scarce: a post-compaction
+    consolidation turn with a large UNCOMMENTED tabular frontier produces no new claim, exactly the anti-hindsight
+    shape (the 2963 corridor will crystallize only at the turn whose timeline COMMENTS on / prunes / seeds-out it).
+    --- v2-005 (THE architecture-compliance turn; 155 runs attached, canceled=35/completed=120; best step_to_3.28 this
+    window = 2962 legal-v12opt-rolewd-rolelr2-lookahead-ts2962-cm0225-attn0625-r41 SINGLE-SEED; narration 2026-05-04,
+    closing stat pass 16:33Z): the DECISIVE turn for the v2 line, with the FIRST crystallizations since C03 (TWO: C05 +
+    C04). THE EVENT: the USER flagged a real ARCHITECTURE / FORWARD-PASS VIOLATION — every v12-derived `v2cx` variant
+    inherited `RMSNorm.forward = (norm(x.float())*self.gains).type_as(x)` (a module-level `norm()` helper) and routed
+    attention q/k normalization through that helper, instead of the workspace baseline `F.rms_norm(...)`. This is a
+    precision/behavior change in the forward path, INVALID for this track even though math-equivalent (bf16 precision) —
+    exactly the compliance risk O21/N64 staged (then unresolved) at v2-002, now CONFIRMED first-person and reaffirmed
+    REPEATEDLY. The agent STOPPED the live push (cancelled active `v2cx-t3-*` jobs; some reached Slurm COMPLETING first),
+    QUARANTINED ALL v12-derived `v2cx` results as non-submittable (= C03's entire evidence basis), built a NEW compliant
+    `legal_v12opt_*` family from `train_gpt_simple.py` with VERIFIED-EMPTY Architecture diff + identical norm lines
+    (changing only Optimization + Init/Optim Hyperparams), changed the launcher prefix `v2cx`->`v2cxleg`, and added then
+    STRENGTHENED a HARD LAUNCH-TIME GATE (`launch_variant.sh` exits 64/75 on non-byte-identical Architecture, modified
+    `RMSNorm.forward`/q-k-norm line, the `norm(x.float())` / `q,k=norm(q),norm(k)` failure modes, OR special
+    RMSNorm/gain-path optimizer plumbing — which RECLASSIFIED PWG/GMS as non-promotable). A run-ledger recomputation
+    found 507/762 indexed runs legal (255 bad); a scratchpad audit found 89 stale files disqualified. THE WALK: on the
+    compliant base the agent COMMENTS on a step-by-step legal frontier walk (each promotion single-seed / low-tail):
+    `legal-v12opt-combo-cm0225-attn0625` 3000->2993, then `rolewd-combo` 2992->2982 (ts2982-r32 first crossing at step
+    2975), then `rolewd-rolelr2-lookahead` 2970->2965->2963->2962 (window best ts2962-r41 3.27992) — this IS the exact
+    rolewd-cm0225-attn0625 corridor O23 staged at v2-004 as UNCOMMENTED, now NARRATED. A BROAD legal parent-screen washout
+    at ts2998 closed ~50+ optimizer/init/schedule branches (mu097/AdaGrad-Muon/QKTrust/BranchCov/RoleWD/PMI/eta/MTrust/
+    Adam1Tune/GradCenter/MomentMix/ProjInit/SVC/RoleLR/.../M2F/AdamMini) cold or near-miss — the working lever stayed
+    train-step-only + the rolewd/rolelr2/lookahead stack (N77). THE CLOSURE: on USER instruction the agent switched to
+    SUBMISSION-VALIDITY VERIFICATION and ran a cohort z-test by EXACT fixed variant: the low-step frontier families FAIL
+    `(3.28-mu)*sqrt(n)>=0.004` (ts2962 n=38 score -0.0150; ts2963 -0.0116; ts2970 -0.0072; ts2982 -0.0054), but FIXED-STEP
+    cohorts from the clean ts2962 stack at +25/+50/+75 give ts2987 -0.00438 (FAIL), ts3012 0.00052 (FAIL), and ts3037
+    PASSES (n=8, losses [3.27823,3.27882,3.27831,3.27862,3.27769,3.27845,3.27919,3.27771], mean 3.2783775, score
+    (3.28-mu)*sqrt(8)=0.004589, z=3.53, p~0.000208), with the same-checkpoint anti-val-spam scan showing 3025 fails
+    (0.002454) and step 3037 the earliest common checkpoint that passes, and REPRODUCIBILITY VERIFIED for all 8 (source_log
+    = exact `legal_v12opt_rolewd_rolelr2_lookahead_ts3037_cm0225_attn0625.py`, stdlib+PyTorch only). This is the SAME
+    `(3.28-mu)*sqrt(n)` gate that crystallized C02 at v1-007/N59, with the SAME lower-floor-rejected coda (C02 rejected the
+    3170 floor; here the 2962-2982 crossings are rejected and the verified frontier settles at the higher COMPLIANT ts3037).
+    CRYSTALLIZED: O21 -> C05 (the cc-v12 base VIOLATES the no-forward/no-norm rule -> v12-derived results non-submittable;
+    only byte-identical-Architecture variants are valid; supported; provenance UPGRADED ai-suggested->user-revised via
+    verbal-affirmation; closure = verbal-affirmation + artifact-commitment); and O23 -> C04 (on an architecture-COMPLIANT
+    base, the rolewd-rolelr2-lookahead-cm0225-attn0625 stack reaches step_to_3.28=3037 STATISTICALLY VERIFIED at n=8, the
+    lower-step crossings do NOT clear the gate; supported; depends [C05]; provenance ai-suggested — empirical-resolution
+    does not upgrade; closure = empirical-resolution + artifact-commitment, the O23 watch-for signal). STAGE-4 on C03
+    (the central reconciliation): the compliance ruling (C05) + the compliant frontier (C04) CONTRADICT C03's sub-3000
+    frontier relevance (C03's base is now confirmed non-compliant, its evidence quarantined, and the compliant verified
+    frontier is 3037 not sub-3000 — the sub-3000 was forward-path-assisted). Per Rule 7 (never silently overwrite a
+    contradiction) + the supported->weakened conservatism rule (never demote on a single event): FLAGGED the contradiction
+    (appended unresolved decision node N79), UPDATED C03's Interpretation + Falsification + Tags to record the
+    confirmed-non-compliant base / quarantine / 3037 port (a scope-narrowing content edit, allowed; logged in
+    logic_revisions), and LEFT C03's Status `supported` for the researcher to adjudicate (NOT auto-flipped). Staged ONE new
+    observation O24 (the matured O22 tension: the sub-3000 was forward-path-assisted, and a COMPLIANT lever stack is needed
+    to clear the gate at all — but only at ts3037, not sub-3000; potential_type heuristic). STAGE-4 NO-OP on C01/C02 (no
+    experiment in their Proof ran; v2-005 is entirely on the cc-v12 / legal_v12opt line; C04's gate is the C02/N59 gate
+    REUSED, not a re-run of C02's cells). CONCEPTS: added NONE — the rolewd/rolelr2/lookahead/cm0225/attn0625 modifiers are
+    optimizer/init slugs that reached a verified frontier as a STACK (C04 records them inline); the compliance rule (C05) is
+    a constraint, not a mechanism; deferred any per-modifier concept (over-formalizing). Routed 4 trace nodes: N76 (the
+    compliance-stop PIVOT, provenance:user — the spine of the turn) with children N77 (the compliant frontier-walk experiment
+    -> feeds C04) + N78 (the submission-validity stat-pass experiment -> C04); N79 (the unresolved C03-vs-C05/C04 contradiction
+    decision, provenance:user). The many subagents (Faraday/Dirac/Aristotle/Chandrasekhar/Raman/.../Nash/Boole/etc. that
+    staged + validated legal variants) -> ai_actions, folded into N76/N77, not tree nodes (prep/validation helpers, same
+    policy as v2-001/003/004). STALE-WATCH: O02-O07 last referenced 2026-05-02; today is STILL 2026-05-04 (v2-005 does not
+    reference them by id) -> distinct session-days strictly after 05-02 = {05-03 seal, 05-04} = 2, short of 3, so NOT flagged
+    stale (clock still running; the NEXT 2026-05-05+ turn must sweep O02-O07). Tally v2-005: 4 trace nodes (N76 pivot;
+    N77/N78 experiments; N79 unresolved decision), O21 CRYSTALLIZED -> C05, O23 CRYSTALLIZED -> C04, 1 new observation staged
+    (O24), 1 logic edit (C03 Interpretation/Falsification/Tags scope-narrowed + contradiction-flagged, Status unchanged),
+    0 concepts. C01 + C02 + C03 + C04 + C05 = 5 claims through 12 turns — the FIRST architecture-compliant + statistically-
+    verified v2 frontier (C04, the v2 C02-analogue) lands exactly at the turn whose timeline COMMENTS on + PRUNES + STAT-TESTS
+    the rolewd corridor O23 held in staging for one turn, and the inherited cc-v12 compliance risk (O21, staged 3 turns)
+    crystallizes to a hard constraint (C05) the same turn the user confirms it.
+
+events_logged:
+  - turn: 2
+    type: decision
+    id: "N61"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      v2 opening strategy: adopt the cc-v12 step-3025 parent as the backbone (over the public baseline
+      AND over Codex's own C02 ~3195-3220 corridor); screen candidates at train_steps=3000 first on
+      preempt (single-seed hit -> reseed -> lower-step pressure); isolate each Slurm job in its own
+      detached `v2cx`-prefixed worktree. Mirrors v1-001's N07 opener; 0 runs => no child experiments.
+  - turn: 2
+    type: observation
+    id: "O17"
+    routing: staged
+    provenance: ai-suggested
+    summary: >
+      Working belief (UNVERIFIED, 0 runs): train_steps=3000 is the real floor on the cc-v12 parent, so
+      3025-parity tweaks are not high-leverage unless they open a margin below ~3000. Premise behind the
+      ts=3000 screening protocol (N61). potential_type claim; bound_to N05/N06/N16/N61.
+  - turn: 2
+    type: observation
+    id: "O18"
+    routing: staged
+    provenance: ai-suggested
+    summary: >
+      Working belief (UNVERIFIED; from prior reports): Codex's own 3195 EMA branch (C02 corridor) does
+      NOT stack on the cc-v12 step-3025 parent — the two best independent lines don't simply add. The
+      non-stacking premise behind choosing the cc-v12 backbone over continuing C02 (N61). potential_type
+      claim; bound_to N03/N61. A cross-track stacking observation; does NOT contradict C02's standalone
+      existence claim (concerns a new untested combination).
+  - turn: 3
+    type: decision
+    id: "N62"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      v2-002 operating mode (executes N61): stand up the scratchpad launcher/parser + Slurm-hygiene fixes
+      (--nodes=1 / --cpus-per-task=64 / venv PATH; `--requeue=0` -> `--no-requeue`), then fire the first
+      two `v2cx` preempt waves of cheap orthogonal init/optimizer screens at ts3000 on the cc-v12 parent.
+      Children N63 (first-wave results) + N65 (second-wave launches).
+  - turn: 3
+    type: experiment
+    id: "N63"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      First-wave ts3000 screens = the 7 completed runs, ALL MISS 3.28 (step_to_3.28 = —, stat_verify=False):
+      v12-ts3000 control 3.28104; PMI pmi02/05/10 3.28154/3.28105/3.28207 (≈ control, parity); AdaGrad-Muon
+      ag1e6/1e4/1e2 3.28986/3.28731/3.28877 (worse). THREAD does not comment on results -> journey fact;
+      interpretation staged O19/O20. No crossing => no 2-seed reproduction.
+  - turn: 3
+    type: experiment
+    id: "N65"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      Second-wave ts3000 init screens LAUNCHED (within Init/Optim Hyperparams, no optimizer surgery):
+      pmi01; SVC b={0.70,0.75,0.85,0.95,1.05}; VFG same-gain control vfg085; QKP shared c={0.50,0.70,1.40,
+      2.00}; asymmetric Q/K controls. NONE in the completed table -> result PENDING. OPEN.
+  - turn: 3
+    type: decision
+    id: "N64"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      Compliance caveat: code-comparison subagent flags cc-v12 differs from the public script in
+      ARCHITECTURE/NUMERICS (RMSNorm helper, q/k norm casting), not only optimizer/init. Keep screening on
+      v12 (mission names it the 3025 parent) but treat any win as PROVISIONAL until checked against the N16
+      hard-rule surface and justified-as-numerics or ported to a compliant base. Interpretation staged O21.
+  - turn: 3
+    type: decision
+    id: "N66"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      Literature-scout higher-effort optimizer queue (Mousse/Mousse-Lite, PSGD-Kron, NAMO-D): do NOT block
+      on them before the cheap init screens finish; Mousse-Lite is the next implementation target if no init
+      signal (persistent Kronecker pre-NS geometry, not another post-NS spectral tweak). Worker's row-side
+      Mousse-Lite switched to one-sided smaller-axis preconditioning for the 45-min preempt cap; launched
+      mousse-lite-ts3000 (9438, pending).
+  - turn: 3
+    type: observation
+    id: "O19"
+    routing: staged
+    provenance: ai-suggested
+    summary: >
+      The cc-v12 "3025" parent does NOT reproduce a sub-3.28 crossing locally at ts3000 (v12-ts3000 control
+      3.28104, step_to_3.28 = —). Single-seed; CONSISTENT with the inherited 3025 belief (a ts3000-stopped
+      run at 3.281 crosses just after step 3000), so corroborating-direction evidence for O17, NOT a
+      refutation. potential_type constraint; bound_to N05/N61/N62/N63.
+  - turn: 3
+    type: observation
+    id: "O20"
+    routing: staged
+    provenance: ai-suggested
+    summary: >
+      First-wave cheap levers don't open a margin below the v12 parent at ts3000 (all single-seed, all miss):
+      PMI pmi02/05/10 at parity with the control (~3.281); AdaGrad-Muon ag1e6/1e4/1e2 clearly worse
+      (3.287-3.290). Corroborates O17 (parity tweaks low-leverage). Single-seed screened-out negatives, NOT
+      2-seed refutations; PMI=0.01/SVC/QKP/Mousse-Lite still pending. potential_type claim; bound_to
+      N01/N03/N62/N63.
+  - turn: 3
+    type: observation
+    id: "O21"
+    routing: staged
+    provenance: ai-suggested
+    summary: >
+      The cc-v12 backbone may sit partly OUTSIDE the lawful-core hard-rule surface: it differs from the
+      public script in architecture/numerics (RMSNorm helper, q/k norm casting), so a v2 win on it is not
+      automatically submittable (port-or-justify, N64). A compliance-risk constraint on the whole v2 line,
+      distinct from any run result. potential_type constraint; bound_to N16/N61/N64.
+  - turn: 4
+    type: decision
+    id: "N67"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      v2-003 operating mode: after the v2-002 ts3000 lever-screens missed, hill-climb the cc-v12 step-count /
+      schedule-denominator boundary downward (midpoint probes 3010-3024, then 3012/3000/2999...), gate each
+      step on a 2-seed reproduction, and delegate trajectory-analysis (Zeno/Maxwell/Epicurus) + fallback-
+      variant PREP (Mendel/Rawls/Kant/Kierkegaard/boundary-worker, no Slurm submit) so each freed preempt node
+      launches from signal; respect the launcher idle gate. Continues N61/N62. Children N68/N69/N70.
+  - turn: 4
+    type: experiment
+    id: "N68"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      cc-v12 step-count boundary hill-climb: pure run-control / step-count tuning walks the 3.28 crossing BELOW
+      3025 and 2-SEED-REPRODUCES it — ts3022 (r1/r3/r6), ts3015 (r5/r7/r8/r10/r12), ts3012 r2/r3 (cross @step
+      3000), plain v12-ts3000-r3 (3.27987), plain v12-ts2999 r4 (3.27985)+r7 (3.27996); single-seed scratch
+      reach to 2992. Narrator comments + commits. RESOLVES O17 -> crystallizes C03. RIGOR: all stat_verify=False,
+      crossings wall at the stop (~3.2799, inside noise floor), NO stat pass / NO pruning this turn -> C03 scoped
+      to existence + 2-seed-reproducibility (anchored ts2999), NOT gate-clearance, NOT the 2992-2998 scratch.
+  - turn: 4
+    type: dead_end
+    id: "N69"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      v2-003 lever / stretch side-branches all CLOSE: Mousse-Lite ts3000 3.28267 (worse than control), QKT
+      alpha=0.25 ts3000 3.28271 (slight mid-run lead, miss endpoint), pow1.5+attn0.5 the strongest mid-run shape
+      but >3.285 at every lower-step locator (ts2800-2950). The sub-3000 margin is RUN-CONTROL, not a new lever
+      (corroborates O20; a strong mid-run curve does NOT carry to the 3.28 endpoint — N05 bin-vs-loss-curve).
+  - turn: 4
+    type: dead_end
+    id: "N70"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      Explicit schedule-denominator transfer (v12 ts3000/2999/2998/2995/2990 with _SCHEDULE_STEPS=3012) is
+      NEGATIVE: 0/8 at ts3000_sched3012, 0/6 at ts2999_sched3012, 0 at 2998/2995/2990 — none cross — while
+      PLAIN ts3000/ts2999 DO cross + reproduce (N68). Isolates the working lever to the LITERAL train_steps,
+      not a decoupled denominator under an earlier stop (relates to O02). Single-seed-per-cell negatives.
+  - turn: 4
+    type: pivot
+    id: "N71"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      Main-line pivot: from v2-002 optimizer/init-lever screening at ts3000 -> pure cc-v12 step-count boundary
+      hill-climbing below 3000. Trigger: the levers missed/tied (N63/N69) while a plain step-count repeat at
+      ts3022 became the first below-record hit and 2-seed-reproduced below 3000. The productive lever on the
+      cc-v12 parent is the step count, not a new mechanism (mirrors the v1 NorMuon O05 lesson). Feeds C03.
+  - turn: 4
+    type: observation
+    id: "O22"
+    routing: staged
+    provenance: ai-suggested
+    summary: >
+      ATTRIBUTION residue: the v2 sub-3000 margin (C03) comes from RUN-CONTROL / step-count tuning, NOT a new
+      optimizer/init lever — every cheap (O20) and surgery/stretch (N69) lever closed at parity-or-worse, the
+      schedule-denominator transfer is negative (N70), and plain step-count repeats reproduced below 3000.
+      Mirrors the v1 NorMuon O05 lesson on the cross-track cc-v12 parent; bears on N03 (levers don't stack onto/
+      beat the schedule lever). potential_type heuristic; single-seed negatives, not 2-seed-certified -> staged.
+  - turn: 5
+    type: decision
+    id: "N72"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      v2-004 operating mode (post-compaction continuation of the C03 step-count line): keep live preempt slots
+      full with PLAIN `v12_ts####` boundary repeats around 2995-2999 (2999 support + 2998/2997/2996/2995 lottery)
+      while subagents do read-only run-stat recommendations (Boyle, Descartes) + PREPARE (do-not-launch) eta-min
+      (Laplace) / cooldown-fraction (Pascal) variants; DECLINE to launch the prepared eta/cooldown/schedule-
+      denominator/pow lines (prior evidence negative). Continues N67/N71. Children N73/N74; sibling dead_end N75.
+  - turn: 5
+    type: experiment
+    id: "N73"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      Plain cc-v12 boundary consolidation around 2995-2999: more single-seed support at the C03 ts2999 anchor
+      (plain v12_ts2999 n=14, 2 hits, best 3.27985 = C03's EXISTING anchor) + a commented 2999 MISS (v12-ts2999-r23
+      3.28188, "stochastic-low-tail target") + close lower-step misses (2996 best 3.28026, 2997 3.28036, 2998
+      3.28040). CORROBORATES C03 (2999 is a stochastic-low-tail crossing, exactly its noise-floor caveat) but opens
+      NO 2-seed stop below 2999 and runs NO stat pass / NO pruning -> C03 status UNCHANGED (Stage-4 near-miss).
+  - turn: 5
+    type: experiment
+    id: "N74"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      [UNCOMMENTED-IN-THREAD] a legal-v12opt-rolewd-{combo,rolelr2,lookahead,pmi02,pmiamp,tailroleswap}-cm0225-
+      attn0625 corridor extends the runs-table frontier far below the THREAD's plain-2999 boundary: best
+      step_to_3.28 = 2963 (rolewd-rolelr2-lookahead-ts2963 3.27947), 2970 (3.27942), a dense 2982-2991 band
+      (rolewd-combo ts2991 3.27932 ... ts2983 3.27968). The THREAD covers ONLY plain v12_ts#### at 2995-2999 — it
+      NEVER names rolewd/combo/rolelr2/lookahead/cm0225/attn0625/tailnoise/2963. Journey fact (the runs happened);
+      interpretation staged O23; NO empirical-resolution closure (no comment); C03 anchor NOT rewritten on it.
+  - turn: 5
+    type: dead_end
+    id: "N75"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      v2-004 declined/noncompetitive side-lines consolidated: explicit schedule-denominator variants stay
+      noncompetitive (no new slots), prepared eta-min (Laplace) and cooldown-fraction (Pascal) variants are NOT
+      launched ("prior eta evidence is negative"), Boyle recommends abandoning schedule-denominator/eta/PMI/plain-
+      3000, and Descartes' read-only branch scan finds NO completed optimizer-only branch worth a follow-up
+      (sched3012 best 3.28016, pow15attn05_ts3010 best 3.28022). The working lever stays plain step-count (C03).
+      Corroborates O22/O20; extends N70. Declined-without-launch / read-only-prior basis, not a 2-seed refutation.
+  - turn: 5
+    type: observation
+    id: "O23"
+    routing: staged
+    provenance: ai-suggested
+    summary: >
+      UNCOMMENTED v2 frontier-extension evidence (the v2 analogue of O10/O14): a legal-v12opt-rolewd-...-cm0225-
+      attn0625 corridor on the cc-v12 parent reaches step_to_3.28 = 2963 (window best) with a dense 2982-2991 band,
+      ~36 steps below C03's commented ts2999 boundary — but the THREAD body NEVER names rolewd/combo/rolelr2/
+      lookahead/cm0225/attn0625/2963. Crossings wall at the stop (~3.2793-3.2800, inside the noise floor), look
+      single-seed; the only stat_verify=True rolewd-tailnoise-ts2982 rows MISS. No comment / prune / seed-out /
+      commit this turn -> no closure signal. potential_type claim; bound_to N01/N03/N04/N16/N68/N74.
+  - turn: 6
+    type: pivot
+    id: "N76"
+    routing: direct
+    provenance: user
+    summary: >
+      ARCHITECTURE-COMPLIANCE STOP (provenance:user — the spine of v2-005): the USER flagged that every v12-derived
+      `v2cx` variant changed the model forward path (`RMSNorm.forward = (norm(x.float())*self.gains).type_as(x)` +
+      q/k norm via the helper) instead of baseline `F.rms_norm` — INVALID even if math-equivalent (bf16 precision).
+      Agent stopped the live push, cancelled active `v2cx-t3-*` jobs, QUARANTINED all v12-derived results
+      (= C03's evidence basis), rebuilt a byte-identical-Architecture `legal_v12opt_*` family behind a hard
+      launch-time Architecture/norm/gain gate, prefix `v2cx`->`v2cxleg`. Confirms O21/N64; crystallizes C05;
+      bears on N16. Children N77/N78.
+  - turn: 6
+    type: experiment
+    id: "N77"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      Compliant `legal_v12opt_*` frontier walk (forward/norm preserved): the rolewd-rolelr2-lookahead-cm0225-attn0625
+      stack walks the legal step frontier 3000->2998->...->2982 (ts2982-r32 first crossing 2975)->2970->2965->2963->2962
+      (window best ts2962-r41 3.27992), ALL single-seed / tail hits walling at the stop; a broad legal optimizer/init/
+      schedule parent-screen washout at ts2998 (~50+ branches) closes ~all. This IS the O23 corridor, now COMMENTED.
+      Feeds C04; bears on N01/N03/N04.
+  - turn: 6
+    type: experiment
+    id: "N78"
+    routing: direct
+    provenance: ai-executed
+    summary: >
+      Submission-validity STAT PASS (on USER instruction): cohort z-test by fixed variant shows the low-step frontier
+      families FAIL `(3.28-mu)*sqrt(n)>=0.004` (ts2962 n=38 -0.0150; ts2963 -0.0116; ts2970 -0.0072; ts2982 -0.0054),
+      but a fixed ts3037 cohort PASSES (n=8, mean 3.2783775, score 0.004589, z=3.53, p~0.000208) with reproducibility
+      verified (source_log = exact ts3037 script, stdlib+PyTorch only). Step 3037 the earliest common checkpoint that
+      passes (3025 fails 0.002454). The C02/N59 gate REUSED, same lower-floor-rejected coda. Crystallizes C04.
+  - turn: 6
+    type: decision
+    id: "N79"
+    routing: direct
+    provenance: user
+    summary: >
+      CONTRADICTION (status:unresolved, provenance:user — deferred to researcher): C03 (sub-3000 step frontier on the
+      cc-v12 parent, `supported`) vs C05 (the cc-v12 base VIOLATES the no-forward/no-norm rule -> v12-derived results
+      non-submittable) + C04 (the COMPLIANT verified frontier is 3037, not sub-3000; the sub-3000 was forward-path-
+      assisted). C03's evidence quarantined; existence statement stays factually true about the (non-compliant) base.
+      Flagged both, appended this node, narrowed C03's Interpretation/Falsification; Status flip DEFERRED per the
+      supported->weakened conservatism rule. bound N16/N64/N76/N77/N78.
+  - turn: 6
+    type: observation
+    id: "O21"
+    routing: crystallized
+    provenance: user-revised
+    summary: >
+      CRYSTALLIZED -> C05 (constraint) via verbal-affirmation + artifact-commitment: the cc-v12 compliance risk O21
+      staged at v2-002 (then unresolved at v2-003/004) is CONFIRMED — the USER ruled first-person (reaffirmed
+      repeatedly) that the cc-v12 forward path violates the hard rule, and the agent committed (stopped, quarantined,
+      built the gate). Provenance UPGRADED ai-suggested -> user-revised. promoted_to logic/claims.md:C05.
+  - turn: 6
+    type: observation
+    id: "O23"
+    routing: crystallized
+    provenance: ai-suggested
+    summary: >
+      CRYSTALLIZED -> C04 via empirical-resolution + artifact-commitment (the O23 watch-for signal FIRES, the exact
+      v1-007 O10/O14 -> C02 pattern): the rolewd-cm0225-attn0625 corridor O23 tracked as UNCOMMENTED at v2-004 is now
+      COMMENTED (N77) + PRUNED/SEEDED-OUT + STAT-VERIFIED (N78). RIGOR CODA: the low-step crossings (2962-2982) FAIL the
+      gate -> rejected; the verified frontier lands on the COMPLIANT ts3037 (n=8, 0.004589). Provenance NOT upgraded.
+      promoted_to logic/claims.md:C04.
+  - turn: 6
+    type: observation
+    id: "O24"
+    routing: staged
+    provenance: ai-suggested
+    summary: >
+      NEW (the matured O22 tension): the v2 sub-3000 frontier was MATERIALLY ENABLED BY THE INVALID FORWARD-PATH CHANGE,
+      and a COMPLIANT recipe needs an optimizer/init LEVER STACK (rolewd+rolelr2+lookahead+cm0225+attn0625), not plain
+      step-count, to clear the gate AT ALL — but only at ts3037, not sub-3000 (plain compliant step-count cohorts fail;
+      ~50+ single levers wash out, N77). Sharpens O22 (which held on the forward-path-assisted cc-v12 base). Caveat: no
+      clean baseline-v12-optimizer compliant control at matched n -> specific-stack attribution not yet 2-seed-certified.
+      potential_type heuristic; bound_to N03/N16/N76/N77/N78.
+
+ai_actions:
+  - turn: 2
+    action: >
+      Read the local mission files (ai/AGENTS.md, ai/goal.md, track README.md) + the prior-state
+      README.md and the cc/codex reports to establish the v2 starting state. Extracted the binding frame
+      (target = step_to_3.28 to val<=3.28; current best cc v12 at 3025; stretch <2800; hard constraints =
+      no architecture/data/batch changes, one forward-backward per step, changes confined to Optimization
+      + Init/Optim Hyperparams). Routine reads recorded for their point-in-time-belief relevance (the
+      '3025' backbone number), not as a research event.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: >
+      Run-control / ownership convention for v2: create an isolated detached worktree per Slurm job, every
+      job carrying the `v2cx` prefix, to avoid concurrent edits to a shared train_gpt_simple.py and keep
+      Slurm-job ownership clear (the v2 analogue of the v1 worktree/`codex-` convention). Plumbing folded
+      into N61's job-isolation choice; recorded here, not as a separate tree node.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 2
+    action: >
+      Spawned 4 subagents to parallelize the wave open — idea shortlist, launch/logistics, v12-vs-current
+      diff, and a literature scout — while the main thread continues with cheap-to-implement v12 variants.
+      No run launched this window (0 runs attached).
+    provenance: ai-executed
+    files_changed: []
+  - turn: 3
+    action: >
+      Implemented the scratchpad launcher/parser; the logistics subagent confirmed the detached-worktree
+      pattern and flagged explicit `--nodes=1`, `--cpus-per-task=64`, and venv PATH inheritance as necessary
+      Slurm hygiene -> patched the launcher before the first submissions. A submit attempt then found the
+      local Slurm rejects `#SBATCH --requeue=0` ("option '--requeue' doesn't allow an argument") -> patched
+      to `#SBATCH --no-requeue` and resubmitted the unchanged first-wave variants. Launcher/Slurm plumbing
+      folded into N62 (operating mode), recorded here as tooling.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 3
+    action: >
+      Launched FIRST `v2cx` preempt wave at ts3000: v12-ts3000 (job 9417, failure control), pmi02-ts3000
+      (9418), pmi05-ts3000 (9419), pmi10-ts3000 (9420), ag1e6-ts3000 (9421), ag1e4-ts3000 (9422),
+      ag1e2-ts3000 (9423). These are the 7 completed runs (the evidence for N63). All MISS 3.28.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 3
+    action: >
+      Launched SECOND `v2cx` preempt wave (while the first ran): pmi01-ts3000 (9424); SVC b={0.70,0.75,0.85,
+      0.95,1.05} (9425-9429); VFG same-gain control vfg085-ts3000 (9430); QKP shared c={0.50,0.70,1.40,2.00}
+      (9431-9434); asymmetric Q/K controls (9435-9436); and mousse-lite-ts3000 (9438). None of these appears
+      in this packet's completed runs table (pending). Evidence for N65 (init screens) + N66 (Mousse-Lite).
+    provenance: ai-executed
+    files_changed: []
+  - turn: 3
+    action: >
+      Mousse-Lite worker produced a row-side (two-sided) version; the main thread changed it to ONE-SIDED
+      smaller-axis preconditioning before launch to avoid 3072x3072 MLP eigensystems in the 45-min preempt
+      cap. A cost change, not a change to the intended Mousse-Lite screen (persistent covariance EMA,
+      trace-normalized eigensystem, alpha=0.125 pre-NS shaping before MuonEq/Contra). Folded into N66.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 4
+    action: >
+      Launched the cc-v12 step-count boundary hill-climb across ~945 runs (canceled=52/completed=893): midpoint
+      probes v12-ts3010/3015/3020 (+ pmi05/svc070 ties) jobs 9444-9448; below-record wave ts3020-3024 +
+      pmi05-3022/3024 (9459-9470); close-miss repeats ts3010/3015 (9471-9493); 3020-3022 support (9516-9531);
+      lower-boundary ts3011-3015 saturation (9544-9596); explicit schedule-denominator ts3000/2999/2998/2995/2990
+      _sched3012 (9603-9632); mixed plain ts3000/3005/3008/3012 (9642-9673); plain low-step ts3000/2999/2998 +
+      the below-3000 push ts2999/2998/2997/2996/2995 (9675-9743). The decisive REPRODUCED hits: ts3022 r1/r3/r6,
+      ts3015 r5/r7/r8/r10/r12, ts3012 r2/r3 (cross @step 3000), plain v12-ts3000-r3, plain v12-ts2999 r4/r7.
+      Evidence for N68 -> C03. Pruned slow controls (qkq140k070-ts3000 9436, vfg085-ts3000 9430) and the slow
+      ts3010-r5 (9488) to recycle nodes onto near-threshold cells.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 4
+    action: >
+      Launched the lever / stretch side-branches that all closed (N69): mousse-lite-ts3000 (single-sided
+      alpha=0.125/T=20, 3.28267); qkt-a025-ts3000 preempt job 9455 (3.28271); pow1.5+attn0.5 ts3000/3010
+      jobs 9481-9495 (strong mid-run, weak endpoint) and the lower-step pow locators ts2800/2850/2875/2900/2950
+      jobs 9496-9501 (all >3.285). QKT produced qkt_a025_ts3000.py (same-block q/k caches before sharded
+      application); the negative-alpha control was withheld (endpoint did not beat v12). Evidence for N69.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 4
+    action: >
+      Spawned analysis + prep subagents (no Slurm submission of their own): Zeno (raw scratchpad trajectory
+      analysis -> hit/miss followups), Maxwell (independent next-slot priority read), Epicurus (read-only
+      boundary table + next-launch priority list); and variant-PREP workers Mendel (pow1.5+attn0.5 ts3000/3010),
+      Rawls (lower-step pow ts2800-2950 + idea note), Kant (v12/pmi05 ts3021 + eta-floor variants), Kierkegaard
+      (eta015/cf065/cf075 schedule variants for 3014/3015, held), and a boundary worker (v12_ts3012/3013/3014 +
+      eta025 + pmi05_ts3014 scripts, syntax-checked). The same delegate-to-launch-from-signal pattern as the
+      v2-001 4-subagent spawn; analysis/prep helpers, recorded here, not as tree nodes. Folded into N67.
+    provenance: ai-executed
+    files_changed:
+      - "v2/codex/scratchpad/variants/qkt_a025_ts3000.py"
+      - "v2/codex/scratchpad/variants/v12_ts3012.py"
+      - "v2/codex/scratchpad/variants/v12_ts3013.py"
+      - "v2/codex/scratchpad/variants/v12_ts3014.py"
+      - "v2/codex/scratchpad/variants/v12_ts2999.py"
+      - "v2/codex/scratchpad/variants/v12_ts2998.py"
+      - "v2/codex/scratchpad/variants/v12_ts2995.py"
+  - turn: 5
+    action: >
+      Closed the outstanding launcher session for v12-ts2999-r23 (submitted Slurm job 9744, v2cx-t3- prefix on
+      preempt, filling the one idle preempt slot seen before compaction). Then fired successive idle-gate PLAIN
+      boundary fill waves to keep live preempt slots occupied: v12-ts2999-r24..r27 (9745-9748), v12-ts2998-r13..r16
+      (9749-9752), v12-ts2997-r7..r8 (9753-9754); v12-ts2999-r28..r31 (9755-9758), v12-ts2998-r17..r18 (9759-9760),
+      v12-ts2997-r9 (9761); expanded lower-boundary v12-ts2999-r32..r37 (9762-9767), v12-ts2998-r19..r23
+      (9768-9772), v12-ts2997-r10..r13 (9773-9776), v12-ts2996-r5..r7 (9777-9779); v12-ts2999-r38..r40 (9780-9782)
+      + v12-ts2995-r2 (9783); v12-ts2999-r41/r42 (9784-9785); and a final 9-slot plain mix v12-ts2999-r43..r47
+      (9786-9790), v12-ts2996-r8..r10 (9791-9793), v12-ts2997-r14 (9794). All plain `v12_ts####` boundary repeats
+      (no new lever). Evidence for N73 (the commented plain-boundary consolidation). The 1622-run window total
+      includes the large uncommented rolewd-cm0225-attn0625 corridor (N74) from concurrently-running jobs.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 5
+    action: >
+      Spawned focused subagents for SIGNAL/PREP ONLY (no Slurm submission of their own): Boyle (read-only run-stat
+      recommendations from runs.jsonl/THREAD.md — favor plain v12_ts2999, small lottery to v12_ts2996, minimal
+      pressure on 2998/2997/2995, abandon schedule-denominator/eta/PMI/plain-3000); Laplace (prepared four
+      optimizer-only eta-min variant files WITHOUT submitting); Pascal (prepared four cooldown-fraction-only variant
+      files WITHOUT submitting); Descartes (read-only scan for non-plain optimizer branches with near-misses —
+      found none worth a follow-up). The agent DECLINED to launch the prepared eta/cooldown variants (prior eta
+      evidence negative). Same delegate-for-signal pattern as the v2-001 4-subagent and v2-003 8-subagent spawns;
+      analysis/prep helpers, recorded here, folded into N72/N75, not as tree nodes. Variant files prepared by the
+      subagents (point-in-time scratchpad pointers; may post-date the turn):
+    provenance: ai-executed
+    files_changed:
+      - "v2/codex/scratchpad/variants/v12_ts2998_eta015.py"
+      - "v2/codex/scratchpad/variants/v12_ts2998_eta025.py"
+      - "v2/codex/scratchpad/variants/v12_ts2999_eta015.py"
+      - "v2/codex/scratchpad/variants/v12_ts2999_eta025.py"
+      - "v2/codex/scratchpad/variants/v12_ts2999_cf065.py"
+      - "v2/codex/scratchpad/variants/v12_ts2999_cf075.py"
+      - "v2/codex/scratchpad/variants/v12_ts2996_cf065.py"
+      - "v2/codex/scratchpad/variants/v12_ts2996_cf075.py"
+  - turn: 6
+    action: >
+      ARCHITECTURE-COMPLIANCE STOP + compliant rebuild (executes the user's N76 ruling). Cancelled active
+      `v2cx-t3-*` jobs (some reached Slurm COMPLETING before cancellation finished) and quarantined ALL v12-derived
+      `v2cx` results as non-submittable. Built a new compliant `legal_v12opt_*` family from `train_gpt_simple.py`
+      with VERIFIED-EMPTY Architecture diff + identical `RMSNorm.forward` (`F.rms_norm(..., weight=self.gains.type_as(x))`)
+      and q/k `F.rms_norm` lines, changing only Optimization + Init/Optim Hyperparams. Changed the launcher prefix
+      `v2cx`->`v2cxleg` and worktree root to `/beegfs/elie/t3opt-v2cxleg-worktrees/`. Added then STRENGTHENED a hard
+      launch-time gate in `ai/scratchpad/launch_variant.sh` (exit 64/75 on non-byte-identical Architecture, modified
+      `RMSNorm.forward`/q-k-norm line, the `norm(x.float())` / `q,k=norm(q),norm(k)` failure modes, OR special
+      RMSNorm/gain-path optimizer plumbing — `norm1.gains`/`gains.grad`/`gain_refs`/etc.); verified it blocks invalid
+      `v12_ts3000.py`, PWG, and GMS-style variants. Recomputed the run ledger (507/762 indexed runs legal, 255 bad)
+      and audited 239 variant files (89 disqualified). Evidence for N76. Launcher/gate plumbing folded into N76,
+      recorded here as tooling.
+    provenance: ai-executed
+    files_changed:
+      - "v2/codex/scratchpad/launch_variant.sh"
+  - turn: 6
+    action: >
+      Launched the compliant `legal_v12opt_*` frontier walk + broad parent-screen washout (~120 completed of 155
+      window runs; jobs 9808..12476 across the turn). Calibration `legal-v12opt-ts3000..3200` (jobs 9808..9839) then
+      the `combo-cm0225-attn0625` walk 3000->2993, the `rolewd-combo` walk 2992->2982, and the `rolewd-rolelr2-lookahead`
+      compression 2970->2965->2963->2962. Decisive REPRODUCED-as-frontier (single-seed) promotions: ts3000-r4, ts2998-r3,
+      rolewd-combo-ts2982-r32 (first crossing 2975), rolelr2-lookahead-ts2970-r12, ts2965-r24, ts2963-r11, ts2962-r41
+      (window best, 3.27992). A broad legal optimizer/init/schedule parent-screen washout at ts2998 closed ~50+ branches
+      cold/near-miss (mu097/AdaGrad-Muon/QKTrust/BranchCov/RoleWD/PMI/eta/MTrust/Adam1Tune/GradCenter/MomentMix/ProjInit/
+      SVC/RoleLR/.../M2F/AdamMini/OSM-nan). Throughout: repeated active-worktree audits (0 Architecture/norm/gain violations,
+      0 duplicate run IDs) and cancellation of slow ~0.5s/step outliers + pending idle-gate-race jobs. Evidence for N77.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 6
+    action: >
+      Ran the submission-validity statistical pass (on the user's instruction to switch from frontier search to
+      verification). Cohort z-test by EXACT fixed variant: low-step frontier families FAIL `(3.28-mu)*sqrt(n)>=0.004`
+      (`ts2962` n=38 score -0.01496; `ts2963` n=22 -0.01163; `ts2970` n=21 -0.00724; `ts2982` n=17 -0.00539). Launched
+      FIXED-STEP significance cohorts at +25/+50/+75 from the clean ts2962 stack (only `train_steps` changed):
+      `ts2987 sig-r1..r8` (jobs 12500..12507), `ts3012 sig-r1..r8` (12508..12515), `ts3037 sig-r1..r8` (12516..12525).
+      Result: ts2987 score -0.00438 (FAIL), ts3012 8/8 score 0.00052 (FAIL), `ts3037` 8/8 PASSES — losses
+      [3.27823,3.27882,3.27831,3.27862,3.27769,3.27845,3.27919,3.27771], mean 3.2783775, `(3.28-mu)*sqrt(8)=0.004589`
+      (z=3.53, sigma 0.0013, p~0.000208); same-checkpoint anti-val-spam scan shows 3025 fails (0.002454), step 3037 is
+      the earliest common validation checkpoint that passes. Reproducibility verified for all 8 (each `source_log`
+      begins with the exact `legal_v12opt_rolewd_rolelr2_lookahead_ts3037_cm0225_attn0625.py`; stdlib + PyTorch only,
+      no third-party optimizer library). Evidence for N78 -> C04.
+    provenance: ai-executed
+    files_changed: []
+  - turn: 6
+    action: >
+      Spawned many disjoint legal-variant subagents (Faraday/Dirac/Aristotle/Chandrasekhar/Raman/Hubble/Fermat/Volta/
+      Beauvoir/Boole/Erdos/Confucius/Kuhn/Ohm/Huygens/Feynman/Bernoulli/Euclid/Ampere/Poincare/Lovelace/Linnaeus/Sagan/
+      Einstein/Bacon/Plato/Halley/James/Locke/Nash/...) to PREPARE + locally-validate compliant optimizer/init/schedule
+      variant files, each constrained to byte-identical Architecture, exact baseline norm call sites, NO RMSNorm/gain-path
+      logic, and NO Slurm submission; plus read-only allocation/ledger triage subagents (Volta/Hypatia/Banach/McClintock/
+      Harvey/Dewey/Boole/Nash/...). All returned variants passed the orchestrator strict gate (py_compile, empty
+      Architecture diff, exact RMSNorm/q-k norm lines, forbidden norm/gain grep clean) before any launch. Same
+      delegate-for-signal/prep pattern as the v2-001/003/004 subagent spawns; folded into N76/N77, recorded here, not as
+      tree nodes. (The packet's scratchpad-variant pointers are point-in-time; CONTENT may post-date this turn — recorded
+      via the THREAD narration, not opened to read state.)
+    provenance: ai-executed
+    files_changed: []
+
+claims_touched:
+  - id: C03
+    action: crystallized
+    turn: 4
+  - id: C03
+    action: confirmed   # corroborated-not-changed: more single-seed plain-2999 support (N73), but NO stat pass / NO pruning / NO 2-seed stop below 2999; status stays `supported`, no field edited (Stage-4 near-miss)
+    turn: 5
+  - id: C05
+    action: crystallized   # v2-005: O21 -> C05 (compliance constraint), verbal-affirmation + artifact-commitment; provenance user-revised
+    turn: 6
+  - id: C04
+    action: crystallized   # v2-005: O23 -> C04 (compliant stat-verified ts3037 frontier), empirical-resolution + artifact-commitment; provenance ai-suggested
+    turn: 6
+  - id: C03
+    action: revised   # v2-005: scope narrowed (Interpretation/Falsification/Tags) to record the confirmed-non-compliant base + quarantine + 3037 compliant port; contradiction flagged (N79); Status LEFT `supported` (demotion deferred per the supported->weakened conservatism rule)
+    turn: 6
+
+logic_revisions:
+  # v2-004: NONE. v2-005: ONE edit — C03 reconciled against the compliance ruling (C05) + compliant frontier (C04).
+  # The Status flip (supported->weakened/withdrawn) is DEFERRED: the skill forbids demoting `supported`->`weakened` on
+  # a single new event (flag as contradiction instead — N79). The content edit is a SCOPE-NARROWING update (allowed):
+  # record that the provisional-until-ported caveat resolved adversely (base confirmed non-compliant, evidence
+  # quarantined, compliant port lands at 3037 = C04, not sub-3000). C04 + C05 are NEW crystallizations (no before-state;
+  # their full first-state is in claims.md, the crystallization trail in staging O23/O21 + nodes N76/N77/N78).
+  - turn: 6
+    entry: C03
+    field: Interpretation
+    before: >
+      ... C03 is INDEPENDENT of C02: C02 is Codex's own muon2f+EMA+mu_schedule ~3195-3220 corridor on the
+      NorMuon/Adam-mini parent; C03 is a step-count frontier on the cc-v12 parent — a different backbone, and the
+      inherited premise that the two best lines do not stack stays untested (O18).   [ENDED HERE before v2-005;
+      no v2-005 compliance-resolution clause]
+    after: >
+      ... [unchanged through O18] ... **v2-005 UPDATE (compliance caveat RESOLVED ADVERSELY — see C05; contradiction
+      flagged at N79):** the "provisional-until-ported" caveat is now RESOLVED against C03's submittability. The USER
+      confirmed (first-person, repeatedly) that the cc-v12 base's `RMSNorm.forward` and q/k norm route through a
+      non-baseline helper — a forward-path precision change INVALID for this track even though mathematically close —
+      and the agent QUARANTINED all v12-derived `v2cx` results (C03's entire evidence basis) as non-submittable. When
+      the recipe is rebuilt on a byte-identical-Architecture compliant base AND required to clear the statistical gate,
+      the sub-3000 crossings VANISH into the noise floor; the compliant frontier that actually clears the gate is at
+      3037 steps (C04), NOT sub-3000. So C03's existence statement about the (now-known-non-compliant) cc-v12 base
+      remains factually intact, but its sub-3000 frontier is superseded for the compliant benchmark by C04 and its
+      result is NOT submittable. Status left `supported` pending researcher adjudication of the flagged contradiction (N79).
+    signal: contradicting-evidence
+    provenance: user-revised
+    note: >
+      User-confirmed compliance ruling (C05) + the compliant frontier (C04) contradict C03's sub-3000 frontier
+      relevance. Per Rule 7 + the supported->weakened conservatism rule: flagged (N79), scope-narrowed the content,
+      Status NOT auto-flipped. Falsification + Tags also touched (same edit family: added the confirmed-non-compliant
+      base resolution + compliance-risk-confirmed/superseded-by-C04 tags + Last revised pointer).
+
+key_context:
+  - turn: 1
+    excerpt: >
+      Handoff (packet 'Starting knowledge'): "Wave v2 — starts 2026-05-04, after the v1/novelty era
+      closes. Seeded from Codex's OWN v1 best: the v12-style stack at bin 3195 (EMA-practical; 3205 as
+      the formally-submitted variant), built from Muon2F + Adam-mini + a tail-EMA / tuned schedule.
+      Carried-forward result from the contemporaneous novelty wave: the guaranteed-novel constraint
+      produced no promotable submission (a real negative result). The prior iteration found that
+      optimizer-only mechanisms plateaued near a 3000-step floor — anything that breaks that floor is
+      the prize. User stretch target: below 2800. Same benchmark and compute."
+  - turn: 1
+    excerpt: >
+      Anti-peeking instruction (packet 'Binding rules' + 'Redaction note'): "When reading
+      v2/codex/goal.md, IGNORE any achieved-frontier / 'current best' table: rows reporting a bin BELOW
+      3195 are hindsight (this wave's own future discoveries) and must NOT be treated as known now ...
+      Any achieved bin below 3195 is withheld; such results must emerge through this wave's replay."
+      start_bin (best legitimately-known at wave start) = 3195.
+  - turn: 2
+    excerpt: >
+      v2 opener THREAD (verbatim framing): "Binding target is step count to val loss <= 3.28, current
+      best is cc v12 at 3025 ... Decision: use cc v12 as the experimental backbone rather than the public
+      baseline in this worktree, because v12 is the only known 3025-step parent and prior reports show
+      codex's 3195 EMA branch does not stack on top of v12. Decision: screen candidates at train_steps=3000
+      first on preempt; any single-seed hit gets immediate reseeds and then lower-step pressure. Prior
+      evidence says ts=3000 is the real floor, so 3025-parity tweaks are not high-leverage unless they
+      create a margin."
+  - turn: 2
+    excerpt: >
+      The decisive recorder judgment of v2-001: this is the v1-001-style MISSION-SCOPED OPENER but with
+      0 runs. Recorded the opening strategy as a decision (N61) + staged the two working beliefs (O17 floor,
+      O18 non-stacking); crystallized NOTHING (0 runs => no empirical resolution; the 'cc v12 at 3025'
+      backbone number is an INHERITED point-in-time belief the agent read, not a verified finding of this
+      artifact). NB the cc-v12 '3025' is the OTHER track's claimed step_to_3.28, NOT Codex's washed-out
+      `s3025` stop-slug (N57/N43); kept distinct.
+  - turn: 3
+    excerpt: >
+      v2-002 THREAD (verbatim launch rationale): "First wave variants: `v12_ts3000` as local failure
+      control; `pmi{02,05,10}_ts3000` because projection micro-init is an init-only orthogonal lever and
+      cheap to sweep; `agmuon_g{1e-6,1e-4,1e-2}_ts3000` because unbounded pre-NS AdaGrad changes the input
+      singular subspace before MuonEq/Contra, unlike prior failed post-NS RMS variants. All screen at 3000
+      because beating 3025 requires crossing that floor."
+  - turn: 3
+    excerpt: >
+      v2-002 compliance flag (verbatim): "Code-comparison subagent flagged that cc v12 differs from the
+      public script in architecture/numerics (`RMSNorm` helper and q/k norm casting), not only
+      optimizer/init. Decision: use v12 for screening because the mission spec names it as the 3025 parent,
+      but treat any win as provisional until checked against the hard-rule surface and either justified as
+      numerics or ported to a compliant base." -> staged O21 (compliance risk on the v2 line) + decision N64.
+  - turn: 3
+    excerpt: >
+      The decisive recorder judgment of v2-002: the FIRST v2 turn WITH runs, but all 7 completed runs MISS
+      3.28 (step_to_3.28 = —) and the THREAD comments on NO result (it narrates launches + rationale only —
+      the v1-001 silent-opener pattern). So NO crossing, NO 2-seed reproduction, NO closure signal -> nothing
+      crystallizes (a zero-crossing single-seed result is not a closure signal; the lawful core needs a
+      2-seed reproduction). KEY non-contradiction: the v12-ts3000 "failure control" miss (3.28104) does NOT
+      contradict the inherited cc-v12-3025 belief — a run STOPPED at ts3000 sitting at 3.281 is CONSISTENT
+      with a crossing just after step 3000 (~3025) — so no contradiction trigger fires on O17/O18 or C02.
+  - turn: 4
+    excerpt: >
+      v2-003 THREAD (verbatim, the crystallizing comments): "First confirmed below-record hit: `v12-ts3022-r1`
+      ended at `3.27969` and crossed at step 3022. This beats the 3025 prior best." ... "New best observed
+      boundary: v12 3015 repeats finally hit." ... "Boundary moved again: `v12-ts3012-r2` and `v12-ts3012-r3`
+      both crossed at validation step 3000 ... This makes the current best observed step count 3000 using a
+      3012-step schedule." ... "Explicit 3000-step success: plain `v12-ts3000-r3` finished at `3.27987` ...
+      promote 3000 as current best final-step result." ... "Frontier moved below 3000: plain `v12-ts2999-r4`
+      hit at `3.27985` and `v12-ts2999-r7` hit at `3.27996` ... 2999 is a real below-3000 result. Decision:
+      promote 2999 as current best final-step count." (THIS is the commented + committed 2-seed reproduction
+      that crystallizes O17 -> C03.)
+  - turn: 4
+    excerpt: >
+      v2-003 lever-washout (verbatim): "Mousse-Lite completed at ts=3000 with `3.28267`, worse than v12's
+      `3.28104`; kill this single-sided alpha=0.125/T=20 screen." ... "QKT alpha=0.25 finished at ts=3000 with
+      `3.28271`; kill this branch. It was only slightly ahead mid-run and did not carry through to threshold."
+      ... "Completed pow endpoints changed the read: despite much better middle, `pow15attn05` ended weak ...
+      close the pow stretch branch as noncompetitive for <3000 despite good mid-run shape." ... "Explicit
+      schedule-denominator branch is now negative: `v12_ts3000_sched3012` 0/8 ... stop expanding schedule-
+      denominator variants." -> the sub-3000 margin is run-control, not a lever (N69/N70/O22).
+  - turn: 4
+    excerpt: >
+      The decisive recorder judgment of v2-003: the FIRST v2 turn whose THREAD COMMENTS on results — and it
+      contains genuine 2-SEED reproductions at the same recipe/stop below the inherited 3025 line (ts2999
+      r4/r7; ts3022 r1/r3/r6; ts3015 broadly), commented on + committed (capacity pivoted to support 2999 and
+      push lower). That clears the replay directive's bar (the lawful core's rule-5 two-seed reproduction is
+      present, unlike v2-002's all-miss). So O17 CRYSTALLIZES -> C03 — the v2 analogue of v1-002's C01 moment.
+      CRUCIAL rigor scope, mirroring C01/C02: every run is stat_verify=False and the crossings WALL at the stop
+      (final ≈ 3.2799, ~1-2e-4 below 3.28, inside the ~0.001 noise floor — the O02/O06/O08 stop-knob pattern),
+      with NO statistical pass and NO pruning round this turn, so C03 is scoped to EXISTENCE + 2-seed-
+      reproducibility (anchored at ts2999) and EXCLUDES gate-clearance + the 2992-2998 single-seed scratch —
+      exactly the discipline that REJECTED the analogous 3-seed 3170 floor at v1-007/N59. Stage-4 no-op on
+      C01/C02 (different parent; no experiment in their Proof ran; O18 non-stacking still untested).
+  - turn: 5
+    excerpt: >
+      v2-004 THREAD (verbatim, the narrated PLAIN-boundary line): "indexed plain boundary results are
+      `v12_ts2999.py` n=14, hits=2, best=3.27985; `v12_ts3000.py` n=25, hits=1, best=3.27987; `v12_ts2998.py`
+      n=4, hits=0, best=3.28204. The explicit schedule-denominator variants remain consistently noncompetitive,
+      so I am not spending new slots there." ... "`v12-ts2999-r23` completed at 3.28188, a miss. This does not
+      change the frontier (`v12-ts2999-r4` remains best at 3.27985), but it increases evidence that 2999 is a
+      stochastic-low-tail target." ... "no hit below 2999 yet, but lower steps are not far off (`v12_ts2996.py`
+      best=3.28026 from 4, `v12_ts2997.py` best=3.28036 from 6, `v12_ts2998.py` best=3.28040 from 10)." (The
+      THREAD's commented numbers are CONSOLIDATION of C03's existing ts2999 anchor — best=3.27985 = C03's anchor,
+      plus a miss — NOT a new lower frontier. No stat pass, no pruning round.)
+  - turn: 5
+    excerpt: >
+      v2-004 THREAD (verbatim, the DECLINED off-plain side-lines): "Laplace prepared four optimizer-only eta-min
+      variants without submitting jobs ... I am not launching these immediately because Boyle's read-only pass
+      notes prior eta evidence is negative." ... "Boyle's read-only recommendation ...: favor `v12_ts2999.py`
+      (current frontier, better than 3000), give small lottery allocation to `v12_ts2996.py` ..., and abandon
+      schedule-denominator, eta, PMI, and plain 3000 for now." ... "Descartes' read-only branch scan found no
+      completed optimizer-only branch that justifies a follow-up: `v12_ts2999_sched3012.py` best=3.28016, no hits;
+      `v12_pow15_attn05_ts3010.py` best=3.28022, no hits. I will not allocate immediate slots to cooldown/eta/
+      schedule/pow variants; next fill stays plain." -> the working lever stays plain step-count (N75/O22/O20).
+  - turn: 5
+    excerpt: >
+      The decisive recorder judgment of v2-004 (anti-peeking, the v1-001/003/004/005 pattern RECURS on the v2
+      line): the runs table's best step_to_3.28 = 2963 comes from a `legal-v12opt-rolewd-rolelr2-lookahead-ts2963-
+      cm0225-attn0625` corridor, with a dense 2982-2991 band (rolewd-combo/pmi02/pmiamp/lookahead), that the
+      THREAD body NEVER names — the narration covers ONLY plain `v12_ts####` boundary polling/fills at 2995-2999.
+      Per replay.md the THREAD body is the authoritative point-in-time narrative and the runs table is the
+      evidence; here they diverge (the tabular 2963 is ~36 steps below the narrated plain-2999 boundary, in a
+      wholly different modifier family). So the 2963/rolewd corridor is UNCOMMENTED evidence -> recorded as a
+      journey fact (N74, flagged [UNCOMMENTED-IN-THREAD]) + staged (O23), NOT crystallized (empirical-resolution
+      REQUIRES a comment, and there is none). C03's anchor (ts2999) is NOT rewritten on it (Stage-4 near-miss),
+      and the corroborating plain-2999 consolidation (N73) does NOT change C03's status (already `supported`,
+      already carrying the not-yet-noise-floor-gated caveat; no stat pass / no pruning / no 2-seed stop below
+      2999 this turn). Nothing crystallizes; claims stay at C01+C02+C03 through 11 turns.
+  - turn: 6
+    excerpt: >
+      v2-005 USER directive (the compliance stop, verbatim THREAD): "User flagged a real architecture/forward-pass
+      violation: every v12-derived codex variant inherited `RMSNorm.forward` as `(norm(x.float()) * self.gains).type_as(x)`
+      instead of the workspace baseline `F.rms_norm(x, (x.size(-1),), weight=self.gains.type_as(x))`, and attention q/k
+      normalization also routes through the helper. This is a precision/behavior change in the forward path and is invalid
+      for this track even if mathematically close." ... "never change `RMSNorm`, attention normalization, or any model
+      `forward` path. Future variants must be built from workspace `train_gpt_simple.py` and preserve forward/norm code
+      byte-for-byte; only Optimization and Init & Optim Hyperparams may change." (Reaffirmed REPEATEDLY across the turn —
+      "even mathematically equivalent rewrites ... can change bf16 precision behavior.") -> crystallizes O21 -> C05 + the
+      N76 pivot; all v12-derived `v2cx` results quarantined.
+  - turn: 6
+    excerpt: >
+      v2-005 THREAD (the closing submission-validity stat pass, verbatim): "Final significance verification for the fixed
+      +75 cohort passed including all 8 preplanned `ts3037` seeds. Losses `[3.27823, 3.27882, 3.27831, 3.27862, 3.27769,
+      3.27845, 3.27919, 3.27771]`; mean 3.2783775; score `(3.28 - mu) * sqrt(8) = 0.004589`, equivalent z = 3.53 with
+      sigma 0.0013 and one-sided p about 0.000208. Same-checkpoint anti-val-spam scan across all 8 runs shows 3025 does
+      not pass (mean 3.279132, score 0.002454), while final step 3037 is the earliest common validation checkpoint that
+      passes. Reproducibility check passed for all 8: each indexed `source_log` exists and begins with the exact
+      `legal_v12opt_rolewd_rolelr2_lookahead_ts3037_cm0225_attn0625.py` source; imports are stdlib plus PyTorch only
+      ... no third-party optimizer library imports." Earlier in the same pass: "the low-step frontier families do not pass
+      `(3.28 - mu) * sqrt(n) >= 0.004`: `ts2962` n=38 ... score -0.01496, `ts2963` ... -0.01163, `ts2970` ... -0.00724,
+      `ts2982` ... -0.00539." -> crystallizes O23 -> C04 (the COMPLIANT verified frontier is ts3037, the lower-step
+      crossings are noise-floor artifacts).
+  - turn: 6
+    excerpt: >
+      v2-005 THREAD (the attribution reading, verbatim): "Interpretation: the legal stack does reach the target, but the
+      invalid forward-path change materially helped the sub-3000 behavior." -> the basis for revising C03 (the sub-3000
+      frontier was forward-path-assisted; the compliant verified frontier is 3037, C04) and for staging O24 (a compliant
+      lever stack is needed to clear the gate at all, but only at ts3037, not sub-3000).
+  - turn: 6
+    excerpt: >
+      The decisive recorder judgment of v2-005: THE turn the v2 line both (a) confirms its inherited compliance risk and
+      (b) lands its first GATED frontier. The USER's first-person, repeated ruling that the cc-v12 forward path violates
+      the no-forward/no-norm rule fires the verbal-affirmation + artifact-commitment closure on O21 -> C05 (the agent
+      committed by stopping, quarantining, and building the launch gate), and the closing `(3.28-mu)*sqrt(n)>=0.004` stat
+      pass — the SAME gate that crystallized C02 at v1-007/N59 — fires the empirical-resolution closure on O23 (the
+      rolewd-cm0225-attn0625 corridor O23 staged UNCOMMENTED at v2-004 is now COMMENTED + PRUNED + STAT-TESTED) -> C04.
+      CRUCIAL rigor scope, identical to C02 (which rejected the 3170 floor): the low-step crossings (2962-2982) FAIL the
+      cohort gate and are excluded; C04 lands on the architecture-COMPLIANT, gate-passing ts3037. C03 is reconciled NOT
+      refuted: the compliance ruling + the 3037 compliant port CONTRADICT its sub-3000 frontier relevance, so per Rule 7
+      + the supported->weakened conservatism rule the contradiction is FLAGGED (N79), C03's Interpretation/Falsification
+      scope-narrowed (the provisional-until-ported caveat resolved adversely), and its Status LEFT `supported` for the
+      researcher to adjudicate — its existence statement about the (non-compliant) cc-v12 base stays factually true.
+      C01..C05 = 5 claims through 12 turns; the FIRST compliant + stat-verified v2 frontier lands exactly at the
+      comment+prune+stat-test turn for the corridor O23 held one turn, the C02-analogue.
+
+open_threads:
+  - "v2 COMPLIANT VERIFIED FRONTIER (C04, crystallized v2-005 — the v2 C02-analogue): on an architecture-COMPLIANT (byte-identical forward/norm) `legal_v12opt_*` base, the rolewd-rolelr2-lookahead-cm0225-attn0625 stack reaches step_to_3.28 = 3037 STATISTICALLY VERIFIED — n=8 cohort, mean 3.2783775, `(3.28-mu)*sqrt(8)=0.004589` (z=3.53, p~0.000208), reproducibility-verified — while the low-step crossings (2962-2982) FAIL the same cohort gate (negative scores) and are noise-floor artifacts. This is the FIRST compliant + gated v2 result (the C02/N59 gate REUSED, same lower-floor-rejected coda). OUTSTANDING: (1) a clean baseline-v12-optimizer COMPLIANT control at matched n (to attribute the verified margin to the rolewd/rolelr2/lookahead/cm0225/attn0625 modifiers vs the compliant base alone — C04's Falsification names this); (2) whether ANY compliant stop BELOW 3037 can clear the gate (3025 fails the same-checkpoint scan at 0.002454); (3) the mandatory pruning round on the C04 stack (lawful-core rule 6) before any submission. Watch the next turn for the control / a lower compliant gated stop / pruning."
+  - "v2 COMPLIANCE HARD RULE (C05, crystallized v2-005; provenance user-revised): the cc-v12 base VIOLATES the no-forward/no-norm rule (`RMSNorm.forward = (norm(x.float())*self.gains).type_as(x)` + q/k-norm-via-helper, a bf16-precision change), so ALL v12-derived `v2cx` results are non-submittable and were quarantined; only byte-identical-Architecture variants are valid, enforced by the launch-time gate (`launch_variant.sh`). This RESOLVED the long-standing O21/N64 compliance risk (staged v2-002, unresolved through v2-004). REMAINING watch: this is user-confirmed and terminal-unless-user-reverses; the only live follow-up is whether any FUTURE variant trips the strengthened gate (the gate also blocks special RMSNorm/gain-path optimizer plumbing — PWG/GMS were reclassified non-promotable on it)."
+  - "C03 RECONCILIATION + FLAGGED CONTRADICTION (N79, v2-005 — researcher adjudication needed): C03 (sub-3000 step-count frontier on the cc-v12 parent, `supported`) is now in CONTRADICTION with C05 (its base is confirmed non-compliant; its evidence quarantined) + C04 (the compliant verified frontier is 3037, not sub-3000 — the sub-3000 was forward-path-assisted). Per Rule 7 + the supported->weakened conservatism rule, the contradiction was FLAGGED (unresolved node N79), C03's Interpretation/Falsification/Tags scope-narrowed (provisional-until-ported caveat resolved adversely), and its Status LEFT `supported` — C03's existence statement about the (non-compliant) cc-v12 base stays factually true, but its sub-3000 frontier is superseded for the compliant benchmark and is NOT submittable. THE adjudication the researcher owes a future turn: demote C03 to `weakened`/`withdrawn`, or keep it as a scoped existence-on-a-non-compliant-base record? (The recorder will not auto-resolve.)"
+  - "ATTRIBUTION RESOLVED-IN-DIRECTION (O22 -> O24, v2-005): the O22 'run-control, not a lever' reading held on the FORWARD-PATH-ASSISTED cc-v12 base; under compliance + the gate it sharpens (O24, NEW): the sub-3000 frontier was MATERIALLY ENABLED BY THE INVALID FORWARD-PATH CHANGE, and a COMPLIANT recipe needs an optimizer/init LEVER STACK (rolewd+rolelr2+lookahead+cm0225+attn0625), not plain step-count, to clear the gate AT ALL — but only at ts3037, not sub-3000 (plain compliant step-count cohorts fail; ~50+ single levers wash out, N77). So a compliant lever stack DOES matter at the verified level, but does NOT recover a sub-3000 verified frontier. O24 is staged (inductive attribution; no clean baseline-optimizer compliant control at matched n yet). Open: does the specific stack beat a compliant baseline-v12-optimizer control at matched n (the C04 attribution question)?"
+  - "v2 working belief O18 (Codex's 3195 EMA branch does NOT stack on the cc-v12 parent) is STILL UNTESTED — no cc-v12 x Codex-3195 combination has been run through v2-005. NB the cc-v12 base is now confirmed NON-COMPLIANT (C05), so any cc-v12 x Codex stacking test would itself be non-submittable; O18 bears on N03 (do the two best lines add) but is now partly moot for submission. It does NOT contradict C02 (standalone) or C04 (compliant frontier). Watch for a turn that combines a COMPLIANT v12-optimizer base with Codex's C02 levers."
+  - "STALE-WATCH (carried; clock still running): the oldest non-promoted observations O02-O07 were last referenced 2026-05-02 (v1-007). The pre-computed trip point is a 2026-05-05+ turn. Today is STILL 2026-05-04 (none of v2-001..v2-005 referenced O02-O07 by id), so the 3+ session-day threshold is NOT yet met — but the NEXT turn dated 2026-05-05+ must flag O02-O07 (and re-check O08-O15) for triage. NB O02 (stop-knob wall) is thematically alive again via C04/C05 (the low-step compliant crossings WALL at the stop, final ≈ 3.2793-3.2800 — exactly the O02 pattern, now shown to FAIL the gate); the 05-05+ sweep should weigh it. Newly-staged O24 (v2-005) is fresh, not near stale."
+  - "Inherited negative (N60 / seal): the contemporaneous novelty wave produced no promotable recipe — v2 begins knowing that lane delivered no win to build on. v2 does NOT inherit novelty's per-mechanism internals (held in the isolated NV## subtree)."
+
+ai_suggestions_pending:
+  - "O18 (Codex's 3195 EMA branch does NOT stack on the cc-v12 parent) — AI-suggested working belief, STILL UNVERIFIED (no cc-v12 x Codex-3195 combination run through v2-005); now partly moot for SUBMISSION since the cc-v12 base is confirmed non-compliant (C05); awaiting a closure signal (a compliant-base stacking test)."
+  - "O20 (cheap init levers don't open a margin below the v12 parent at ts3000) — AI-suggested, single-seed screened-out negatives; CORROBORATED + EXTENDED at v2-003 (N69), v2-004 (N75), and AGAIN at v2-005 (N77: ~50+ legal optimizer/init/schedule parent screens cold at ts2998) — still single-seed / screened-out (not 2-seed-certified) -> stays staged, awaiting a closure signal."
+  - "O22 (the v2 sub-3000 margin is run-control, not a new lever — v2-003) — AI-suggested heuristic; the standing TENSION (the O23 rolewd corridor as a lever stack below the plain-2999 frontier) is now PARTLY RESOLVED by v2-005: O23 -> C04, and the compliant verified frontier is a LEVER STACK at 3037, while plain compliant step-count fails the gate and the sub-3000 was forward-path-assisted. The sharpened reading is staged as O24. O22 itself stays staged (inductive, the narrator never stated it as a settled rule); its successor O24 carries the v2-005 resolution. Awaiting a clean compliant baseline-optimizer control to fully settle the lever-vs-step-count question."
+  - "O24 (NEW v2-005; the matured O22 tension): the v2 sub-3000 frontier was forward-path-assisted, and a COMPLIANT recipe needs an optimizer/init lever STACK to clear the gate at all — but only at ts3037, not sub-3000 — AI-suggested heuristic; inductive across the turn's cohorts (low-step compliant cohorts fail the gate; ~50+ single levers wash out; only the rolewd-rolelr2-lookahead-cm0225-attn0625 stack passes, at 3037). Caveat: no clean baseline-v12-optimizer compliant control at matched n -> specific-stack attribution not yet 2-seed-certified. Awaiting a closure signal (the control, the narrator stating it as a rule, or a lower compliant gated stop)."
+  - "C04 RIGOR FOLLOW-UPS (NOT a staged observation — a claim-maintenance note): C04 crystallized as the existence of a COMPLIANT, n=8-gated frontier at ts3037 (the C02/N59 gate cleared + reproducibility-verified). OUTSTANDING for stronger support / submission: (1) a clean baseline-v12-optimizer COMPLIANT control at matched n (attribution: is it the rolewd/rolelr2/lookahead/cm0225/attn0625 stack or the compliant base alone? — C04's Falsification names this); (2) whether any compliant stop below 3037 clears the gate (3025 already fails the same-checkpoint scan); (3) the mandatory pruning round (lawful-core rule 6). A future control showing the gain is the compliant base alone would WEAKEN C04; a lower compliant gated stop would extend it."
+  - "C03 ADJUDICATION PENDING (NOT a staged observation — the N79 contradiction): the researcher must decide C03's fate now that its base is confirmed non-compliant (C05) and the compliant port lands at 3037 (C04), not sub-3000. The recorder flagged + deferred (did not auto-demote `supported`->`weakened` on the single user-driven event). Watch the next turn for an explicit user/agent ruling on whether to weaken/withdraw C03 or keep it as a scoped existence-on-a-non-compliant-base record."
