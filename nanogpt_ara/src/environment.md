@@ -1,38 +1,38 @@
 # Environment
 
-## Hardware
-- 1 node, 8× {H100 / H200} GPUs (v3 specifically 8×H200). ~15 min per run.
-- Concurrency: one run at a time on the compute node; a Slurm `preempt` partition is available for
-  parallel runs. Wall-clock is irrelevant to the metric (slow-per-step methods are allowed).
+Reconstructed from the run export and code. Items not stated in the provided source are marked
+"Not specified".
 
-## Code
-- Benchmark script: `records/track_3_optimization/train_gpt_simple.py` — a simplified
-  modded-nanogpt (KellerJordan/modded-nanogpt lineage). Submitted runs use this canonical script
-  with all hyperparameters hardcoded into the variant file.
-- Run command: `torchrun --standalone --nproc_per_node=8 train_gpt_simple.py`.
-- Dependencies: Python standard library + PyTorch only. The submitted recipes import no third-party
-  optimizer library (verified during v2 submission checks).
-- Distributed semantics (fixed): `assert 8 % world_size == 0`; broadcast all params from rank 0
-  after init; all-reduce each gradient with SUM; Muon distributes block-matrix updates by rank and
-  gathers updated params.
+- **Python**: Not specified in INSIGHTS.md (modded-nanogpt lineage; runs are standard PyTorch scripts
+  `launched_script.py`).
+- **Framework**: PyTorch (the run code uses `torch` tensor ops, custom Newton-Schulz / SOAP in pure
+  torch). Exact version not specified.
+- **Hardware**: Not specified in INSIGHTS.md. The export logs per-step wall-clock (`step_avg_ms`,
+  `train_time_s`) and `train_time_s` per run, implying a single fixed GPU configuration across runs
+  (modded-nanogpt is canonically multi-GPU H100; this is NOT confirmed by the provided source — do not
+  assume).
+- **Benchmark**: modded-nanogpt `track_3_optimization`; GPT-124M; FineWeb-10B; batch 8x64x1024 tokens.
+- **Key dependencies**: torch; numpy (for analysis); the run harness records `metadata.json`,
+  `train.log`, `launched_script.py`, `source_snapshot.py`, `launch_stub.sh` per run.
+- **Random seeds**: seeds are an explicit experimental axis. Run names carry `sN` (s0, s1, ...);
+  reproducers used 3 seeds for v1 levers and 8-16 seeds for the `seed_reverify` wave (13 config
+  groups, 152 runs). The seed noise floor is `std(final_val_loss) ~ 0.0004-0.0011` and a ~9-12%
+  per-config miss rate at the frontier.
+- **Data export**: `data/runs_self_contained/runs.csv` (10,428 runs; 9,235 completed), `runs.jsonl`,
+  `dropped_runs.jsonl`, `manifest.json`, plus per-run directories under
+  `data/runs_self_contained/agents/{cc,codex}_{v1,novelty,v2,v3}/` and `agents/seed_reverify/`.
 
-## Fixed benchmark surfaces
-See [`../logic/solution/constraints.md`](../logic/solution/constraints.md) for the full fixed
-contract (model, data, batch, forward path, init partition, validation cadence, success criterion).
-These must be held byte-for-byte constant; only optimizer/schedule/init hyperparameters may change.
+## CSV schema (per-run fields used for grounding)
+`export_id, agent_version, agent_label, version, agent, family, purpose, status, run_id, launched_at,
+final_val_loss, min_val_loss, final_step, train_steps, step_to_3_28, num_val_points, train_time_s,
+step_avg_ms, is_completed, is_canceled, is_preempted, is_timeout, is_failed, is_incomplete,
+is_stat_verify, config_path_source, run_dir, train_log, launched_script, source_snapshot, console_log,
+launch_stub`.
 
-## Data
-- Training shards `data/fineweb10B/fineweb_train_*.bin`; validation shards `fineweb_val_*.bin`
-  (FineWeb-10B). `val_tokens = 20 * 524288`. Not redistributed in this artifact.
-
-## Captured artifacts in this ARA
-- `src/execution/` — the three submitted recipe scripts (v1/v2/v3), transcribed verbatim from the
-  agent's `variants/` directories. See `src/execution/README.md` for provenance and grounding.
-- `src/configs/` — the per-wave leave-one-out pruning data (`v{1,2,3}_pruning_data.json`), copied
-  verbatim from the submitted `record_configs/`.
-
-## Reproduction notes (from the source repo)
-- Raw per-seed run logs (~3 GB across 8,224 runs) are git-ignored on disk in the source repo; this
-  ARA carries the run **index** (`runs.csv` / `runs.jsonl`) and the submitted record configs, not the
-  bulk logs.
-- The submitted bins were each validated over 16 reproducibility logfiles (seeds 0..15).
+## Reproduction entry points
+- Baseline: `agents/cc_v1/runs/00001-muon-baseline-1-*/launched_script.py`.
+- v3 record (cc): `agents/cc_v3/runs/07070-v88-aurora-proj-s2/launched_script.py`.
+- v3 record (codex): `agents/codex_v3/runs/08953-*worker27*/launched_script.py`.
+- v12 frozen backbone: `agents/cc_v2/runs/03141-v12-baseline-s2/launched_script.py`.
+- LOO ablation suite: `agents/cc_v3/runs/*loo{01..15}_no_*-s{0..3}-*` (629 runs).
+- Seed reverify: `agents/seed_reverify/runs/*` (13 groups).

@@ -1,81 +1,171 @@
 # Related Work
 
-Typed dependency graph for the Codex speedrun. Edge types: `baseline` (the bar being beaten),
-`extends` (built on / reproduced and modified), `imports` (mechanism reused), `bounds` (sets a
-reference frontier), `refutes` (tried and rejected), `cross-agent` (another agent's work, attributed
-not claimed).
+Typed dependency graph of the methods this experiment imports, extends, baselines against, bounds, or
+refutes. Full `RW` blocks for methods with a specific technical delta; brief citations at the end for
+the remaining intellectual neighborhood. arXiv IDs / PR numbers are taken verbatim from INSIGHTS.md
+and the run code headers.
 
----
+## RW01: Jordan et al. — Muon optimizer / modded-nanogpt
+- **DOI**: github.com/KellerJordan/modded-nanogpt (benchmark + reference recipe)
+- **Type**: baseline
+- **Delta**:
+  - What changed: This work takes the Muon reference (3500 steps) as the starting point and stacks
+    levers on top; it does not replace Muon.
+  - Why: Muon's orthogonalized-momentum update already captures most cheap curvature at 124M.
+- **Claims affected**: C01, C03, C05, C10
+- **Adopted elements**: Two-optimizer partition (AdamW + Muon), Newton-Schulz orthogonalization, WSD
+  schedule, the `track_3_optimization` benchmark and `step_to_3_28` metric.
 
-## RW01 — Muon (Keller Jordan, modded-nanogpt) — `baseline`
-The standing SOTA on this track: orthogonalized momentum via Newton-Schulz on block matrices,
-canonical `lr=0.025, wd=0.0125`, first crossing `val_loss <= 3.28` at 3500 steps. Every Codex wave
-is measured against this. Technical delta of the experiment: stack mechanisms on top of Muon and
-push the crossing step down while preserving its block-matrix update core.
+## RW02: MuonEq — pre-NS per-row normalization
+- **DOI**: arXiv:2603.28254
+- **Type**: imports
+- **Delta**:
+  - What changed: Per-row L2-normalize the momentum *before* Newton-Schulz.
+  - Why: Equalized rows give NS a better-conditioned input -> more faithful orthogonalization.
+- **Claims affected**: C03, C04
+- **Adopted elements**: The pre-NS row-normalization operator; found to be the strongest single
+  Muon-internal lever (dval -0.00484).
 
-## RW02 — AdamW (block-matrix + aux groups) — `baseline`
-The weaker reference family on this track (crosses ~5625 steps). Used as a sanity baseline and the
-aux-group optimizer for embeddings/heads/1-D params in all recipes; not the SOTA bar.
+## RW03: NorMuon — post-NS per-row 2nd-moment normalization
+- **DOI**: arXiv:2510.05491 (microsoft/dion)
+- **Type**: imports
+- **Delta**:
+  - What changed: Divide the orthogonalized update by a per-row 2nd-moment EMA *after* NS.
+  - Why: Per-row update-magnitude control.
+- **Claims affected**: C03, C13
+- **Adopted elements**: The post-NS row-norm; found weaker than MuonEq and redundant once Aurora/MuonEq
+  are present (LOO ~0).
 
-## RW03 — Polar Express (arXiv:2505.16932) — `imports`
-Non-uniform / 5-coefficient Newton-Schulz projection. Imported as the orthogonalization core
-("Polar Express NS-5") in v1, v2 and v3.
+## RW04: SOAP — Adam in Shampoo's eigenbasis
+- **DOI**: arXiv:2409.11321
+- **Type**: refutes (as a global add-on) / imports (as a subset preconditioner)
+- **Delta**:
+  - What changed: Second-order preconditioning in the gradient-covariance eigenbasis. Applied globally
+    on top of Muon it fails (~3.39); restricted to MLP+V it is the biggest hitting v3 lever.
+  - Why: NS already conditions Q/K-style matrices (SOAP duplicates it there); MLP/V carry persistent
+    curvature anisotropy NS leaves on the table.
+- **Claims affected**: C05, C13, C16
+- **Adopted elements**: The eigenbasis-Adam preconditioner, norm-preserving and amortized (basis every
+  10 steps), gated by trust_gate; benchmarked originally against AdamW (hence the backbone mismatch).
 
-## RW04 — MuonEq (arXiv:2603.28254) — `imports`
-Row/column-normalized Muon update. Imported as the row-normalized update in v1 (NorMuon lineage)
-and v2 ("MuonEq"); in v2's pruning it is the second-largest load-bearing component.
+## RW05: Cautious optimizers (Cautious-Muon)
+- **DOI**: arXiv:2411.16085
+- **Type**: refutes
+- **Delta**:
+  - What changed: Mask update components that disagree in sign with the fresh gradient.
+  - Why: Intended to enforce monotone descent.
+- **Claims affected**: C07
+- **Adopted elements**: None — both agents found it regresses/diverges (codex 3.30833; all 4 cautious
+  modes regress at the cc v8 backbone). The masking destroys NS's orthogonality. The experiment's most
+  robust cross-agent clean negative.
 
-## RW05 — @nilin PR #275 / Contra-Muon (modded-nanogpt) — `imports`
-Contra-Muon shaping / residual term. The optimizer-family lineage credited in v1 and v2; v3 reuses
-the Contra residual and scales it down for q/k.
+## RW06: Polar Express — tuned Newton-Schulz coefficients
+- **DOI**: arXiv:2505.16932
+- **Type**: extends
+- **Delta**:
+  - What changed: Per-iteration NS coefficients tuned to reach good spectral shape in 5 iterations
+    instead of the canonical 12.
+  - Why: Cheaper orthogonalization; tests whether the NS target is the bottleneck.
+- **Claims affected**: C01
+- **Adopted elements**: The Polar-Express coefficient tuple (used in the v3 records); ~neutral on
+  quality at 124M but enabling/cheaper.
 
-## RW06 — @nilin PR #291 / Contra→normal→Soft-Muon (modded-nanogpt) — `extends`
-3030-step parent (N=30, margin +0.00540): Contra-Muon early, normal Muon mid, Soft-Muon late, with
-a Gram-Frobenius / Schatten-4 input-norm estimate and basis stacking (p=0.1, 80% blend). v3
-reproduces this faithfully and adds q/k Contra scaling 0.125 and a moved Soft endpoint (2905).
+## RW07: Contra-Muon (modded-nanogpt PR275)
+- **DOI**: modded-nanogpt PR #275
+- **Type**: imports
+- **Delta**:
+  - What changed: Add a ramping negative fraction of the unit-norm raw gradient to the orthogonalized
+    update early, annealing to pure Muon (`contra_coeff` -0.2 -> 0 by ~step 1920).
+  - Why: Decorrelate the early update from the greedy gradient direction (exploration/conditioning).
+- **Claims affected**: C08, C14
+- **Adopted elements**: The contrastive term and its ramp; member of the v3 stack and the engineered
+  crossover.
 
-## RW07 — @nilin PR #294 / radial brake (modded-nanogpt) — `extends`
-2990-step parent (N=11, margin +0.00442): outward-radial update dampening (scale outward component
-by ~0.5, inward by 1.0) plus a post-step weight-radius correction. v3 reproduces it (base outward
-scale 0.45, tail guard 2775..2895, tail outward 0.38); the v3 LOO shows it is load-bearing.
+## RW08: SOAP-on-subset preconditioning (modded-nanogpt PR278)
+- **DOI**: modded-nanogpt PR #278
+- **Type**: extends
+- **Delta**:
+  - What changed: Extends the SOAP parameter set to MLP + value projection (`mlp_plus_v`), with a
+    gentler 95%/5% SOAP/raw blend on V.
+  - Why: Apply second-order preconditioning only where curvature is anisotropic and persistent.
+- **Claims affected**: C05, C13
+- **Adopted elements**: The subset selector (`should_soap_param`) and the V-SOAP blend.
 
-## RW08 — @samacqua PR #278 / MLP SOAP (modded-nanogpt) — `imports`
-SOAP (Shampoo-family second-order) preconditioning machinery for MLP params; v3 extends it to
-MLP+V (`mlp_plus_v`, V blend 0.95). The v3 LOO shows SOAP is the single most load-bearing component.
+## RW09: Aurora row-rescale + PR287 power-law cooldown
+- **DOI**: modded-nanogpt PRs (Aurora; PR287 "power-law LR schedule")
+- **Type**: imports
+- **Delta**:
+  - What changed: Aurora = K outer NS iterations with per-row `D` rescale between calls
+    (`_AURORA_BETA=0.25`); PR287 = per-role convex `(t_end - step)^1.2` cooldown with horizon
+    decoupled from the stop step.
+  - Why: Per-row magnitude control (enables higher LR) + a co-tuned terminal LR trajectory.
+- **Claims affected**: C04, C13, C14
+- **Adopted elements**: The Aurora rescale and the power-law schedule constants — the latter the single
+  most critical frontier lever (LOO: removing it -> all seeds miss).
 
-## RW09 — PR #290 / KL-SOAP-H (modded-nanogpt) — `refutes`
-A full Muon-replacement (precondition every step, state from the first gradient) at 3125 steps.
-Codex repeatedly tried KL-SOAP-H as a full replacement and it failed hard (diverged / froze
-zero-init projections); only the SOAP machinery (as a partial preconditioner) survived.
+## RW10: Muon^2 / "MuonSq" (Adam-style 2nd-moment precond before NS)
+- **DOI**: modded-nanogpt PR (community; "MuonSq")
+- **Type**: refutes (in-stack)
+- **Delta**:
+  - What changed: `M_tilde = M / (sqrt(V) + eps)` before NS.
+  - Why: A public PR showed -175 steps against *vanilla* Muon.
+- **Claims affected**: C05
+- **Adopted elements**: None in the final recipe — it conflicts with the already-present Nesterov +
+  mu-schedule + Polar-Express stack and regresses monotonically (`family=muon2f` best 3190). The
+  canonical example that a lever's sign depends on the backbone.
 
-## RW10 — PR #288 / Muown (modded-nanogpt) — `refutes`
-Direction/gain split with NS on direction and Adam on gain, 3075 steps. Tried by Codex as a separate
-parent and hard-killed (diverged to ~5.7 val_loss by step 2500).
+## RW11: AdEMAMix and Lookahead (as Muon variants)
+- **DOI**: AdEMAMix arXiv:2409.03137; Lookahead arXiv:1907.08610
+- **Type**: refutes
+- **Delta**:
+  - What changed: AdEMAMix adds a slow (beta=0.999) + fast EMA; Lookahead periodically blends slow
+    weights.
+  - Why: Tested as Muon add-ons for better averaging.
+- **Claims affected**: C07
+- **Adopted elements**: None — the slow components under-converge in <3200 steps and the periodic blend
+  halves the effective update rate at the short budget.
 
-## RW11 — @yash-oai PR #287 / power-law LR schedule (modded-nanogpt) — `imports`
-Power-law cooldown constants; imported into v3 (`train_steps=3020`, `schedule_steps=3025`). Its
-back-loaded shape is why early-trajectory kills were ruled invalid for public-frontier schedules.
+## RW12: Shampoo / KL-Shampoo (second-order baselines)
+- **DOI**: Shampoo arXiv:1802.09568 (KL-Shampoo: community variant)
+- **Type**: bounds
+- **Delta**:
+  - What changed: Full second-order preconditioning; KL-Shampoo is a KL-regularized variant.
+  - Why: Tested as heavier curvature preconditioners.
+- **Claims affected**: C11, C16
+- **Adopted elements**: None directly — KL-Shampoo is the Mode-A "slow-and-stuck" divergence example
+  (final 5.49); bounds where second-order helps (scale-dependent, "may win at >=350M").
 
-## RW12 — cc / Claude "v12" optimizer stack — `cross-agent` / `refutes`
-The other agent's 3025-step optimizer stack, inherited as v2's parent. Codex tested it, then (on a
-user flag) found its rewritten `RMSNorm.forward` / q-k-norm to be a bf16-precision forward-path
-change violating the no-architecture rule, and **quarantined** every v12-derived result (see C05).
-Recorded as attributed cross-agent provenance, never as a Codex result.
+## RW13: SWA / EMA endgame weight averaging
+- **DOI**: SWA arXiv:1803.05407
+- **Type**: refutes
+- **Delta**:
+  - What changed: Average weights over the late trajectory (EMA decay 0.995 from step 2000; finite-
+    window averaging).
+  - Why: Variance reduction near convergence.
+- **Claims affected**: C07
+- **Adopted elements**: None — under WSD the late LR is ~0 so the trajectory is near-stationary;
+  averaging adds bias without variance reduction (EMA final 3.28010, misses).
 
-## RW13 — opus "v15 / v48" stack — `cross-agent` / `extends`
-Cross-agent stacks read as source material for v3's faithful reproduction: v48 = PR #294 verbatim +
-CGI Rademacher channel-gain split (alpha=0.14) + di-fc init + AdamW `b2=0.99` (reported bin 2980,
-N=15, +0.00418). v3's CGI gain split is ported from opus v15. Attributed, not claimed.
+## RW14: ARA methodology (Agent-Native Research Artifacts)
+- **DOI**: arXiv:2604.24658
+- **Type**: imports
+- **Delta**:
+  - What changed: Provides the artifact structure (cognitive / physical / exploration-graph / evidence
+    layers) this document is compiled into.
+  - Why: To make the synthesis machine-executable, addressing the "Storytelling Tax" (discarded
+    failures) and "Engineering Tax" (unwritten implementation detail).
+- **Claims affected**: (structural — all)
+- **Adopted elements**: The four-layer ARA schema; the exploration tree preserves the dead ends
+  (novelty wave, clean negatives) that a conventional write-up would discard.
 
-## RW14 — Aurora / KLShampoo-KLSoap — `refutes` / `bounds`
-Local source mechanisms (leverage-aware row/Stiefel correction, KL-Shampoo). v3's Aurora branch
-reached bin ~3027 via clean passes but was superseded by the stronger public Soft/radial parent;
-KL-SOAP repeatedly failed. Used as inspiration and a reference frontier, not the submitted stack.
-
-## RW15 — Broad post-Muon / classical optimizer literature — `refutes`
-The v1 and novelty waves head-to-head screened a large catalog — SOAP, Shampoo/Kron, Lion, Sophia,
-AdEMAMix, Adam-mini, MARS-M, Cautious-Muon, RAdam, NovoGrad, LARS/LAMB, AdaBelief, AggMo, QH-Adam,
-Lookahead, NAdam, MADGRAD, SM3, AdaBound, SWATS, ADOPT, DION, Scion and more. Most were clean
-negatives on this exact setup (e.g. SOAP and many second-order replacements diverged or finished
-well above target), supporting the goal.md premise that the literature is full of unverified claims.
-Adam-mini, Lookahead and AggMo survived as components; the rest are recorded dead ends.
+## Brief citations (intellectual neighborhood, no distinct in-stack delta)
+- **AdamW** (Loshchilov & Hutter, arXiv:1711.05101) — the non-Muon optimizer for 1-D/embedding/output
+  params (baseline 5625 steps); its betas were retuned (LOO ~+45). Affects C06.
+- **MARS, KronPSGD** — additional preconditioners screened and ruled out in cc_v1 (`ideas.md`); affect
+  C05/C07. Cited as rejected alternatives.
+- **AdaBelief / QHAdam** — tried for the AdamW-owned groups in codex cluster 3; affect C06.
+- **RAdam / LAMB / NovoGrad / Adan** — older optimizers flagged in PROGRESS.md (goal Q2) as candidates
+  to pair with a modern schedule; outcomes only partially explored. Affect C16 (open question).
+- **WSD / stable-then-decay schedule** (cited in modded-nanogpt; "minimax/medium" speedrun recipes) —
+  source of the baseline schedule and the mu-schedule port. Affects C02.
+- **FineWeb-10B** (HuggingFace) — the fixed training corpus. Context for A1.

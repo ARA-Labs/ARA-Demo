@@ -1,55 +1,52 @@
-# Constraints, assumptions and limitations
+# Constraints & Limitations
 
-## Binding benchmark rules (the fixed contract)
+The honest envelope of these results (INSIGHTS.md §20, §9, §18). Read before transferring anything.
 
-These surfaces of `train_gpt_simple.py` are fixed and must not be changed by any submitted run.
-A change to any of them is out of scope and (for the forward path) a disqualifying architecture
-violation (see C05). Source: the agent's own `existing_results_summary.md` "Baseline Constants to
-Preserve" plus the goal.md scope sections.
+## Boundary conditions (fixed by the benchmark)
+- **Model**: GPT-124M (12 layers, dim 768, vocab 50304) — fixed.
+- **Data**: FineWeb-10B — fixed.
+- **Batch**: 8 x 64 x 1024 tokens — fixed.
+- **Objective**: `step_to_3_28` (first val <= 3.28); wall-clock and per-step FLOPs are explicitly free.
+- **Allowed changes**: optimizer, schedule, initialization, a few hyperparameters only.
+- Every conclusion (which optimizer, which schedule, which per-role split) holds *only inside this box*
+  (A1). These are results about optimizing a fixed target, not about optimizers in general.
 
-- **Data / batching (fixed).** Training shards `data/fineweb10B/fineweb_train_*.bin`; validation
-  shards `fineweb_val_*.bin`; `val_tokens = 20 * 524288`; `batch_size = 8 * 64 * 1024`; `mbs = 64`;
-  sequence length 1024.
-- **Model (fixed).** `GPT(vocab_size=50304, num_layers=12, model_dim=768)`; attention `head_dim=128`,
-  causal, `scale=0.12`; MLP hidden `4*dim`, squared ReLU; final logit soft cap
-  `15 * logits * (logits.square() + 15**2).rsqrt()`; RMSNorm with learned gains; Linear `bias=True`;
-  embedding `.bfloat16()`; half-truncated RoPE.
-- **Forward path (fixed, byte-for-byte).** `GPT.forward`, `RMSNorm.forward`, attention q/k
-  normalization, logits, loss/objective. Even a mathematically-equivalent rewrite is invalid because
-  it can change bf16 precision behavior (C05).
-- **Init partition (fixed).** Zero every parameter whose name contains `"proj"` before optimizer
-  creation; aux AdamW owns `embed.weight`, `proj.weight` and all `ndim < 2`; the matrix optimizer
-  owns `[p for p in blocks.parameters() if p.ndim >= 2]`.
-- **Step semantics (fixed).** Exactly one forward-backward per step; no multi-step inner loops, grad
-  accumulation tricks, batch-size or data changes.
-- **Success criterion (fixed).** `val_loss <= 3.28`, observed on the `step % 125 == 0` grid plus the
-  explicit final validation; the submitted step is the bin.
+## Known limitations
+1. **Wall-clock / FLOP tax (graded).** The v3 recipe trades ~17% fewer steps for ~20% more compute per
+   step (188 vs 157.5 ms). On a wall-clock- or FLOP-budgeted run the expensive v3 machinery (SOAP/
+   Aurora) can be a net loss. The cheap v1/v2 levers (MuonEq, train-steps trim, per-role LR/WD,
+   mu-sched) are *strictly favorable* (fewer steps AND cheaper per step, ~147 ms) and should transfer;
+   the v3 SOAP/Aurora machinery is benchmark-specific (worth it only when per-step cost is free).
+2. **Overfit to the exact 3.28 threshold.** Frontier hitters cluster `min_val_loss` ~3.2765-3.2773
+   (a median only ~2.6-3.3e-3 below 3.28; ~17% clear by <0.001). The runs are tuned (via `train_steps`
+   and the power-cooldown stop) to cross *3.28* as early as possible and halt — not to minimize loss.
+   `step_to_3_28` does NOT generalize to "steps to reach loss X" for any other X (3.27 would need more
+   steps and a different schedule; 3.29 fewer). The metric and recipe are entangled with the number
+   3.28.
+3. **Scale-bound to 124M.** The "Muon's orthogonalization beats heavier second-order" conclusion holds
+   because NS already captures the curvature at this size; the agents explicitly flag SOAP "may win at
+   >=350M" (cc_v1 `ideas.md` #8). The whole "where the gains live" map could invert at larger scale.
+4. **Records are best-of-N over a noisy floor.** The headline 2880-2885 is a lucky-seed tail with a
+   ~9-12% per-config miss rate; seed-verified is ~2930. Any single quoted step count overstates by
+   ~30-50 steps. Use seed-verified medians (and `min_val_loss` below ~15-step resolution).
+5. **The v3 frontier is one shared artifact, not two independent confirmations.** The two agents' v3
+   records are byte-identical (shared public-PR pool), so the frontier has not been independently
+   replicated in the scientific sense. The independent-replication evidence is the weaker v1 overlap.
+6. **Validation-cadence coupling.** Part of the train-steps "gain" is a measurement artifact of the
+   logging cadence; comparisons below ~15 steps are within the noise floor and should be made on a
+   continuous metric.
 
-## What is in scope (the only allowed degrees of freedom)
+## Assumptions carried by the recipe
+- A2: per-step compute is free (the recipe spends it freely; see limitation 1).
+- A3: the 3.28 threshold is exact and is the thing being crossed-and-stopped-on (see limitation 2).
+- The frozen architecture/init structure (two-optimizer partition, zero-init output proj, 15*tanh
+  logit softcap) is assumed; per-role splits are defined relative to it.
 
-Optimizer changes (any), per-parameter-group HPs, schedules (warmup/decay/WSD/cosine/trapezoid/
-schedule-free), init scale and per-module init differences, LR/WD/β/ε/momentum. Diagnostic
-instrumentation is allowed but submitted runs use the canonical script with HPs hardcoded.
-
-## Assumptions carried by the claims
-
-- The noise floor (~50 steps / ~0.001 val_loss) is stationary across the 3000–3500 region (A3).
-- `sigma = 0.0013` is the per-seed val_loss std used in the significance z-test (A4).
-- Seed control fixes the validation batch so cross-seed variation is init/optimizer-state only (A2).
-
-## Limitations of this artifact
-
-- **L1 — Single-agent slice.** Only Codex's own runs are included. Cross-agent touchpoints (cc v12,
-  opus v15/v48) are recorded as attributed provenance, not as Codex results. The blocklisted v2/v3
-  `goal.md` frontier tables (which headline other agents' bins) are deliberately excluded.
-- **L2 — Leave-one-out is one-at-a-time.** Pruning deltas (C03, C04, C06) do not capture
-  super-additive interactions among components removed together; the one documented composition test
-  (v3 `nosphere-notangent`) shows the two sphere removals do not compose.
-- **L3 — Per-component ablations use small cohorts.** Several v3 LOO ablations are n=3; only the
-  submitted baselines use n=16. Removal deltas from small-n ablations are directional.
-- **L4 — Internal tension in v1.** The wave's running notes promoted a 3170 "practical floor", but
-  the final statistical pass rejected 3170 (negative score) and settled the submission at 3205. The
-  artifact reports the conservative, statistically-passing bin; the aggressive single-seed frontier
-  is recorded as stepping-stone evidence only.
-- **L5 — Numbers are point-in-time.** The bins and means are the submitted-record values; the raw
-  per-seed logs (~3 GB) are git-ignored on disk and not reproduced here (the run *index* is).
+## What transfers vs what does not
+| Transferable (mechanism) | Non-transferable (artifact) |
+|---|---|
+| orthogonalize then per-row normalize -> raise LR | the exact constants (0.0375, power_c, ...) |
+| differentiate LR / WD / schedule per parameter role | the subset-SOAP machinery (scale/benchmark-specific) |
+| trim the training horizon | the 3.28-specific stop step |
+| schedule exploration->exploitation in optimizer-space | single-number best-of-N records |
+| seed-verify and report medians + miss-rate | the v3 recipe as "independent replication" |

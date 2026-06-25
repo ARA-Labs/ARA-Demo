@@ -1,98 +1,166 @@
 # Concepts
 
-Technical vocabulary as used in this experiment (not generic dictionary definitions).
+Formal definitions of the technical terms used across this ARA. Notation follows the run code
+(`launched_script.py`) and INSIGHTS.md.
 
-## Benchmark / methodology
+## Muon (orthogonalized-momentum optimizer)
+- **Notation**: update `U = NS(M) * max(1, rows/cols)**0.5`, where `M` is Nesterov momentum of the
+  gradient and `NS` is Newton-Schulz orthogonalization.
+- **Definition**: An optimizer for 2-D weight matrices that takes the Nesterov-momentum gradient,
+  orthogonalizes it (drives its singular values toward 1) via a fixed-iteration Newton-Schulz scheme,
+  then scales by `sqrt(max(1, rows/cols))`. Applied with decoupled weight decay (`p *= 1 - lr*wd`).
+- **Boundary conditions**: Used only for `ndim>=2` block weights inside `model.blocks`; 1-D /
+  embedding / output params are handled by AdamW. Baseline HPs: lr 0.025, wd 0.0125, mu 0.95.
+- **Related concepts**: Newton-Schulz orthogonalization, MuonEq, NorMuon, soft-Muon, WSD schedule.
 
-- **bin** — the submitted `train_steps` value: the step count at which a recipe is claimed to reach
-  `val_loss <= 3.28`. Lower is better. The reportable bin is the earliest fixed-step checkpoint whose
-  seed cohort passes the significance gate.
-- **horizon / stop decoupling** — keeping the LR-decay denominator (`schedule_steps`, the "horizon")
-  larger than the training stop step (`train_steps`, the "stop"), so the cooldown is not compressed
-  into a shorter run. Notation e.g. `h3375-stop3195`.
-- **noise floor** — the empirical run-to-run variability used to gate "real" improvements:
-  ~50 steps in `step_to_target` and ~0.001 in final val_loss. A promotion must exceed ~2× this floor.
-- **stepping stone** — a rigorously reproduced lower-step hit that is still inside the noise-floor
-  gate relative to the current frontier; kept as boundary evidence, not promoted.
-- **fixed-step seed cohort / cohort z-test** — the submission gate: run n distinct seeds at a fixed
-  bin and require `(3.28 - mean)*sqrt(n) >= 0.004` (with `sigma = 0.0013`, a one-sided z, `p < 0.001`).
-- **anti-val-spam** — scoring significance only at validation checkpoints common to all runs, never
-  at a per-run cherry-picked lowest validation step (a p-hacking control).
-- **leave-one-out (LOO) pruning** — ablating each stacked mechanism singly and keeping only those
-  whose removal degrades the statistical boundary; the basis of the per-component "removal delta".
-- **seed control** — inserting `torch.manual_seed(seed)` after the validation batch is materialized
-  but before model construction, so the validation data is fixed and only init/optimizer state vary.
+## Newton-Schulz orthogonalization (NS)
+- **Notation**: `X_{k+1} = a*X_k + b*(X_k X_k^T) X_k + c*(X_k X_k^T)^2 X_k`, baseline
+  `(a,b,c)=(2,-1.5,0.5)`, 12 iterations (`zeropower_via_newtonschulz5`).
+- **Definition**: An iterative matrix polynomial that approximates the orthogonal polar factor of `M`,
+  pushing all singular values toward 1 without an explicit SVD. It is the mechanism that gives Muon a
+  well-conditioned update direction.
+- **Boundary conditions**: At 124M the 12-iteration version is already converged, so re-tuning the
+  coefficients (Polar-Express, 5 iters) is ~neutral on quality; modifying the NS core (fewer iters,
+  anisotropic coeffs) degrades the orthogonalization and hurts (novelty wave).
+- **Related concepts**: Muon, Polar-Express coefficients, soft-Muon, MuonEq.
 
-## Optimizer / update mechanisms
+## MuonEq (pre-NS per-row normalization)
+- **Notation**: `M_row = M / ||M_row||_2` (per-row L2 normalize) applied *before* `NS(M_row)`.
+- **Definition**: Equalizes the L2 norm of each row of the momentum matrix before orthogonalization,
+  giving NS a better-conditioned input so rows contribute equally to the spectral fit (arXiv 2603.28254).
+- **Boundary conditions**: Strongest single Muon-internal lever (dval -0.00484, ~11 sigma); becomes
+  redundant with Aurora row-rescale once that is present. Must be applied *before* NS to matter.
+- **Related concepts**: NorMuon, Aurora row-rescale, Newton-Schulz orthogonalization.
 
-- **Muon (baseline)** — orthogonalizes the momentum update via Newton-Schulz on block matrices;
-  canonical recipe `lr=0.025, wd=0.0125, mu=0.95`, NS coefficients `(2,-1.5,0.5)`, 12 iterations.
-- **NorMuon** — "normalized Muon": after orthogonalization, divide each row by an EMA of its squared
-  norm and globally RMS-rescale to canonical Muon's update scale. Used with a colder beta2 (~0.90).
-- **Muon2F / 2-factor preconditioning** — factorized row+column preconditioning of the matrix
-  gradient before Newton-Schulz (`pre_eps`, `beta2_pre`).
-- **AggMo3** — aggregated-momentum (3 momentum terms) applied to hidden non-`mlp.proj` matrices.
-- **error-feedback residual** — reinjecting the residual discarded by orthogonalization on
-  `mlp.proj`, so the lost component is not thrown away.
-- **tail-EMA** — a full-model EMA shadow started late in training (e.g. step 2000, `beta=0.99`),
-  swapped in only for validation under `no_grad`, then restored.
-- **Adam-mini** — memory-light Adam variant: rowwise second-moment denominators for embedding/head,
-  a single tensorwise denominator for 1-D gains/biases.
-- **mu schedule** — a time-varying Muon momentum, e.g. `0.85 → 0.95 → 0.85` (warm up to a plateau,
-  then cool down near the end).
-- **Muon lookahead** — a slow-weight pull (Lookahead-style) applied to Muon parameters with a
-  smoothstep ramp (here from step 2450, interval 25, alpha 0.35, pull 0.15).
-- **role-specific LR / WD (RoleLR2 / RoleWD)** — distinct Muon learning-rate multipliers and weight
-  decays per parameter role (q/k, v, attn.proj, mlp.fc, mlp.proj) instead of one body-wide value.
+## NorMuon (post-NS per-row second-moment normalization)
+- **Notation**: `U = NS(M) / sqrt(EMA(row 2nd moment) + eps)` (divide *after* NS).
+- **Definition**: Per-row 2nd-moment EMA normalization applied to the already-orthogonalized update
+  (arXiv 2510.05491 / microsoft/dion). The weaker sibling of MuonEq.
+- **Boundary conditions**: dval -0.00155 standalone; stacking with MuonEq over-corrects the same
+  imbalance (-> ~no gain); LOO `loo14_no_normuon` -> 2930 (dead weight at the frontier once
+  Aurora/MuonEq are present).
+- **Related concepts**: MuonEq, Aurora row-rescale.
 
-## Public-PR mechanisms reproduced in v3
+## SOAP (Shampoo-with-Adam-in-eigenbasis)
+- **Notation**: maintain Gram EMAs `row_gg=EMA(g g^T)`, `col_gg=EMA(g^T g)`; eigenbasis `q_row,q_col`
+  via QR; `projected = q_row^T U q_col`; per-coordinate Adam 2nd-moment in-basis; divide by
+  `denom = exp_avg_sq^0.5`; project back.
+- **Definition**: Runs Adam in the eigenbasis of the gradient covariance (Shampoo's left/right
+  factors), i.e. a second-order preconditioner (arXiv 2409.11321), benchmarked against AdamW.
+- **Boundary conditions**: As a *global* optimizer it fails on top of Muon at 124M (asymptotes ~3.39)
+  because NS already supplies the curvature signal; may win at >=350M scale.
+- **Related concepts**: SOAP-on-subset, Shampoo, KL-Shampoo, Newton-Schulz orthogonalization.
 
-- **Contra-Muon** — a Contra residual update term added to the Muon update (PR #275/#291); v3 scales
-  it down to 0.125 for q/k only.
-- **MuonEq** — a row-normalized Muon update (arXiv:2603.28254 lineage).
-- **Polar Express NS** — a non-uniform 5-coefficient Newton-Schulz iteration for the
-  orthogonalization (arXiv:2505.16932 lineage).
-- **Soft-Muon** — a Contra → normal → Soft-Muon momentum schedule with basis stacking (p=0.1) ending
-  at a blend ceiling (`SOFT_MUON_CEIL`), depending on a Gram-Frobenius / Schatten-4 input-norm
-  estimate (PR #291).
-- **outward-radial dampening / radial brake** — scaling the outward radial component of the update
-  (here 0.45 base, 0.38 in the tail guard window) followed by a post-step weight-radius correction
-  (PR #294).
-- **SOAP (MLP+V)** — a second-order (Shampoo-family) preconditioner applied to MLP parameters plus
-  attention-V (`SOAP_PARAM_MODE="mlp_plus_v"`, V blend 0.95), with an attention SOAP fade window
-  (PR #278 / #290 machinery).
-- **power-law cooldown** — a back-loaded power-law LR decay (PR #287); its lateness makes early
-  trajectory kills invalid.
-- **CGI gain split** — a Rademacher channel-gain split on RMSNorm gains (`alpha=0.14`), ported from
-  the cross-agent v15/v48 stack.
+## SOAP-on-subset (MLP+V eigenbasis preconditioner)
+- **Notation**: `SOAP_PARAM_MODE="mlp_plus_v"`, `SOAP_PRECONDITION_FREQUENCY=10`, `SOAP_BETA2=0.90`,
+  `SOAP_DENOM_POWER=0.50`, Frobenius-norm-preserving (`precond *= ||U||/||precond||`).
+- **Definition**: SOAP applied *only* to MLP `fc`/`proj` and the attention value projection (not Q/K),
+  with the eigenbasis refreshed every 10 steps and the output rescaled to preserve the input's
+  Frobenius norm so it changes update *shape*, not magnitude.
+- **Boundary conditions**: Biggest hitting v3 lever (~+85 steps from MLP-SOAP, ~+35 from V-SOAP);
+  helps where curvature is anisotropic/persistent (MLP, V) and duplicates Muon where it is not (Q/K).
+- **Related concepts**: SOAP, trust_gate, per-role differentiation.
 
-## v3 codex-specific mechanisms
+## trust_gate (stale-basis safety net)
+- **Notation**: `trust_gate(raw, soap, grad)` accepts the SOAP update per-element only if it agrees
+  with raw momentum (cos > 0.20) AND is at least as gradient-aligned as raw momentum; else fall back
+  to plain Muon. Early floor `ATTN_EARLY_TRUST_FLOOR=0.45` fading 1375->1625.
+- **Definition**: A cheap per-element correctness check that catches cases where SOAP's stale
+  (every-10-steps) eigenbasis would mislead, making amortized SOAP affordable *and* safe.
+- **Boundary conditions**: The early trust-floor prevents spurious rejection while early gradients are
+  too noisy to measure cosines reliably; gate becomes fully data-driven after ~1625.
+- **Related concepts**: SOAP-on-subset, temporal curriculum.
 
-- **LACV / lookahead-CV gating** — a lookahead control-variate: a seed-offset correction reusing a
-  prior worker's lookahead state, gated on q/k/mlp.proj.
-- **LACV q/k floor relaxation** — relaxing the u/w-floor that refills the tangent energy LACV
-  removes (`LACV_FLOOR_LAMBDA=0.060`, ramp 2550..2900).
-- **sphere-lookahead** — a pull (`SPHERE_LOOKAHEAD_PULL`) plus a tangent-sphere radial gate; the
-  W258 LOO showed the **pull** is redundant (→ "nosphere") while the tangent term must stay.
+## Contra-Muon (contrastive early-decorrelation term)
+- **Notation**: `contra_update = NS(M) + contra_coeff * normalized_grad`, `contra_coeff` ramps
+  -0.2 -> 0 by step ~1920 (`CONTRA_TO_NORMAL_END_STEP`).
+- **Definition**: Subtracts a ramping fraction of the unit-norm raw-gradient direction from the
+  orthogonalized update early in training (decorrelating the update from the greedy gradient), then
+  anneals to pure Muon (modded-nanogpt PR275).
+- **Boundary conditions**: Active in the Explore phase only; standalone `family=contra` best 3000;
+  enabling, not sufficient. Mechanism confirmed from code (§16.4).
+- **Related concepts**: temporal curriculum, soft-Muon, lose-early-win-late crossover.
 
-## Novelty-wave concepts
+## Aurora row-rescale
+- **Notation**: K outer NS iterations with a per-row diagonal `D` rescale between NS calls,
+  `_AURORA_BETA=0.25`.
+- **Definition**: A per-row magnitude/variance normalization interleaved with the orthogonalization
+  that clamps the per-neuron update scale, enabling a larger global LR.
+- **Boundary conditions**: Part of the v3 stack; makes MuonEq/NorMuon redundant (same mechanism);
+  LOO `aurora` ~+20 steps when removed.
+- **Related concepts**: MuonEq, NorMuon, learning-rate headroom.
 
-- **two-gate rule** — every novelty idea needs both an arXiv/local novelty existence check and a
-  benchmark-rule compliance check to PASS before any code is written.
-- **refined novelty bar** — an optimizer-level combination counts as novel only if one mechanism's
-  output *materially and non-additively* shapes another's; schedule/LR/WD tuning and additive combos
-  are "plumbing" and do not count.
-- **exact-polar no-op** — for Muon's exact polar factor `U`, `U^T U = I` (and unit input-column
-  norms), so a pre-polar perturbation built from disagreement/commutator terms of `U` vanishes
-  identically — the most common reason a "clever" novel optimizer idea was killed before code.
-- **same-family target-step probe** — a measurement-only step/HP sweep of an already-cleared idea;
-  explicitly not a new novelty claim.
+## soft-Muon (endgame orthogonalization softening)
+- **Notation**: raise singular values to a small power `SOFT_MUON_P=0.1` instead of forcing them to 1;
+  blend in over steps 2400-2890 to ceiling 0.80 (`soft_via_newtonschulz5`, `soft_blend_for_step`).
+- **Definition**: A softened orthogonalization used only in the endgame so updates retain more of
+  their natural magnitude structure for gentle fine-tuning near convergence — the optimizer-space
+  analogue of LR annealing. Mechanism partly `[HYP]`.
+- **Boundary conditions**: Acts only in the final ~1.7% of steps; LOO `softmuon` ~0 (a refinement,
+  not load-bearing).
+- **Related concepts**: Newton-Schulz orthogonalization, temporal curriculum, power-law cooldown.
 
-## Cross-agent terms
+## WSD schedule (Warmup-Stable-Decay / stable-then-decay)
+- **Notation**: hold `eta=1.0` for the first 30% of steps, then linearly decay to 0 over the final
+  70% (`set_hparams(step, cooldown_frac=0.7)`), applied as one multiplier to all groups.
+- **Definition**: The baseline learning-rate schedule: a long full-LR stable phase for bulk descent,
+  then a linear cooldown into the minimum.
+- **Boundary conditions**: Near-optimal *shape* at the baseline (only the *length* is the lever there);
+  replaced at the frontier by a per-role power-law cooldown.
+- **Related concepts**: power-law cooldown, train_steps, cooldown_frac.
 
-- **cc v12** — a "v12" optimizer stack authored by the Claude/"cc" agent, inherited as v2's parent;
-  its rewritten RMSNorm forward path triggered the compliance quarantine (C05).
-- **opus v15 / v48** — cross-agent stacks (CGI gain split, AdamW b2=0.99, di-fc init) read as source
-  material for v3's faithful reproduction.
-- **legal / compliant / byte-identical rebuild** — a variant family rebuilt from the workspace
-  `train_gpt_simple.py` with an empty Architecture-block diff, enforced by a launcher-time gate.
+## Power-law cooldown (per-role convex LR decay)
+- **Notation**: `lr(step) = min(flat_lr, power_c * (t_end - step)^power)` with `power=FINAL_LR_POWER
+  =1.2`, `t_end=FINAL_SCHEDULE_STEPS=2985`, per-group `power_c`; run stops at `FINAL_TRAIN_STEPS=2900`
+  (LR then = 0.00069 = 1.8% of flat).
+- **Definition**: A convex (power>1) cooldown that holds LR higher through mid-training then drops
+  steeply near the end, with a per-role cooldown onset and the schedule horizon *decoupled* from the
+  stop step.
+- **Boundary conditions**: The single most critical frontier lever — removing it makes all 4 LOO seeds
+  miss; exposes three coupled knobs (onset `power_c`, curvature `power`, terminal-LR offset
+  `t_end != stop`) co-tuned to land val ~3.279 at ~2885-2900.
+- **Related concepts**: WSD schedule, per-role differentiation, train_steps, horizon-decoupling.
+
+## step_to_3_28 (the benchmark metric)
+- **Notation**: `step_to_3_28 = min { step : val_loss(step) <= 3.28 }`.
+- **Definition**: First training step whose logged validation loss is <= 3.28; the quantity being
+  minimized. Lower is better; wall-clock and per-step FLOPs are explicitly free.
+- **Boundary conditions**: Quantized to the validation cadence (default every 125 steps), so it
+  rounds up to the next logged validation; below ~15 steps it is the wrong metric (rank on
+  `min_val_loss` instead). Has a binary miss-rate tail at the frontier (`None` if never hit).
+- **Related concepts**: validation cadence, noise floor, min_val_loss.
+
+## Noise floor / miss-rate (seed reproducibility)
+- **Notation**: within-config `std(final_val_loss) ~ 0.0004-0.0010`; frontier `std(step_to_3_28) ~
+  14-21` steps; miss-rate = fraction of seeds with `step_to_3_28 = None`.
+- **Definition**: The seed-to-seed variability of a fixed config. The std of final val loss is the
+  same size as a single-lever gain, and ~9-12% of frontier seeds fail to reach 3.28 at all.
+- **Boundary conditions**: Coarsely-validated configs read step-std ~0 (cadence hides it); dense
+  validation reveals the true ~15-step floor. Seeds needed ~ 8*sigma^2/Delta^2.
+- **Related concepts**: step_to_3_28, seed-verified median, validation cadence.
+
+## Per-role differentiation
+- **Definition**: Splitting Muon parameter groups by structural role (attention vs MLP, plus the
+  AdamW-owned embed/proj/scalars) and assigning each its own learning rate, weight decay, and cooldown
+  onset, because attention and MLP matrices differ in scale/curvature/sensitivity.
+- **Notation**: attn LR ~0.5-0.6x MLP; attn WD 0.0275 < MLP 0.03125; per-group `power_c`.
+- **Boundary conditions**: A recurring frontier theme across three axes (LR, WD, schedule); each axis
+  contributes a small-to-mid LOO delta.
+- **Related concepts**: power-law cooldown, weight decay, learning-rate.
+
+## Backbone-dependence (the dominant confounder)
+- **Definition**: The phenomenon that a lever's *sign and magnitude* depend on what else is in the
+  recipe and on which parameter subset it touches, so public-PR gains measured against vanilla Muon do
+  not transfer additively.
+- **Boundary conditions**: Sharpened to *param-subset*-dependence by SOAP (full fails, MLP+V helps);
+  the reason the agents re-tested every lever at the current backbone.
+- **Related concepts**: SOAP-on-subset, MuonEq/NorMuon stacking, Muon^2, enabling lever.
+
+## Temporal curriculum (explore -> exploit in optimizer-space)
+- **Definition**: A recipe whose levers are *time-scheduled* to hand off across the run — early
+  exploration/decorrelation (Contra-Muon, forced SOAP-trust, mu warmup) trading early loss for
+  conditioning, then late exploitation (hard NS -> soft-Muon, convex cooldown) — producing an
+  engineered lose-early/win-late crossover.
+- **Boundary conditions**: The ramp constants bracket the measured crossover (~step 1750); it is the
+  mechanism behind the §8 crossover, not an accident.
+- **Related concepts**: Contra-Muon, soft-Muon, trust_gate, lose-early-win-late crossover.

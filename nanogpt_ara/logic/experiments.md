@@ -1,104 +1,231 @@
 # Experiments
 
-Verification/analysis plans, directional only (no exact numbers — those live in `evidence/`).
-"Experiment" here = a screening/ablation/statistical protocol on the fixed benchmark.
+Declarative verification plans reconstructed from the agents' protocol. Directional outcomes only —
+exact numbers live in `evidence/`. Each `Verifies` references claims in [claims.md](claims.md).
+Common setup (unless noted): GPT-124M (12 layers, dim 768, vocab 50304), batch 8x64x1024 tokens,
+FineWeb-10B; metric `step_to_3_28` plus `final_val_loss`/`min_val_loss`.
 
----
+## E01: Single-lever integration ladder (3-seed reproducers)
+- **Verifies**: C01, C03, C04
+- **Setup**:
+  - Model: GPT-124M (fixed)
+  - Hardware: Not specified in INSIGHTS.md (modded-nanogpt cluster; per-step ms logged in metadata)
+  - Dataset: FineWeb-10B (fixed)
+  - System: Muon + AdamW two-optimizer baseline (§0) as the shared backbone
+- **Procedure**:
+  1. Start from the §0 baseline recipe.
+  2. Add one candidate lever at a time (mu-schedule, Polar-Express NS, attn-LR split, train-steps
+     trim, embed-init x0.7, NorMuon, MuonEq).
+  3. Run a 3-seed reproducer at a canonical step count; record dval vs the seed mean.
+  4. Keep levers with consistent negative dval (or that are "enabling" for later levers); integrate
+     into the running backbone (v1 -> v2 -> v12 frozen frontier).
+- **Metrics**: 3-seed mean `dval` at the canonical step; sign and sigma-multiple vs seed std.
+- **Expected outcome**:
+  - Pre-NS row-norm (MuonEq) is the strongest single lever; post-NS (NorMuon) is weaker; stacking the
+    two does not add.
+  - Each lever is small (fraction of a 0.005 val unit); the integrated stack compounds to the frontier.
+  - Optimal Muon LR rises once normalization is present.
+- **Baselines**: §0 Muon reference (3500 steps).
+- **Dependencies**: none
 
-## E01 — Horizon/stop schedule-decoupling screen
-**Verifies.** C01.
-**Setup.** Muon-family run on the fixed nanoGPT; vary the LR-schedule denominator ("horizon",
-`schedule_steps`) independently of the training stop step (`train_steps`), forcing a final
-validation at the stop step.
-**Procedure.** For a target stop, compare a compressed schedule (`horizon == stop`) against a
-larger-horizon schedule (`horizon > stop`); reproduce each candidate on a second seed; record the
-first step where `val_loss <= 3.28`. Descend the stop step, lowering the horizon ("colder") as
-needed.
-**Expected outcome.** Larger-horizon runs cross the target at a lower step than compressed runs at
-matched stop; each lower stop needs a colder horizon to keep crossing.
+## E02: Training-length and validation-cadence probes
+- **Verifies**: C02
+- **Setup**: Baseline Muon recipe; vary `train_steps` (and the coupled WSD cooldown length); vary the
+  forced validation step near the end of a fixed-horizon run.
+- **Procedure**:
+  1. Sweep `train_steps` (e.g. 3500 -> ~2900) and record `step_to_3_28` / `min_val_loss`.
+  2. On a canonical 3500-step trajectory, force an extra validation at intermediate steps (3450, 3425).
+  3. Compare the "crossing" step under coarse vs dense validation cadence.
+- **Metrics**: `step_to_3_28`, `min_val_loss`, whether the target is hit at the forced step.
+- **Expected outcome**:
+  - Shortening the horizon reaches 3.28 earlier with no loss in val quality (down to a hard floor).
+  - Dense late validation finds an earlier crossing than coarse cadence — part of the lever is a
+    measurement artifact; below the true crossing the target genuinely misses.
+- **Baselines**: 3500-step Muon reference; default 125-step cadence.
+- **Dependencies**: E01
 
----
+## E03: SOAP parameter-subset comparison (full vs MLP+V)
+- **Verifies**: C04, C05
+- **Setup**: Muon backbone with SOAP added; vary the SOAP parameter set (full model vs `mlp_plus_v`
+  vs none); co-vary the Muon LR.
+- **Procedure**:
+  1. Run full-model SOAP on top of Muon across an LR sweep.
+  2. Run SOAP restricted to MLP `fc`/`proj` + attention value projection, basis refresh every 10 steps,
+     Frobenius-norm-preserving, with the trust_gate.
+  3. Compare convergence and `step_to_3_28`; re-tune Muon LR for each.
+- **Metrics**: `final_val_loss`, `min_val_loss`, `step_to_3_28`; whether the target is reached.
+- **Expected outcome**:
+  - Full-model SOAP asymptotes above target (never hits); subset SOAP is part of the frontier stack.
+  - Same operator, opposite sign depending on parameter subset; optimal LR depends on the stack.
+- **Baselines**: Muon-only backbone; full-model SOAP.
+- **Dependencies**: E01
 
-## E02 — NorMuon beta2 / LR screen
-**Verifies.** C02.
-**Setup.** Replace canonical Muon with NorMuon (row second-moment normalization of the
-orthogonalized update, RMS-matched to Muon scale) on hidden matrices.
-**Procedure.** Sweep preconditioner momentum (`beta2`) and Muon LR; compare against a
-canonical-Muon control at matched HPs without the row normalization; require two-seed reproduction
-past the noise-floor gate before promoting a lower bin.
-**Expected outcome.** A colder beta2 and a higher LR with row normalization reach the target at
-fewer steps than canonical Muon; the row normalization contributes beyond the HP change.
+## E04: Per-role LR / weight-decay differentiation
+- **Verifies**: C06
+- **Setup**: Split Muon into attention vs MLP parameter groups; vary per-group LR multiplier and per-
+  group weight decay.
+- **Procedure**:
+  1. Sweep attn-LR multiplier (~0.5-0.7x of MLP).
+  2. Sweep per-role weight decay (attn vs MLP).
+  3. Combine with per-role cooldown onset (`power_c`); record frontier `step_to_3_28`.
+- **Metrics**: 3-seed `final_val_loss`; `step_to_3_28`; boundary miss-rate.
+- **Expected outcome**:
+  - Down-scaling attention step size and decaying attention less than MLP both help slightly; the
+    benefit generalizes from LR to WD to schedule onset.
+- **Baselines**: uniform LR/WD across attn and MLP.
+- **Dependencies**: E01
 
----
+## E05: Clean-negative optimizer screen
+- **Verifies**: C05, C07
+- **Setup**: Muon backbone with one well-cited modification at a time (Cautious masking, Lookahead,
+  AdEMAMix, Muon^2, SOAP-global, LR-floor-in-cooldown, EMA/SWA endgame).
+- **Procedure**:
+  1. Add each modification at its recommended HPs to the current backbone.
+  2. Run to completion (or early-kill on divergence); record whether it beats the plain-Muon baseline.
+  3. Where possible, confirm the result with the second agent.
+- **Metrics**: `final_val_loss`, `step_to_3_28`, divergence signature.
+- **Expected outcome**:
+  - Each modification regresses or diverges at the current backbone; several are cross-agent confirmed
+    negatives; a method validated against vanilla Muon can flip negative in the stack.
+- **Baselines**: plain-Muon at the same backbone.
+- **Dependencies**: E01
 
-## E03 — v12iso leave-one-out component pruning
-**Verifies.** C03.
-**Setup.** The full v1 v12iso stack at its low-step screen.
-**Procedure.** For each stack component (tail-EMA, 2-factor preconditioning, mu-schedule,
-error-feedback residual, AggMo3, tail residual mechanics, late-LR, beta2-thaw), remove it singly,
-re-run a fixed seed cohort, and record the change in validation loss vs the full stack.
-**Expected outcome.** Removing the endgame EMA evaluation shadow or the 2-factor preconditioning
-degrades loss far more than removing any single tail-residual mechanism; some tail mechanics are
-within noise.
+## E06: Training-curve crossover extraction
+- **Verifies**: C08
+- **Setup**: Extract `val_loss` vs `step` from `train.log` for the baseline (3500 steps) and the v3
+  record (2900 steps), plus a full-SOAP run.
+- **Procedure**:
+  1. Read per-validation points from each `train.log`.
+  2. Align on matched steps; compute the record-minus-baseline delta over the run.
+  3. Identify the crossover step where the record overtakes the baseline.
+- **Metrics**: `val_loss` at matched steps; crossover step; whether each run eventually hits 3.28.
+- **Expected outcome**:
+  - The record is behind early, crosses over around the point where its early-exploration levers
+    anneal off, then wins; full SOAP loses early and never recovers.
+- **Baselines**: 3500-step Muon reference; full-SOAP run.
+- **Dependencies**: E01
 
----
+## E07: Seed-reverify noise-floor and miss-rate
+- **Verifies**: C09, C16, C17
+- **Setup**: Run fixed configs at many seeds (8-16) across 13 config groups (the `seed_reverify` wave),
+  spanning frontier and safe configs; dense vs coarse validation cadence.
+- **Procedure**:
+  1. For each config, run 8-16 seeds; record `final_val_loss`, `min_val_loss`, `step_to_3_28`, miss.
+  2. Compute within-config std of each metric and the pooled miss-rate.
+  3. Derive the seeds-per-arm needed to resolve a given step gain.
+- **Metrics**: std(`final_val_loss`), std(`step_to_3_28`), miss-rate, seeds-for-significance.
+- **Expected outcome**:
+  - Final-val std is the same size as a single-lever gain; ~9-12% of frontier seeds miss; step-std is
+    ~0 under coarse cadence and ~15-21 under dense cadence; seeds needed scale inversely with the
+    squared effect size.
+- **Baselines**: a safe (always-hitting) config vs a frontier (boundary) config.
+- **Dependencies**: E01
 
-## E04 — v2 legal-rebuild leave-one-out pruning
-**Verifies.** C04.
-**Setup.** The compliant "legal_v12opt" stack at its submitted screen.
-**Procedure.** Singly remove each component (role-specific LR, role-specific WD, MuonEq update,
-Muon schedule, lookahead, Contra-Muon, embed init, eta_min, Polar-Express NS); re-run the fixed
-seed cohort; record removal deltas.
-**Expected outcome.** Role-specific LR, the row-normalized (MuonEq) update and the Muon schedule
-dominate the removal deltas; lookahead and role-WD are positive; Contra-Muon is near-noise.
+## E08: Novelty-constrained wave
+- **Verifies**: C10
+- **Setup**: Same benchmark, but ideas must pass a novelty check (no known methods / HP tweaks) and a
+  code-location compliance rule (changes confined to Optimization and Init & Optim Hyperparams).
+- **Procedure**:
+  1. Generate genuinely-new operators (trust-region-muon, anisotropic, spectral-pre-clip, NS-coeff
+     inits, Schatten-p, ...).
+  2. Re-validate a plain-Muon baseline under the same harness for reference.
+  3. Audit each operator for novelty and compliance; early-kill diverging runs.
+- **Metrics**: `step_to_3_28`; novelty/compliance verdict; early-kill step.
+- **Expected outcome**:
+  - The best novel operator merely matches the re-validated plain-Muon baseline; operators touching
+    the NS core degrade orthogonalization; some compliant ideas are blocked by the code-location rule.
+- **Baselines**: re-validated plain-Muon under the novelty harness.
+- **Dependencies**: E01
 
----
+## E09: Stability / divergence taxonomy
+- **Verifies**: C11
+- **Setup**: Collect runs that completed (or were early-killed) far above target across all waves;
+  read their `train.log` curves and status flags.
+- **Procedure**:
+  1. Classify each diverging trajectory by signature (monotone-slow, spike-and-recover, NaN/no-learn).
+  2. Attribute each to a mechanism (preconditioner scale, pathological HP, normalization x warmup).
+  3. Tally hard-fails vs early-cancellations across the export.
+- **Metrics**: divergence signature, NaN count, step at which the signature is detectable, status mix.
+- **Expected outcome**:
+  - Three recurring modes, all visible by step ~750; most non-completions are early cancellations, not
+    crashes — instability is predictable and early-killable.
+- **Baselines**: a stable frontier run.
+- **Dependencies**: E01
 
-## E05 — v3 W258 leave-one-out pruning
-**Verifies.** C06.
-**Setup.** The v3 frontier stack (Soft-Muon + radial dampening + MLP+V SOAP + LACV + sphere
-lookahead) at the 2949 screen.
-**Procedure.** Build one ablation per mechanism (nosoap, novsoap, noradial, notailradial, nosoft,
-nocontra, noqkcontrascale, nolacv, nolacvfloor, nosphere, notangentsphere, and the combined
-nosphere-notangent); run each cohort; record removal deltas. Keep only removals that tie or improve
-the statistical boundary.
-**Expected outcome.** SOAP and radial removals collapse the tail; the sphere-lookahead pull removal
-(nosphere) holds the boundary and simplifies the stack; the two sphere removals do not compose.
+## E10: Search-economy accounting
+- **Verifies**: C12
+- **Setup**: Tally each agent's launched runs and distinct recipe versions per wave from `runs.csv`
+  and run-name `vNN` counters; order v1 runs by launch time.
+- **Procedure**:
+  1. Count runs per `agent_version`; count distinct families and max `vNN` per wave.
+  2. For v1, tally the family distribution of the first ~120 launch-ordered runs per agent.
+  3. Compare run-count, recipe-diversity, and the located best lever per agent.
+- **Metrics**: runs/wave, families/wave, max recipe version, first-120 family histogram, v1 best.
+- **Expected outcome**:
+  - One agent reaches the frontier with ~1/4 the runs but ~3x the distinct recipes (breadth-first);
+    the other runs narrow-and-deep sweeps; both reach the same ceiling, but breadth-first locates the
+    stronger lever.
+- **Baselines**: cross-agent comparison.
+- **Dependencies**: E01
 
----
+## E11: Leave-one-out ablation at the frontier (4-seed)
+- **Verifies**: C01, C03, C06, C13
+- **Setup**: The full v3 frontier recipe; remove exactly one component at a time; run 4 seeds each.
+- **Procedure**:
+  1. For each component (`pow_cooldown`, `soap_mlp`, `adamw_betas`, `attn_soap`, `uwfloor`, `radial`,
+     `aurora`, `mu_sched`, `contra`, `muwarmup`, `normuon`, `cgi`, `softmuon`, ...), delete it.
+  2. Run 4 seeds; record the median `step_to_3_28` (or all-miss) and the 4-seed range.
+  3. Rank components by the cost of removing them.
+- **Metrics**: median `step_to_3_28` per ablation; 4-seed range; miss flag.
+- **Expected outcome**:
+  - Removing the power-law cooldown makes all seeds miss (critical); SOAP-on-MLP is the biggest hitting
+    contributor; the AdamW-beta retune is real and mid-pack; NorMuon (and a few others) are ~0. The
+    contribution distribution is long-tailed (few essential, several useful, several dead).
+- **Baselines**: full v3 recipe (~2925-2930 seed-verified).
+- **Dependencies**: E01, E03
 
-## E06 — Novelty wave two-gate screen + reproduction
-**Verifies.** C07.
-**Setup.** Hard-isolated worktree; every candidate idea must pass (a) an arXiv/local novelty
-existence check and (b) a benchmark-rule compliance check before any code is written.
-**Procedure.** For each derived idea: scout → write idea doc → run both gates in parallel → if both
-pass, implement a conservative first cell, screen by domination against the baseline curve, then
-require a distinct-seed reproduction past the 2× step noise-floor gate. Kill on any gate failure or
-on reduction to a published mechanism / algebraic no-op.
-**Expected outcome.** No idea survives both reproduction and the noise-floor gate; novel pre-polar
-optimizer perturbations frequently fail the math gate as exact-polar no-ops; the productive
-schedule/HP directions fail the novelty gate. Net: no promotable submission.
+## E12: Temporal-curriculum decode
+- **Verifies**: C14
+- **Setup**: Read the v3 record's ramp constants and phase-active levers from `launched_script.py`;
+  align them with the §8 crossover step.
+- **Procedure**:
+  1. Extract all ramp constants (Contra end-step, trust-floor fade, soft-Muon blend window, mu warmup/
+     cool).
+  2. Partition the run into Explore / Converge / Soften phases by which levers are active.
+  3. Check that the phase boundaries bracket the measured crossover.
+- **Metrics**: ramp-constant step values; phase boundaries; crossover step.
+- **Expected outcome**:
+  - The recipe is a time-scheduled curriculum; the explore-phase levers anneal off right at the
+    crossover, i.e. the lose-early/win-late curve is engineered.
+- **Baselines**: the static §0 baseline schedule.
+- **Dependencies**: E06
 
----
+## E13: Cross-agent recipe diff
+- **Verifies**: C15
+- **Setup**: Diff the two agents' v3 record scripts (`cc_v3/07070-...` vs `codex_v3/08953-...worker27`).
+- **Procedure**:
+  1. Compare the magic constants and helper functions component-by-component.
+  2. Identify which fields are identical vs which differ.
+  3. Contrast with the v1 records, where the agents diverged.
+- **Metrics**: count of identical constants/functions; magnitude of any differences.
+- **Expected outcome**:
+  - The v3 records are component-for-component identical except tiny timing offsets — shared public-PR
+    lineage, not independent rediscovery; the genuine independent signal is the v1 divergence.
+- **Baselines**: the v1 records of both agents.
+- **Dependencies**: E10
 
-## E07 — Fixed-step seed-cohort significance test
-**Verifies.** C08.
-**Setup.** A candidate submission recipe with `train_steps` (the bin) hardcoded.
-**Procedure.** Run n distinct non-cherry-picked seeds at the fixed bin; at each common validation
-checkpoint compute the cohort mean and the significance score `(3.28 - mean)*sqrt(n)`; accept the
-earliest checkpoint whose score clears the threshold; evaluate only common checkpoints (no
-per-run cherry-pick).
-**Expected outcome.** Single-seed sub-step crossings fail the cohort test; the earliest passing
-checkpoint (the submitted bin) sits above the single-seed frontier.
-
----
-
-## E08 — Architecture byte-identity compliance gate
-**Verifies.** C05.
-**Setup.** A launcher-time static check over each candidate variant before submission.
-**Procedure.** Diff the variant's Architecture block against the workspace `train_gpt_simple.py`;
-fail (exit non-zero, no submission) on any non-empty diff, any change to `RMSNorm.forward`, any
-change to the q/k `F.rms_norm` call, or any optimizer logic routed through norm-gain parameters;
-audit active worktrees for residual violations after each launch wave.
-**Expected outcome.** Non-byte-identical forward/norm paths are blocked before Slurm submission;
-prior results built on a rewritten forward path are quarantined and excluded from the frontier.
+## E14: Generalization-limits audit
+- **Verifies**: C16
+- **Setup**: Aggregate per-wave median `step_avg_ms`, the `min_val_loss` distribution of v3 hitters,
+  the SOAP scale caveat, and the fixed-scope rules.
+- **Procedure**:
+  1. Compute per-wave median per-step compute; compare v3 vs baseline.
+  2. Measure how tightly v3 hitters cluster `min_val_loss` just below 3.28.
+  3. Note the scale caveat (SOAP "may win at >=350M") and the fixed architecture/data/batch.
+- **Metrics**: median `step_avg_ms`/wave; `min_val_loss` band; per-step-cost vs step-count tradeoff.
+- **Expected outcome**:
+  - v3 trades ~17% fewer steps for ~20% more compute/step (a net loss when FLOP-budgeted); the recipe
+    is overfit to 3.28; the optimizer ranking is scale-bound; cheap v1/v2 levers transfer, expensive
+    v3 machinery does not.
+- **Baselines**: baseline per-step compute; the v1/v2 cheap-lever recipes.
+- **Dependencies**: E07, E11
