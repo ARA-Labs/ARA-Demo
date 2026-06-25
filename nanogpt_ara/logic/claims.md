@@ -1,372 +1,310 @@
 # Claims
 
-Falsifiable assertions extracted from the synthesis.
+Falsifiable takeaways from the Codex speedrun trajectory. Each `Statement` is the **mechanism or
+relationship** a result reveals — the reusable WHY — with the named recipes, run IDs, and numbers
+demoted to `Evidence basis` / `Proof` and the evidence layer. Numbers in `**Sources**` are quoted
+verbatim from the cited file and were opened during compilation. Provenance: all claims are
+`ai-executed` (produced by the Codex agent's own runs) unless noted.
 
-**Reading convention.** The `Statement` is high-level natural language only — *what was tested, what
-was observed, and why it happens* — with no numbers. All concrete values, run IDs, and detailed
-setups live in the later bullets: `Falsification criteria`, `Evidence basis` (what the cited data
-directly shows), and `Interpretation` (broader mechanistic reading). Each `Proof` references
-experiment IDs in [experiments.md](experiments.md). Everything is grounded to
-`data/runs_self_contained/runs.csv`, agent scratchpads, run code, and `train.log`. `[HYP]` marks
-uncertain mechanisms.
+---
 
-## C01: No silver-bullet optimizer — the gain is compositional
-- **Statement**: Across five waves of search, no single optimizer substitution captured the available
-  improvement. The step-count reduction instead came from stacking many independently small,
-  previously-published levers and re-tuning them to a shared backbone. Because each lever acts on a
-  different part of the update — conditioning, per-role scaling, schedule shape, training horizon —
-  their effects compound rather than overlap, so the frontier looks like an *integration* of ideas
-  rather than the discovery of one.
-- **Status**: supported
-- **Falsification criteria**: A single optimizer swap (one method replacing Muon, no other changes)
-  reaching <= ~2930 seed-verified steps would refute compositionality.
-- **Proof**: [E01, E11]
-- **Evidence basis**: Muon reference 3500 -> ~2880-2885 single-best-seed -> ~2930 seed-verified, i.e.
-  ~16-17% fewer steps and ~48% fewer than the AdamW baseline (5625). cc_v1 `ideas.md` integrated
-  ladder entries 1-7 each have 3-seed dval in [-0.0009, -0.0048]; no single substitution moved the
-  frontier by more than ~1-2%. The LOO ablation (§14) shows every hitting component is worth
-  <= ~85 steps.
-- **Interpretation**: Muon's orthogonalized update already captures most cheap curvature at 124M, so
-  residual gains live in second-order details (per-group scaling, NS conditioning, schedule shape,
-  init) that only compound.
-- **Dependencies**: C03, C13
-- **Tags**: compositional, frontier, levers
+## C01 — Decoupling the LR-decay horizon from the training-stop step is the foundational step-compression lever
 
-## C02: Trimming `train_steps` is the single biggest free lever (and partly a measurement artifact)
-- **Statement**: Shortening the total training horizon was tested as a lever and turned out to be the
-  largest single source of step reduction, with no measurable cost to validation quality at the
-  target. The effect is twofold: the baseline genuinely over-trains in its final cooldown steps, and
-  the headline metric is read off a coarse validation cadence, so the model actually crosses the
-  target *between* logged validations and a finer cadence "recovers" steps it was already achieving.
-  There is nonetheless a hard floor — past a point the target is genuinely not yet reached.
-- **Status**: supported
-- **Falsification criteria**: If shortening the horizon raised `min_val_loss` above 3.28, or if dense
-  validation at the true crossing did not change `step_to_3_28`, the lever would not be "free".
-- **Proof**: [E02]
-- **Evidence basis**: §2.A.1, §6.1, §8.3. Horizon trims 3500 -> ~2900 give -250 to -325 steps;
-  run names pervasively encode `tsXXXX`. On a 3500-step trajectory, a forced validation at step 3450
-  hits (seeds 3.27844 / 3.27777) while 3425 misses (3.28178). The v3 record validates every 5-10
-  steps from step 2820 onward to pin the first sub-3.28 step (2885: 3.27972).
-- **Interpretation**: Two effects stack — real over-training removal plus a coarse-cadence measurement
-  gap that dense late validation closes; the floor (3425 miss) shows the underlying crossing is real.
-- **Dependencies**: none
-- **Tags**: train_steps, schedule, validation-cadence, artifact
+**Statement.** On this benchmark, running the canonical learning-rate cooldown *schedule* to a
+nominal horizon while *stopping* training at a smaller step count crosses the loss target in fewer
+steps than recomputing a shorter cooldown — because the canonical trajectory sits only marginally
+above target at intermediate checkpoints, so the gain comes from *reading the crossing earlier on
+the same curve* rather than from a faster-decaying curve. Every submitted record is built on this
+schedule/stop decoupling.
 
-## C03: MuonEq (pre-NS row normalization) is the strongest single Muon-internal lever
-- **Statement**: Two ways of equalizing per-row update magnitude in Muon were compared: normalizing
-  the momentum rows *before* the Newton-Schulz orthogonalization (MuonEq) versus normalizing the
-  already-orthogonalized update *after* it (NorMuon). Pre-NS normalization was clearly the stronger of
-  the two, and combining both gave no additional benefit. The reason is that the pre-NS version
-  improves the *input* to the orthogonalization (so the result is more faithful), whereas the post-NS
-  version only rescales an update that is already orthogonal, and doing both corrects the same
-  imbalance twice.
-- **Status**: supported
-- **Falsification criteria**: If post-NS normalization (NorMuon) matched or beat pre-NS, or if the two
-  stacked additively, the pre-NS conditioning mechanism would be wrong.
-- **Proof**: [E01, E11]
-- **Evidence basis**: cc_v1 `ideas.md` #6/#7/#14; §2.B.3. MuonEq 3-seed mean dval@3125 = -0.00484
-  (the best single lever, ~11 sigma vs seed std 0.00043); NorMuon = -0.00155; MuonEq+NorMuon stacked
-  = -0.0014 (~= NorMuon alone). LOO `loo14_no_normuon` -> 2930 (= full recipe, i.e. NorMuon redundant
-  once Aurora/MuonEq present).
-- **Interpretation**: Equalizing per-row momentum scale before NS hands the orthogonalization a
-  better-conditioned input so rows contribute equally to the spectral fit.
-- **Dependencies**: C05
-- **Tags**: MuonEq, NorMuon, Newton-Schulz, normalization
+**Conditions.** nanoGPT track_3, Muon-family optimizers, 3.28 target, cosine/linear/power-law
+cooldowns. Untested: whether the decoupling helps under schedules with no long shallow tail, or once
+the stop step is pushed far below the schedule horizon (where the cooldown is too steep to have
+flattened).
+**Status.** Supported (foundational across v1/v2/v3).
+**Falsification criteria.** A matched run with `schedule_steps = train_steps` (a genuinely shorter
+cooldown) reaching the same or lower bin would refute the mechanism; so would the decoupled run
+crossing *later* than the shorter-cooldown run at equal stop step.
+**Proof.** E01.
+**Evidence basis.** v1 record uses `schedule_steps=3375` with submitted bin 3205; v3 record uses
+`train_steps=3020`, `schedule_steps=3025` with submitted bin 2949 (the run continues past the logged
+crossing). The wave's first reproduced improvement was a `stop3450` horizon run.
+**Dependencies.** —
+**Sources.**
+- "Muon `mu` schedule … **linear LR cooldown on `schedule_steps=3375`**" ← `record_configs/20260515_codex_v1_v12iso_3205/README.md:11` [input]
+- "PR #287 power-law cooldown constants with `train_steps=3020`, `schedule_steps=3025`" ← `record_configs/20260515_codex_v3_nosphere_2949/README.md:11` [input]
+- "The runs continue to `train_steps=3020`, but the submitted bin is the logged step-2949 checkpoint" ← `record_configs/20260515_codex_v3_nosphere_2949/README.md:16` [input]
 
-## C04: Normalization buys a higher learning rate (non-monotonic LR trajectory)
-- **Statement**: The best Muon learning rate was not constant across the experiment: it was pushed
-  *up* once per-row normalization was added (because controlling the per-step update magnitude makes a
-  bigger global step stable), then pulled back *down* when heavier preconditioning was stacked on in
-  the final wave (because that changed the effective update geometry again). The takeaway is that the
-  "right" learning rate is a property of the whole preconditioning stack, not a fixed property of
-  Muon.
-- **Status**: supported
-- **Falsification criteria**: If the optimal LR were invariant across waves (constant ~0.025 regardless
-  of normalization/preconditioning) the "normalization buys headroom" mechanism would fail.
-- **Proof**: [E01, E03]
-- **Evidence basis**: §5.2, §13.2. Muon base LR moved 0.025 (baseline) -> 0.045 (v2, +80%) -> 0.0375
-  (both v3 records). The up-move accompanies MuonEq/Aurora row-normalization; the down-move accompanies
-  SOAP-on-subset + Aurora being stacked in v3.
-- **Interpretation**: Per-row normalization clamps update variance so a larger global step stays
-  stable; v3's heavier preconditioning re-shapes the geometry, re-lowering the optimal LR.
-- **Dependencies**: C03, C05
-- **Tags**: learning-rate, normalization, non-monotonic
+---
 
-## C05: A method's effect is backbone- and parameter-subset-dependent (sign flips)
-- **Statement**: The same optimizer modification was observed to help in one context and hurt in
-  another, depending on what else was in the recipe and which parameter matrices it was applied to.
-  Most strikingly, a second-order preconditioner that fails when applied to the whole model becomes
-  one of the most valuable levers when restricted to the matrices where Muon's orthogonalization
-  leaves curvature signal on the table. The general lesson is that gains measured against a vanilla
-  baseline do not transfer additively, so every imported lever had to be re-tested at the current
-  backbone.
-- **Status**: supported
-- **Falsification criteria**: If full-model and subset SOAP gave the same sign, or if Muon^2's PR gain
-  transferred additively into the stack, context-dependence would be refuted.
-- **Proof**: [E03, E05]
-- **Evidence basis**: §2.D.1/§2.D.3/§3.2/§5.3/§16. Full-model SOAP `00182-soap-lr3e-2` asymptotes at
-  3.38876 and never hits 3.28; SOAP on MLP+V is part of the 2885 stack (removing MLP-SOAP costs ~+85
-  steps). Muon^2 showed -175 steps vs vanilla Muon in a public PR but regressed in-stack
-  (`family=muon2f` best 3190).
-- **Interpretation**: Muon's NS already conditions Q/K-style "geometric" matrices, so SOAP duplicates
-  it there (cost without signal); MLP+V carry persistent curvature anisotropy NS leaves untouched,
-  where SOAP's eigenbasis scaling adds real signal.
-- **Dependencies**: none
-- **Tags**: backbone-dependence, SOAP, param-subset, confounder
+## C02 — Second-moment normalization of the orthogonalized Muon update (NorMuon → Muon2F) is a top-tier optimizer contributor to step compression
 
-## C06: Matrices play different roles — differentiate LR, weight decay, and schedule per role
-- **Statement**: Splitting the weight matrices by structural role (attention vs MLP, plus the
-  separately-optimized embedding/output/scalar group) and giving each role its own hyperparameters was
-  tested and consistently helped. The benefit was observed not just for the learning rate but also for
-  weight decay and even for *when* each group begins its learning-rate cooldown. It happens because
-  attention and MLP matrices differ in scale, curvature, and sensitivity, so their ideal step size,
-  shrinkage, and anneal timeline all differ.
-- **Status**: supported
-- **Falsification criteria**: If a uniform LR/WD/schedule across attn and MLP matched the per-role
-  split at the frontier, role differentiation would add nothing.
-- **Proof**: [E04, E11]
-- **Evidence basis**: §2.C.1, §13.3, §15.3. Attention Muon LR ~0.5-0.6x of MLP (cc_v1 best run
-  `...attn0.5` -> 3000); per-role weight decay attn 0.0275 < MLP 0.03125 (codex `rolewd-combo` -> best
-  ~2962); per-group cooldown onset `power_c` (embed 4.98e-5 vs Muon 3.32e-6). LOO `adamw_betas` -> 2970
-  (~+45) shows even the non-Muon group was not pre-optimal.
-- **Interpretation**: Step size, shrinkage, and anneal timeline each want to differ by parameter role;
-  per-role differentiation is a recurring frontier theme across all three axes.
-- **Dependencies**: none
-- **Tags**: per-role, learning-rate, weight-decay, schedule
+**Statement.** Normalizing Muon's Newton–Schulz output by per-row / factorized second moments
+(NorMuon's row normalization, Muon2F's two-factor preconditioning) materially lowers the bin: it
+stabilizes the compressed-cooldown tail by equalizing per-row update magnitudes, buying mid/late-curve
+margin that a single global Muon step does not. In the final v1 stack, removing the factorized
+preconditioner is the second-largest degradation of any single component.
 
-## C07: Several well-cited optimizer modifications are clean negatives, some cross-agent confirmed
-- **Statement**: A set of popular optimizer add-ons were each tested on top of Muon and each failed to
-  beat the plain-Muon baseline, several of them confirmed independently by both agents. The failures
-  are mechanistic, not incidental: masking updates by sign-agreement destroys the orthogonality the
-  optimizer just imposed; periodic slow-weight blending and slow EMAs starve under a short training
-  budget; and endgame weight-averaging adds bias without variance reduction under a schedule whose
-  late learning rate is already near zero. On a saturated benchmark, a well-cited method failing is
-  itself a real result.
-- **Status**: supported
-- **Falsification criteria**: If any of these reached a seed-verified step count below the plain-Muon
-  baseline at the same backbone, the negative would be overturned.
-- **Proof**: [E05]
-- **Evidence basis**: §2.D.2, §6.2-§6.4; cc_v1 `ideas.md` #10/#11/#12; `v1/codex/picklist.md` §1-§3.
-  Cautious-Muon (mask+renorm) ends 3.30833 and never hits (codex), and all 4 cautious modes regress at
-  the cc v8 backbone; LR-floor-in-cooldown still 3500; EMA (decay 0.995 from step 2000) final 3.28010.
-  Lookahead-Muon and AdEMAMix-Muon both regress.
-- **Interpretation**: Cautious masking removes useful signal Muon's implicit monotone descent already
-  provides; under WSD the late trajectory is near-stationary so averaging is biased; short budgets
-  starve Lookahead/AdEMAMix's slow components.
-- **Dependencies**: none
-- **Tags**: negative-result, Cautious-Muon, Lookahead, AdEMAMix, EMA
+**Conditions.** Muon matrix optimizer on a 124M GPT at a compressed horizon; hidden matrices only
+(the v1 stack applies Muon2F hidden-only). Untested at full horizon or on the auxiliary groups.
+**Status.** Supported.
+**Falsification criteria.** A leave-one-out removal of the factorized preconditioner that changes
+validation loss within ±1× the noise floor would refute its load-bearing status.
+**Proof.** E02.
+**Evidence basis.** v1 component-pruning sweep at step 3195: `noMuon2f` is the 2nd-largest positive
+delta; the NorMuon `beta=0.90` family carried the wave from 3450 down to 3350.
+**Dependencies.** C01.
+**Sources.**
+- `noMuon2f` removal worsens validation by `+0.00229` (`mean 3.28136` vs baseline `3.27907`) ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:104-106` «"delta": 0.0022899999999999032, "label": "noMuon2f", "mean": 3.28136» [result]
+- "NorMuon with Polar-Express-style Newton-Schulz projection and row/column preconditioning on hidden matrices." ← `record_configs/20260515_codex_v1_v12iso_3205/README.md:6` [input]
 
-## C08: "Lose early, win late" is real but recipe-specific
-- **Statement**: A direct comparison of the validation curves showed that the frontier recipe is
-  actually *behind* the baseline for most of the run before overtaking it and finishing well ahead on
-  the step-to-target metric — answering the benchmark's explicit question of whether an optimizer can
-  lose early yet win late. But this only holds when the early deficit *buys* something (better
-  conditioning from early exploration): a recipe whose early deficit reflects a genuinely mismatched
-  preconditioner loses early and never recovers. The crossover is therefore a property of the specific
-  recipe, not a general "slow starts are fine" rule.
-- **Status**: supported
-- **Falsification criteria**: If no recipe existed that is behind early yet wins on step-to-3.28, or if
-  every slow-start recipe eventually won, the "conditioned exploration" mechanism would be wrong.
-- **Proof**: [E06]
-- **Evidence basis**: §8. Record `07070-v88-aurora-proj-s2` vs baseline `00001`: behind from step ~250
-  through ~1625 (max deficit +0.028 at step 375), crosses at ~step 1750, ends at 3.28 by step 2885 vs
-  baseline 3500. Full SOAP `00182` is behind throughout and asymptotes at 3.38876 (`step_to_3_28=None`).
-- **Interpretation**: Contra-Muon decorrelation + a higher LR trade early loss for conditioning, and
-  the crossover sits right where Contra anneals off (~step 1920); SOAP's early deficit has no late
-  payoff because the preconditioner is mismatched.
-- **Dependencies**: C14
-- **Tags**: training-dynamics, crossover, lose-early-win-late
+---
 
-## C09: The frontier is a thin tail over a noisy floor (records overstate)
-- **Statement**: Re-running fixed configurations across many seeds revealed that the seed-to-seed
-  scatter in final loss is about the same size as a whole single-lever improvement, and that at the
-  frontier a meaningful fraction of seeds fail to reach the target at all. Consequently the
-  best-of-many-seeds headline number is a lucky tail that overstates real performance, and honest
-  claims must report the seed distribution (a median and a miss-rate) rather than the best run.
-- **Status**: supported
-- **Falsification criteria**: If frontier configs hit 3.28 on every seed with negligible std, the
-  miss-rate tail and "report medians" recommendation would be unnecessary.
-- **Proof**: [E07]
-- **Evidence basis**: §9, §21. Frontier group A (`v88-aurora-proj`, 8 seeds): final-val std 0.00043,
-  1/8 seeds miss; pooled `seed_reverify` miss-rate 14/152 = 9%. The README seed-verified figure is cc
-  2930 vs the CSV single-best 2885.
-- **Interpretation**: `step_to_3_28` has a binary miss-rate tail at the frontier; a single-number
-  record can overstate by ~30-50 steps.
-- **Dependencies**: none
-- **Tags**: noise-floor, seeds, miss-rate, reproducibility
+## C03 — Eval-only tail weight-averaging (tail-EMA) compresses the bin but is seed-fragile near the floor
 
-## C10: Novel != better on a saturated target
-- **Statement**: When the search was constrained to genuinely novel operators (banning known methods
-  and hyperparameter tweaks), the frontier got *worse*, and the best new operator merely matched a
-  carefully re-validated plain-Muon baseline. The mechanism is that the levers that actually move this
-  benchmark add structure *around* the orthogonalization core, whereas novel operators were forced to
-  modify *inside* that core and so traded away the one ingredient that makes Muon work. Novelty was
-  real; measurable improvement was not.
-- **Status**: supported
-- **Falsification criteria**: A novel operator (passing the novelty check) reaching below the
-  re-validated plain-Muon baseline would refute "novel != better" here.
-- **Proof**: [E08]
-- **Evidence basis**: §4, §10. Both agents' novelty-wave best fell to 3375 (`cc_novelty`/`codex_novelty`);
-  the re-validated plain-Muon baseline `baseline-muon-s1` also gave 3375 (3.27734); the top novel
-  operator (trust-region-muon) also bottomed at 3375. Spectral-Momentum with shallow NS drifted to
-  3.71 @ step 2000 and was early-killed; `scaphd-v1` was cancelled for a code-location rule violation.
-- **Interpretation**: The frontier adds around the NS core (row-norm, SOAP-on-subset); novel operators
-  that touch NS degrade orthogonalization; an infrastructure compliance rule also depressed the
-  novelty frontier.
-- **Dependencies**: C05
-- **Tags**: novelty, negative-result, Newton-Schulz, saturated-benchmark
+**Statement.** Maintaining an exponential moving average of the weights during the late phase and
+swapping it in *only for validation* lets the loss cross the target a few steps earlier, because it
+averages away late-training weight noise rather than changing the optimization trajectory. It is the
+single most load-bearing component of the v1 stack — but its margin is small relative to seed
+variance, so below ~3195 steps the crossing becomes seed-fragile (some seeds miss).
 
-## C11: Instability is predictable and early-killable (three divergence modes)
-- **Statement**: Inspecting runs that ended far above target revealed that divergence is not random:
-  it falls into three recurring signatures — a slow, monotone crawl from a mis-scaled preconditioner;
-  a clean descent followed by a mid-training spike and only partial recovery from a pathological
-  hyperparameter; and a never-learning NaN/Inf trajectory from a bad interaction between normalization
-  and warmup. All three are visible early in training, which is why the search discipline was to kill
-  bad trajectories early rather than let them finish; most non-completions were cancellations, not
-  crashes.
-- **Status**: supported
-- **Falsification criteria**: If divergences were random NaNs not predictable early from preconditioner
-  scale / HP magnitude / warmup interaction, the taxonomy would not hold.
-- **Proof**: [E09]
-- **Evidence basis**: §11. Mode A `v17-klshampoo` descends 7.17 @ 375 -> 5.49 final (no spike); Mode B
-  `armv2-eps1e6-a10` goes 4.36 @ 375 -> 5.21 @ 750 then limps back; Mode C `adamwwarm250-normuon`
-  plateaus ~6.8 with 9 NaN/Inf lines. Status mix across the export: 73 failed vs 747 canceled (of
-  ~10,485). All three signatures are detectable by step ~750.
-- **Interpretation**: The dangerous instabilities are consequences of (a) wrong preconditioner scale,
-  (b) pathological HP magnitudes, (c) normalization x warmup interactions — all early-detectable.
-- **Dependencies**: none
-- **Tags**: stability, divergence, early-kill, taxonomy
+**Conditions.** Eval-only averaging (weights restored under `torch.no_grad()` after eval), decay
+~0.99, start ~step 2000, on the v1 Muon2F/Adam-mini stack. The fragility boundary (~3195) is
+specific to this stack and noise floor.
+**Status.** Supported; bounded by seed fragility.
+**Falsification criteria.** Removing tail-EMA changing validation within ±1× noise floor would
+refute its load-bearing status; conversely, a reproduced multi-seed crossing well below 3195 with
+the same EMA settings would refute the fragility bound.
+**Proof.** E03.
+**Evidence basis.** v1 pruning at step 3195: `noTailEMA` is the largest single positive delta.
+**Dependencies.** C02.
+**Sources.**
+- `noTailEMA` removal worsens validation by `+0.00251` (`mean 3.28158`), the largest single delta ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:112-114` «"delta": 0.0025100000000000122, "label": "noTailEMA", "mean": 3.28158» [result]
+- "Tail EMA evaluation starting at step 2000 (`beta=0.99`)." ← `record_configs/20260515_codex_v1_v12iso_3205/README.md:10` [input]
 
-## C12: Two opposite search economies reach the same ceiling
-- **Statement**: The two agents reached essentially the same frontier by opposite strategies: one ran
-  a wide, shallow search over many distinct recipe ideas with relatively few runs each, while the
-  other ran a narrow, deep search of huge hyperparameter sweeps around a small number of backbones.
-  The wide-and-shallow agent used far fewer total runs yet explored far more distinct recipes, and its
-  breadth located the stronger lever earlier; the deep agent over-invested its biggest early sweep in
-  a weaker variant. Both routes are valid paths to the same ceiling but imply very different compute
-  bills.
-- **Status**: supported
-- **Falsification criteria**: If run-count and recipe-diversity were equal across agents, or if only
-  one style reached the frontier, the "two economies, same ceiling" claim would fail.
-- **Proof**: [E10]
-- **Evidence basis**: §7, §12, §19. Claude 2,204 runs vs Codex 8,224 (~3.7x) to the same ~2880-2885;
-  Claude reached recipe v140 vs Codex v48. codex_v2 = 2,729 runs over 23 families vs cc_v2 = 459 runs
-  over 41 families. In v1's first ~120 launch-ordered runs, Codex committed 106 to a single NorMuon
-  sweep (reaching 3150) while Claude spanned ~14 families and located MuonEq (reaching 3000).
-- **Interpretation**: Breadth-first located the stronger lever (MuonEq, the +11-sigma gain);
-  depth-first over-invested in the weaker sibling (NorMuon, later found to be LOO-redundant); both
-  converged on the Muon-family neighborhood.
-- **Dependencies**: none
-- **Tags**: search-economy, sample-efficiency, agent-comparison
+---
 
-## C13: A leave-one-out ablation shows a long-tailed contribution distribution
-- **Statement**: Taking the full frontier recipe and removing exactly one component at a time (with
-  multiple seeds each) produced a clean ranking of how much every piece is worth. The distribution is
-  strongly long-tailed rather than uniform: one component is outright critical (without it the recipe
-  fails on every seed), one is large, a handful are mid-sized, and several contribute essentially
-  nothing because a stronger version of the same mechanism is already present. So a frontier recipe
-  carries a few load-bearing pieces plus a tail of dead weight.
-- **Status**: supported
-- **Falsification criteria**: If every component contributed roughly equally (uniform LOO deltas), or
-  if removing the cooldown left the recipe hitting the target, the long-tail claim would be refuted.
-- **Proof**: [E11]
-- **Evidence basis**: §14; `agents/cc_v3/runs/*loo{01..15}_no_*` (629 LOO runs; clean 4-seed subset).
-  Full recipe ~2925-2930 seed-verified. Median step when each component is removed: `pow_cooldown`
-  MISS (0/4 hit, critical); `soap_mlp` 3010 (~+85); `adamw_betas` 2970 (~+45); `uwfloor`/`attn_soap`
-  ~2960 (~+35); `aurora`/`mu_sched` ~2945 (~+20); `contra`/`muwarmup` ~2940 (~+15); `normuon`/`cgi`/
-  `softmuon` ~2930 (~0). Shape: ~2 essential + ~5 useful + ~4 dead.
-- **Interpretation**: Schedule shape (neutral at the baseline) becomes load-bearing once the rest of
-  the recipe saturates — a higher-order case of backbone-dependence; redundant levers are not pruned.
-- **Dependencies**: C01, C03, C06
-- **Tags**: ablation, leave-one-out, ranking, long-tail
+## C04 — Scheduling the matrix momentum (mu-schedule) is a transferable, load-bearing schedule lever across waves
 
-## C14: The frontier recipe is a temporal curriculum (explore early, exploit late)
-- **Statement**: Decoding the record recipe shows it is not a static optimizer but a *time-scheduled
-  curriculum* in which different levers switch on and off over the course of training. An early
-  exploration phase deliberately decorrelates the update from the greedy gradient and forces trust in
-  the second-order preconditioner; a middle phase hands control to the hard orthogonalization and a
-  data-driven trust gate; and an endgame phase softens the orthogonalization and steepens the cooldown
-  to settle into the minimum. This time schedule is exactly the engineered cause of the lose-early/
-  win-late crossover, with the explore-phase levers annealing off right at the measured crossover.
-- **Status**: supported
-- **Falsification criteria**: If the ramp constants did not bracket the measured crossover step
-  (~1750), or if removing the time-scheduling left the curve unchanged, the curriculum claim would fail.
-- **Proof**: [E12]
-- **Evidence basis**: §17. Explore (0-~1625): mu warmup 0.85->0.95 (0-300), Contra-Muon -0.2->0 by
-  step 1920, attn trust-floor 0.45 fading by 1625. Soften (2400-2900): soft-Muon blends 0->0.80,
-  convex power-cooldown steepens, mu cools 0.95->0.85. The crossover from §8 is at ~step 1750.
-- **Interpretation**: The agents learned to schedule exploration->exploitation in optimizer-space, not
-  just LR-space; `trust_gate` is the cheap correctness check that makes amortized (stale-basis) SOAP
-  safe. Soft-Muon's endgame-softening mechanism is partly `[HYP]`.
-- **Dependencies**: C08
-- **Tags**: temporal-curriculum, explore-exploit, Contra-Muon, soft-Muon, trust-gate
+**Statement.** Warming the Muon momentum coefficient up early and cooling it down over the final
+steps (the "mu-schedule") improves the bin in more than one independently-built stack, indicating
+the gain attaches to the *training-dynamics regime* (early exploration vs late settling) rather than
+to any one optimizer recipe. It is a meaningful contributor in the v1 stack and the **single
+largest** contributor in the v2 stack.
 
-## C15: The cross-agent v3 records are byte-identical — shared lineage, not independent discovery
-- **Statement**: A direct diff of the two agents' final-wave record recipes shows they are
-  component-for-component identical, down to exotic magic constants and byte-identical helper
-  functions, differing only in trivial timing offsets. So the apparent "independent convergence" at
-  the frontier is really a shared public-PR pool that both agents drew from and pushed back to — a
-  correction to an earlier reading that treated the convergence as evidence of real problem structure.
-  The genuine independent-exploration signal is in the first wave, where the agents made different
-  first moves and landed apart before the shared pool pulled them together.
-- **Status**: supported (corrects an earlier overclaim that the convergence evidenced real structure)
-- **Falsification criteria**: If the two v3 records differed in core operators/constants (not just
-  timing offsets), independent rediscovery would be back on the table.
-- **Proof**: [E13]
-- **Evidence basis**: §18 side-by-side table: FINAL_LR_POWER 1.2/1.2, MUON_LR 0.0375/0.0375,
-  CONTRA_MUON_COEFF -0.2/-0.2, SOFT_MUON_P 0.1/0.1, SOAP_PARAM_MODE mlp_plus_v/mlp_plus_v,
-  ATTN_EARLY_TRUST_FLOOR 0.45/0.45; only timing offsets differ (e.g. CONTRA end 1920 vs 1930). The
-  functions `trust_gate`, `soft_via_newtonschulz5`, `soap_update_preconditioner` are the same code. In
-  v1 the agents diverged: cc operator-first to 3000 vs codex schedule-first to 3150.
-- **Interpretation**: The defensible "real structure" evidence is (a) v1 independent divergence still
-  landing in the Muon-family neighborhood and (b) the LOO showing components are individually
-  load-bearing — not the v3 identity, which is mostly a copy.
-- **Dependencies**: C12
-- **Tags**: cross-agent, shared-lineage, replication, correction
+**Conditions.** Muon-family matrix optimizer; `0.85 → 0.95` warmup with a short `0.95 → 0.85` final
+cooldown. Demonstrated in v1 and v2; not isolated as a standalone universal law.
+**Status.** Supported (corroborated across two waves).
+**Falsification criteria.** A leave-one-out removal of the mu-schedule changing validation within
+±1× noise floor in *both* waves would refute its load-bearing status.
+**Proof.** E04.
+**Evidence basis.** v1 pruning (`noMuSched` mid-table positive delta) and v2 pruning (`noMuSched`
+the largest delta) both keep it.
+**Dependencies.** C01.
+**Sources.**
+- v2: `noMuSched` removal worsens validation by `+0.00459` (`mean 3.28344`), the largest v2 delta ← `record_configs/20260515_codex_v2_legal_3037/pruning_data.json:96-98` «"delta": 0.004590000000000316, "label": "noMuSched", "mean": 3.28344» [result]
+- v1: `noMuSched` removal worsens validation by `+0.00091` (`mean 3.27998`) ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:96-98` «"delta": 0.0009100000000001884, "label": "noMuSched", "mean": 3.27998» [result]
 
-## C16: The results have sharp generalization limits
-- **Statement**: The frontier is benchmark-specific in several graded ways. It buys fewer *steps* at
-  the cost of more *compute per step*, so on a wall-clock- or FLOP-budgeted run the expensive part of
-  the recipe can be a net loss. It is overfit to the exact target threshold — the runs are tuned to
-  cross that specific number as early as possible and then stop, not to minimize loss generally — so
-  the metric does not generalize to other thresholds. The "orthogonalization beats heavier
-  second-order" conclusion is bound to this model scale. And the headline records are a lucky tail over
-  a miss-prone floor. The transferable parts are the cheap mechanisms; the expensive machinery, the
-  exact constants, and the single-number records are not.
-- **Status**: supported
-- **Falsification criteria**: If the v3 recipe were also fastest in wall-clock, generalized to other
-  loss thresholds, or held at >=350M scale, the limits would not apply.
-- **Proof**: [E07, E14]
-- **Evidence basis**: §20. Median `step_avg_ms` rose from 157.5 (baseline) to 188 (cc_v3, ~+20%) for
-  ~17% fewer steps; v3 hitters cluster `min_val_loss` ~3.2765-3.2773 (a median ~2.6-3.3e-3 below 3.28,
-  ~17% clear by <0.001); cc_v1 `ideas.md` #8 flags SOAP "may win at >=350M"; the architecture, batch,
-  and data are fixed by rule. The cheap v1/v2 levers (MuonEq, train-steps trim, per-role LR/WD,
-  mu-sched) are actually *faster* per step (~147 ms) and should transfer.
-- **Interpretation**: Transferable = orthogonalize-then-row-normalize -> higher LR; per-role LR/WD/
-  schedule; horizon trim; explore->exploit scheduling. Non-transferable = exact constants, subset-SOAP
-  machinery, the 3.28-specific stop, single-number records.
-- **Dependencies**: C04, C05, C09
-- **Tags**: generalization, limits, wallclock-tax, scale-bound, overfit
+---
 
-## C17: Seeds needed scale inversely with the squared effect size
-- **Statement**: From the seed-reverify data one can read off how many seeds are needed to call a step
-  improvement significant, and the answer scales the way a standard two-sample test predicts: a large
-  gain needs only a seed or two, a strong single lever needs a few, a near-frontier tie needs many,
-  and a sub-handful-of-steps difference is below the floor entirely. This explains the agents'
-  observed protocol — a few-seed reproducer for the early, larger levers and much larger seed groups
-  for resolving frontier ties — as a seed budget correctly matched to the effect size at each stage.
-  Below the floor, the quantized step metric is the wrong tool and a continuous loss metric should be
-  used instead.
-- **Status**: supported
-- **Falsification criteria**: If a 10-step difference were reliably resolved with 3 seeds (contra the
-  ~16 the formula predicts), or the floor sigma were far from ~15 steps, the rule would be miscalibrated.
-- **Proof**: [E07]
-- **Evidence basis**: §21. With frontier step-std sigma ~15 (dense configs: `v3opus_v114` 14.1,
-  `v3cdx_nosphere` 21.4), n ~ 8*sigma^2/Delta^2 gives ~1 seed for a 200-step gain, 2-3 for 50 steps,
-  ~16 for 10 steps, impractical below ~5 steps. The marginal v1 lever embed-init (-0.00091 ~ 0.9 sigma)
-  needed all 3 seeds and barely cleared; the `seed_reverify` wave ran 8-16 seeds per group for frontier
-  ties.
-- **Interpretation**: Below ~15 steps `step_to_3_28` is too quantized — rank on `min_val_loss`
-  (continuous, std ~0.001) instead; match the seed budget to the effect size.
-- **Dependencies**: C09
-- **Tags**: seeds, significance, noise-floor, methodology
+## C05 — Role-specific LR/WD splitting of the Muon matrix groups improves the tail at fixed average budget
+
+**Statement.** Splitting the Muon learning rate and weight decay by tensor *role* (q, k, v,
+attn.proj, mlp.fc, mlp.proj) — while holding the parameter-weighted averages at the body-wide
+values — lowers the bin, because different roles want different effective step/shrinkage scales that
+a single body-wide value cannot give. The role-LR split is a top-tier contributor in the v2 stack;
+the role-WD split is real but smaller.
+
+**Conditions.** v2 legal stack, base Muon LR `0.045` / base WD `0.030`, the six-role split. The
+averages are held fixed, so the gain is from *reallocation*, not a net LR/WD change.
+**Status.** Supported.
+**Falsification criteria.** A role-split whose multipliers are reset to the body-wide value (recovering
+the average) matching the split's bin would refute the reallocation mechanism.
+**Proof.** E05.
+**Evidence basis.** v2 pruning: `noRoleLR` is the 4th-largest delta; `noRoleWD` is small but kept.
+**Dependencies.** C04.
+**Sources.**
+- `noRoleLR` removal worsens validation by `+0.00292` (`mean 3.28177`) ← `record_configs/20260515_codex_v2_legal_3037/pruning_data.json:72-74` «"delta": 0.0029200000000000337, "label": "noRoleLR", "mean": 3.28177» [result]
+- "Role-specific Muon LR multipliers: q/k `0.61875`, v `0.625`, attn.proj `0.6375`, mlp.fc `1.0125`, mlp.proj `0.9875` of base LR `0.045`." ← `record_configs/20260515_codex_v2_legal_3037/README.md:8` [input]
+- role LR multipliers in the recipe ← `src/execution/v2_legal_v12opt_recipe_ts3037.py:320-323` «_ATTN_Q_LR_MULT = 0.61875 … _ATTN_PROJ_LR_MULT = 0.63750» [input]
+
+---
+
+## C06 — A softened Lookahead slow-pull on the matrix weights damps late jitter and contributes a real but modest gain
+
+**Statement.** A Lookahead variant that interpolates the live matrix weights toward a slow copy
+*without resetting the fast weights to the slow copy* damps late-training matrix-weight jitter and
+lowers the bin. Removing it costs a contribution comparable to the Polar-Express NS coefficients —
+real, but an order of magnitude below the schedule/preconditioner levers — so it is a refinement,
+not a primary driver.
+
+**Conditions.** v2 legal stack; pull ramped in via a smoothstep from step 2450
+(`ALPHA=0.35, PULL=0.15, INTERVAL=25, RAMP=150`). The "no fast-weight reset" detail distinguishes it
+from standard Lookahead.
+**Status.** Supported (modest effect).
+**Falsification criteria.** Removing the lookahead changing validation within ±1× noise floor, or a
+standard reset-Lookahead matching it, would weaken the claim.
+**Proof.** E06.
+**Evidence basis.** v2 pruning: `noLookahead` ties `noPolarExpress` at `+0.00117`.
+**Dependencies.** C05.
+**Sources.**
+- `noLookahead` removal worsens validation by `+0.00117` (`mean 3.28002`) ← `record_configs/20260515_codex_v2_legal_3037/pruning_data.json:64-66` «"delta": 0.0011700000000001154, "label": "noLookahead", "mean": 3.28002» [result]
+- lookahead params ← `src/execution/v2_legal_v12opt_recipe_ts3037.py:393-397` «_LOOKAHEAD_START_STEP = 2450 … _LOOKAHEAD_ALPHA = 0.35 … _LOOKAHEAD_PULL = 0.15 … _LOOKAHEAD_RAMP_STEPS = 150» [input]
+
+---
+
+## C07 — In the public-frontier (v3) stack, SOAP preconditioning and outward-radial dampening are the load-bearing components
+
+**Statement.** When a deep multi-lever public-PR stack (Soft-Muon + Contra + radial + SOAP + LACV +
+power-law cooldown) is compressed, the dominant contributions come from *preconditioning* (SOAP,
+extended to MLP+V) and from *outward-radial update dampening* — removing SOAP is the single largest
+degradation, and removing the radial control is the second. The many late micro-levers around them
+contribute far less. The benefit of preconditioning + radial control therefore concentrates the
+stack's value, mirroring the v1 pattern (preconditioning + averaging dominate).
+
+**Conditions.** v3 nosphere stack at step 2949; SOAP in `mlp_plus_v` mode with V-blend 0.95; radial
+outward scale 0.45 with a tail guard. Demonstrated on the public-PR lineage, not isolated from it.
+**Status.** Supported.
+**Falsification criteria.** A leave-one-out removal of SOAP or radial control changing validation
+within ±1× noise floor would refute their load-bearing status.
+**Proof.** E07.
+**Evidence basis.** v3 W258 leave-one-out at step 2949: `nosoap` and `noradial` are the two largest
+positive deltas; `novsoap` (V-SOAP only) is third.
+**Dependencies.** C01, C08.
+**Sources.**
+- `nosoap` removal worsens validation by `+0.00528` (`mean 3.28370`), the largest v3 delta ← `record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json:64-66` «"delta": 0.005283124999999611, "label": "nosoap", "mean": 3.2836999999999996» [result]
+- `noradial` removal worsens validation by `+0.00374` (`mean 3.28216`), the 2nd-largest delta ← `record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json:56-58` «"delta": 0.0037431249999997362, "label": "noradial", "mean": 3.2821599999999997» [result]
+
+---
+
+## C08 — Leave-one-out pruning reveals that late stacked micro-levers contribute within noise and are removable, and that co-located mechanisms need not compose
+
+**Statement.** A mandatory leave-one-out pruning round repeatedly finds that, once a deep stack is
+built, several late-added micro-levers contribute within ±noise (or slightly *negative*) and can be
+dropped at no cost — the "nosphere" result drops the sphere-lookahead pull to zero while preserving
+the step-2940 boundary. Moreover two mechanisms that target the same locus need not compose: removing
+the sphere *pull* helps, and a separate variant removing the tangent *gate* is independently valid,
+but removing *both* loses the boundary. Pruning is thus a load-bearing epistemic step, not bookkeeping.
+
+**Conditions.** Applied to the v1 (step 3195) and v3 (step 2949) stacks; "co-located non-composition"
+shown for the v3 sphere pull vs tangent gate. The specific droppable set is stack-specific.
+**Status.** Supported.
+**Falsification criteria.** If every leave-one-out removal worsened validation by ≥ 1× noise floor
+(no droppable micro-levers), or if the two sphere removals composed without losing the boundary, the
+claim would be refuted.
+**Proof.** E08.
+**Evidence basis.** v1 pruning: `noResPulse`, `noMomRefresh`, `noBeta2Thaw` have ≤ 0 deltas (removal
+does not hurt). v3 pruning: the `nosphere` baseline already *is* the pruned stack; the combined
+`nosphere-notangent` removal carries a positive (degrading) delta.
+**Dependencies.** —
+**Sources.**
+- v1 `noResPulse` delta `-0.00007` (removal does not worsen) ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:24-26` «"delta": -7.00000000000145e-05, "label": "noResPulse"» [result]
+- v3 `nosphere-notangent` (combined removal) degrades by `+0.00070` ← `record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json:80-82` «"delta": 0.0007014583333342372, "label": "nosphere-notangent", "mean": 3.2791183333333342» [result]
+- "the sphere-lookahead pull is disabled (`SPHERE_LOOKAHEAD_PULL=0.0`), hence the submitted `nosphere` stack." ← `record_configs/20260515_codex_v3_nosphere_2949/README.md:12` [input]
+- the prune in code (pull 0.0, tangent gate retained) ← `src/execution/v3_nosphere_recipe_ts3020.py:144,156` «SPHERE_LOOKAHEAD_RADIAL_PARAM = "q,k" … SPHERE_LOOKAHEAD_PULL = 0.0» [input]
+
+---
+
+## C09 — Individually-helpful levers do not stack additively near the noise floor; a package can wash out while one isolated lever carries the gain
+
+**Statement.** Combining several levers that each help in isolation can *fail* as a package: in the
+v1 wave the full "v12" multi-lever package missed every stop it was tried at, while the **isolated**
+mu-schedule lever — the same wave, one lever — reproduced the frontier. Near the noise floor, lever
+effects are not additive; interactions can cancel, so isolating a single lever can beat stacking
+many. This is a direct counter-instance to the orthogonal-and-additive assumption (gap G2).
+
+**Conditions.** v1 wave, the "v12" lever set (attention-LR, pre-NS row-L2, embed-init, Contra)
+packaged vs the mu-schedule isolated. Shown at the compressed horizon near the seed-noise floor.
+**Status.** Supported (single decisive instance + corroborated by the cross-wave pruning pattern in C08).
+**Falsification criteria.** If the full v12 package had reproduced a bin at or below the isolated
+mu-schedule's bin, the non-additivity claim would be refuted.
+**Proof.** E09.
+**Evidence basis.** v1 `THREAD.md`: full/simplified `v12pack` variants missed all stops; isolated
+`v12iso-musched` hit and reproduced. The submitted v1 record is named the "v12iso/MuSched" stack.
+**Dependencies.** C04, C08.
+**Sources.**
+- "This is the **v12iso/MuSched** codex stack." ← `record_configs/20260515_codex_v1_v12iso_3205/README.md:5` [input]
+- v1 package-vs-isolate finding (full v12 package missed all stops; isolated mu-schedule hit) ← `v1/codex/scratchpad/THREAD.md:2202,2208` [pending: THREAD line read by extraction subagent, not re-opened this compile]
+
+---
+
+## C10 — An un-audited forward-path precision change can masquerade as an optimizer gain; only provenance + byte-identical compliance lets a speedrun gain be attributed correctly
+
+**Statement.** A numerical change inside the model's forward path (here, a `RMSNorm.forward` that
+upcasts via `norm(x.float())` and routes q/k through the same helper, inherited from a *different
+agent's* "v12" stack) materially produced the apparent sub-3000-step advantage — not the optimizer.
+Once flagged as a benchmark-rule (architecture) violation, all v12-derived results had to be
+quarantined and the frontier rebuilt on a byte-identical-compliant base, which regressed the
+submittable bin from a single-seed crossing at 2963 to 3037. The lesson: a speedrun gain is only
+attributable to the optimizer when the forward path is provably unchanged; provenance + a
+compliance gate are prerequisites for any cross-stack comparison.
+
+**Conditions.** v2 wave; the inherited parent is the cc/Claude agent's "v12" stack (cross-agent
+provenance). The violation is a bf16 forward-path precision change, not an optimizer change.
+**Status.** Supported (a decisive epistemic event, recorded with attribution).
+**Falsification criteria.** If the compliant rebuild (baseline `RMSNorm.forward`) had reached the
+same sub-3000 bins as the tainted base, the forward-path change would not have been the source of the
+advantage and the claim would be refuted.
+**Proof.** E10.
+**Evidence basis.** The compliant `legal_v12opt` recipe uses the baseline RMSNorm form; the v2 record
+is the legal frontier at 3037; the single-seed crossing reached 2963 only on the search path.
+**Dependencies.** C04, C05.
+**Sources.**
+- "the user then flagged its `RMSNorm.forward` / q-k-norm as a forward-path precision change that violates the no-architecture-change rule, and Codex **quarantined** every v12-derived result" ← `README.md:67-69` [input]
+- "The *submittable* v2 frontier (**C04**, `legal_v12opt` @ 3037) is rebuilt on a byte-identical-compliant base." ← `README.md:70-71` [input]
+- "legal frontier bin 3037 (single-seed crossing at 2963)" ← `README.md:18` [input]
+- compliant baseline RMSNorm.forward in the recipe ← `src/execution/v2_legal_v12opt_recipe_ts3037.py:65` «return F.rms_norm(x, (x.size(-1),), weight=self.gains.type_as(x))» [input]
+- the handed parent's provenance ← `v2/codex/goal.md:8` «**Best: 3025 steps** — cc-agent's v12 stack» [input]
+
+---
+
+## C11 — Under a hard novelty constraint plus isolation, the noise-dominated regime yields a negative result: no derived novel mechanism survived both reproduction and the 2× noise-floor gate
+
+**Statement.** Requiring every submission to contain a non-published mechanism, while forbidding the
+search from porting-and-tuning published methods, produced no promotable result on this benchmark.
+The best *reproduced* novel crossing was a 25-step gain — below the 2× (≈100-step) noise-floor gate —
+and the two best *apparent* crossings failed exact-seed reproduction. The combination of a
+noise-dominated regime and a constraint that pushes the search off the methods most likely to work
+makes a clean negative result the honest outcome. A clean negative on a hard constraint is itself a
+contribution.
+
+**Conditions.** The hard-isolated novelty wave (no access to other worktrees); novelty enforced by a
+pre-run arXiv existence-check subagent and a refined "materially non-additive interaction" bar.
+**Status.** Supported (faithful negative result).
+**Falsification criteria.** A novel mechanism reaching a ≥ 2×-noise-floor bin improvement reproduced
+over ≥ 2 seeds would refute the negative result.
+**Proof.** E11.
+**Evidence basis.** Novelty `plan.md` "Current state": the single reproducible sub-3500 crossing is
+25 steps (below the gate); the two best 3375 crossings failed reproduction. No promotable submission.
+**Dependencies.** C12.
+**Sources.**
+- "Reproducible but not promotable: `vfg001_gain080_lr026_t3475` reached `3.27960` at 3475 … and `3.27962` on seed 1234. This is only a 25-step grid improvement, below the 2x noise-floor gate" ← `novelty/codex/plan.md:13-15` [result]
+- "Failed reproduction: `ngi001_n0875_m1125_t3450` reached the target at observed step 3375 on one seed, but exact repeat `9003` missed 3375 (`3.28149`)" ← `novelty/codex/plan.md:18-19` [result]
+- "every submitted recipe must contain at least one idea that has not been published on arXiv" ← `novelty/codex/goal.md:11-12` [input]
+- "a **negative result** (no promotable submission)" ← `README.md:17` [input]
+
+---
+
+## C12 — Single-seed sub-frontier crossings systematically fail cohort significance; the submittable bin sits well above the single-seed frontier
+
+**Statement.** On this benchmark a single-seed crossing is a hypothesis, not a result: seed variance
+is comparable to the entire sub-threshold margin, so a fixed-step cohort z-test
+`(3.28 − μ)·√n ≥ 0.004` repeatedly demotes the lowest single-seed crossings and the submittable bin
+lands tens of steps higher. v2's single-seed crossing at 2963 became a submittable 3037; v3's viable
+bin (~2940) sits above its lowest observed crossings. The discipline that converts a seed-lottery win
+into a defensible record is the cohort gate, not the lucky seed.
+
+**Conditions.** All four waves; `σ ≈ 0.0013`, n=16 seed cohorts for the submitted records, the
+`(3.28 − μ)·√n ≥ 0.004` bar (p < 0.001).
+**Status.** Supported (governs every submission).
+**Falsification criteria.** A single-seed sub-frontier crossing that, re-run as an n≥8 cohort at the
+same step, cleared the `0.004` bar would refute the systematic gap.
+**Proof.** E12.
+**Evidence basis.** All three records report n=16 cohorts with explicit scores; the v2 single-seed
+2963 vs submittable 3037 gap; the noise floor ≈ 50 steps vs the ~0.0011 sub-threshold margin.
+**Dependencies.** —
+**Sources.**
+- v2 cohort: "n = 16 / mean val loss = 3.27853000 / (3.28 - mu) * sqrt(n) = 0.00588000 … `p < 0.001`" ← `record_configs/20260515_codex_v2_legal_3037/README.md:21-26` [result]
+- "legal frontier bin 3037 (single-seed crossing at 2963)" ← `README.md:18` [input]
+- noise floor "`step_to_target` ≈ 50 steps … `final_val_loss` mean ≈ 0.001" ← `v1/codex/AGENTS.md:161-162` [input]
+- v3 cohort score `0.00455500` at the submitted bin 2949 ← `record_configs/20260515_codex_v3_nosphere_2949/README.md:24` [result]
