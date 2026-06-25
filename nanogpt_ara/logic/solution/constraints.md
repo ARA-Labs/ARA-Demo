@@ -1,57 +1,55 @@
-# Constraints
+# Constraints, assumptions and limitations
 
-> **t=0 FRAME.** The boundary conditions, assumptions, and rules in force at the start of the
-> experiment — all time-invariant (the benchmark and lawful core are fixed for the whole run).
-> No discovered limitation of any recipe appears here; method-specific limitations crystallize
-> later through the replay.
+## Binding benchmark rules (the fixed contract)
 
-## Boundary conditions (frozen benchmark — lawful core rule 1 + "Hard rules — benchmark")
-- **Architecture is fixed**: same model as `train_gpt_simple.py` — no architecture changes (no
-  value embeddings, no skip-lambda gymnastics, no attention-pattern changes). See
-  `src/environment.md` for the frozen architecture.
-- **Data and batch are fixed**: same dataset (FineWeb 10B shards) and same batch size
-  (524288 tokens/step); no data changes, no batch-size changes.
-- **One forward-backward per step**: no gradient-accumulation tricks, no multi-step inner loops.
-  The step is the unit `step_to_3.28` counts.
-- **Success threshold**: a run must reach **val loss ≤ 3.28** to count; a run that does not is a
-  failed candidate, never a "look how few steps" win.
-- **Tunable surface only**: modifications are confined to the `Optimization` and
-  `Init & Optim Hyperparams` sections. Init scaling and optimizer-schedule changes are fair
-  game; the optimizer itself (any), per-parameter-group HPs, schedules, and init scale are
-  in-scope.
-- **Hardcoded HPs**: any *submitted* result hardcodes its hyperparameters in the script — no
-  CLI args. Diagnostic instrumentation of the training loop is allowed, but submitted runs use
-  the canonical script.
-- **Diagnostics are quarantined**: experimental code that breaks any benchmark rule lives in
-  `scratchpad/variants/` for diagnostics only and is never submitted as a result.
+These surfaces of `train_gpt_simple.py` are fixed and must not be changed by any submitted run.
+A change to any of them is out of scope and (for the forward path) a disqualifying architecture
+violation (see C05). Source: the agent's own `existing_results_summary.md` "Baseline Constants to
+Preserve" plus the goal.md scope sections.
 
-## Lawful-core constraints on the search process (always law — AGENTS.md "Lawful core")
-- **Noise-floor gate** (rule 2): no candidate is "passing" without ≥ 2 seeds AND beating the
-  prior best by ≥ 2× the noise floor.
-- **Stuck detector** (rule 3): at 30 consecutive runs in one family without a `step_to_target`
-  improvement, the family is ruled out and the agent pivots (a "noise floor or pivot?" check
-  fires earlier, at 15).
-- **Slug-stack ≤ 3 modifiers** (rule 4): a 4th modifier defines a new family — rename, reset
-  the stuck-counter, fresh picklist entry. The family is the slug prefix, not the full string.
-- **Two-seed reproduction** (rule 5): required before any new "best" is recognized.
-- **Mandatory pruning before submission** (rule 6): a pre-submission pruning round is required;
-  a modifier is dropped only on a 2-seed mean inside ±0.5× the noise floor (single-seed pruning
-  is itself overfitting), and the post-pruning recipe must re-clear the noise-floor gate before
-  submission.
+- **Data / batching (fixed).** Training shards `data/fineweb10B/fineweb_train_*.bin`; validation
+  shards `fineweb_val_*.bin`; `val_tokens = 20 * 524288`; `batch_size = 8 * 64 * 1024`; `mbs = 64`;
+  sequence length 1024.
+- **Model (fixed).** `GPT(vocab_size=50304, num_layers=12, model_dim=768)`; attention `head_dim=128`,
+  causal, `scale=0.12`; MLP hidden `4*dim`, squared ReLU; final logit soft cap
+  `15 * logits * (logits.square() + 15**2).rsqrt()`; RMSNorm with learned gains; Linear `bias=True`;
+  embedding `.bfloat16()`; half-truncated RoPE.
+- **Forward path (fixed, byte-for-byte).** `GPT.forward`, `RMSNorm.forward`, attention q/k
+  normalization, logits, loss/objective. Even a mathematically-equivalent rewrite is invalid because
+  it can change bf16 precision behavior (C05).
+- **Init partition (fixed).** Zero every parameter whose name contains `"proj"` before optimizer
+  creation; aux AdamW owns `embed.weight`, `proj.weight` and all `ndim < 2`; the matrix optimizer
+  owns `[p for p in blocks.parameters() if p.ndim >= 2]`.
+- **Step semantics (fixed).** Exactly one forward-backward per step; no multi-step inner loops, grad
+  accumulation tricks, batch-size or data changes.
+- **Success criterion (fixed).** `val_loss <= 3.28`, observed on the `step % 125 == 0` grid plus the
+  explicit final validation; the submitted step is the bin.
 
-## Assumptions (from goal.md)
-- **Wallclock-irrelevant**: methods slow per step are acceptable if they cut the step count
-  (full-matrix preconditioners like Shampoo / SOAP are fair game).
-- **Compute**: 1 node, 8×{H100,H200}, ~15 min per run, one run at a time, no calendar deadline;
-  effectively unlimited wall-clock.
-- **Variance is real**: nothing under ~50–100 steps is treated as signal until reproduced.
-- **Paper-default LRs are untrustworthy here**: e.g. AdamW LR at this scale wants ~4–8e-3, not
-  the canonical 3e-4 — HP sweeps are first-class.
+## What is in scope (the only allowed degrees of freedom)
 
-## Known limitations
-- _None recorded at t=0._ The agent has run no experiments; method-specific limitations,
-  failure modes, and ruled-out families crystallize later through the replay.
+Optimizer changes (any), per-parameter-group HPs, schedules (warmup/decay/WSD/cosine/trapezoid/
+schedule-free), init scale and per-module init differences, LR/WD/β/ε/momentum. Diagnostic
+instrumentation is allowed but submitted runs use the canonical script with HPs hardcoded.
 
-## Out of scope (from goal.md)
-- Architecture changes; batch-size or data changes; multi-step inner loops / grad-accumulation
-  tricks; anything that violates the benchmark hard rules.
+## Assumptions carried by the claims
+
+- The noise floor (~50 steps / ~0.001 val_loss) is stationary across the 3000–3500 region (A3).
+- `sigma = 0.0013` is the per-seed val_loss std used in the significance z-test (A4).
+- Seed control fixes the validation batch so cross-seed variation is init/optimizer-state only (A2).
+
+## Limitations of this artifact
+
+- **L1 — Single-agent slice.** Only Codex's own runs are included. Cross-agent touchpoints (cc v12,
+  opus v15/v48) are recorded as attributed provenance, not as Codex results. The blocklisted v2/v3
+  `goal.md` frontier tables (which headline other agents' bins) are deliberately excluded.
+- **L2 — Leave-one-out is one-at-a-time.** Pruning deltas (C03, C04, C06) do not capture
+  super-additive interactions among components removed together; the one documented composition test
+  (v3 `nosphere-notangent`) shows the two sphere removals do not compose.
+- **L3 — Per-component ablations use small cohorts.** Several v3 LOO ablations are n=3; only the
+  submitted baselines use n=16. Removal deltas from small-n ablations are directional.
+- **L4 — Internal tension in v1.** The wave's running notes promoted a 3170 "practical floor", but
+  the final statistical pass rejected 3170 (negative score) and settled the submission at 3205. The
+  artifact reports the conservative, statistically-passing bin; the aggressive single-seed frontier
+  is recorded as stepping-stone evidence only.
+- **L5 — Numbers are point-in-time.** The bins and means are the submitted-record values; the raw
+  per-seed logs (~3 GB) are git-ignored on disk and not reproduced here (the run *index* is).
