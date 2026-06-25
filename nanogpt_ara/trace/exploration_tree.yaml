@@ -1,215 +1,226 @@
-# Exploration Tree — Autonomous nano-GPT Optimizer Speedrunning
-# Research DAG across waves: baseline -> v1 -> novelty -> v2 -> v3, plus the meta-investigation.
-# Node types: question | experiment | dead_end | decision | pivot
-# support_level: explicit (directly in INSIGHTS.md / runs.csv) | inferred (reconstructed logic)
+# Exploration tree — Codex track_3_optimization speedrun
+# Root = the mission question; waves nest as children; experiments, decisions, and dead_ends
+# are typed nodes. The novelty wave is an isolated NV## subtree, read-scoped off the lineage.
+# support_level: explicit (in the inputs, with source_refs) | inferred (reconstructed).
+# evidence: entries are claim IDs (C##) from logic/claims.md.
 
-tree:
-  - id: N01
-    type: question
-    support_level: explicit
-    source_refs: ["§0", "goal.md"]
-    title: "How few training steps can reach val_loss 3.28 on GPT-124M?"
-    description: >
-      Minimize step_to_3_28 changing only optimizer/schedule/init/HPs; architecture, batch, and data
-      fixed. Wall-clock is free. Reference points: AdamW 5625, Muon 3500, public record 3225.
-    children:
+root:
+  id: M0
+  type: question
+  question: "In how few one-fwd-bwd steps can a fixed 124M-GPT reach 3.28 val loss, changing only optimizer/schedule/init?"
+  support_level: explicit
+  source_refs: ["v1/codex/goal.md:3-8", "v1/codex/AGENTS.md:3-6"]
+  children:
 
-      - id: N02
-        type: experiment
-        support_level: explicit
-        source_refs: ["§0", "00001-muon-baseline"]
-        title: "Establish the Muon reference recipe"
-        result: "Two-optimizer baseline (AdamW + Muon, WSD schedule) reaches 3.28 at step 3500."
-        evidence: ["§0"]
-        children:
+    # ===================== WAVE v1 =====================
+    - id: V1
+      type: question
+      question: "Which post-Muon optimizer/schedule/init combination beats Muon at 3500 steps?"
+      support_level: explicit
+      source_refs: ["v1/codex/scratchpad/THREAD.md:10-60"]
+      children:
+        - id: V1-D1
+          type: decision
+          decision: "Order the search conservatively: schedule/LR-floor and EMA before heavy optimizer replacements, because the baseline is already near target at 3375."
+          support_level: explicit
+          source_refs: ["v1/codex/scratchpad/THREAD.md:51-54"]
+        - id: V1-E1
+          type: experiment
+          experiment: "Schedule-horizon vs train-step decoupling (horizon<sched>-stop<train>)."
+          outcome: "First sub-3500 hit at step 3450, reproduced on seed 1 — the core compression lever."
+          support_level: explicit
+          source_refs: ["v1/codex/scratchpad/THREAD.md:142-198"]
+          evidence: ["C01"]
+        - id: V1-E2
+          type: experiment
+          experiment: "Optimizer-family screen vs the 3500-step Muon bar (NorMuon, Muon2F, Adam-mini, and dozens more)."
+          outcome: "NorMuon, Muon2F, Adam-mini survive; most families ruled out as clean negatives."
+          support_level: explicit
+          source_refs: ["v1/codex/plan.md:35-71", "v1/codex/scratchpad/THREAD.md:253-1620"]
+          evidence: ["C03", "C05"]
+          children:
+            - id: V1-DE1
+              type: dead_end
+              dead_end: "Cautious-Muon / sign-mask updates: degrade the early curve (final 3.30833, no crossing)."
+              support_level: explicit
+              source_refs: ["v1/codex/scratchpad/THREAD.md:93"]
+            - id: V1-DE2
+              type: dead_end
+              dead_end: "MARS-M (all gammas), FWA, SOAP/Shampoo full, APOLLO, Lookahead-NorMuon, Sophia-F, RAdamW, SWATS, NovoGrad: rejected at early/mid gates."
+              support_level: explicit
+              source_refs: ["v1/codex/scratchpad/THREAD.md:221-222", "v1/codex/scratchpad/THREAD.md:245-251", "v1/codex/plan.md:56-71"]
+            - id: V1-DE3
+              type: dead_end
+              dead_end: "Residual-projection small-init / tied-head / semi-orthogonal init family: no broad gain; do not stack with Muon2F."
+              support_level: explicit
+              source_refs: ["v1/codex/scratchpad/THREAD.md:1732-1736", "v1/codex/plan.md:55"]
+        - id: V1-E3
+          type: experiment
+          experiment: "Endpoint smoothing — tail-EMA (beta 0.99, late start) vs uniform SWA."
+          outcome: "Tail-EMA is the strongest endpoint lever; SWA consistently worse."
+          support_level: explicit
+          source_refs: ["v1/codex/scratchpad/THREAD.md:1806-1813"]
+          evidence: ["C02"]
+        - id: V1-D2
+          type: decision
+          decision: "Prefer the isolated mu-schedule lever over stacked v12 packages (packages miss late despite mid-curve gains)."
+          support_level: explicit
+          source_refs: ["v1/codex/plan.md:12", "v1/codex/scratchpad/THREAD.md:2202-2208"]
+          evidence: ["C07"]
+        - id: V1-E4
+          type: experiment
+          experiment: "Leave-one-out pruning of the v12iso stack at the 3195 screen, then statistical-relevance pass."
+          outcome: "Tail-EMA and Muon2F dominate; late-LR/pulse/mom-refresh net-removable. Stat pass rejects s3170; submitted record bin = 3205 (n=16)."
+          support_level: explicit
+          source_refs: ["v1/codex/scratchpad/THREAD.md:2170-2232", "record_configs/20260515_codex_v1_v12iso_3205/README.md:13-26"]
+          evidence: ["C06", "C07"]
+          children:
+            - id: V1-DE4
+              type: dead_end
+              dead_end: "s3170 single-seed floor: rejected by the significance gate (negative score at n=15)."
+              support_level: explicit
+              source_refs: ["v1/codex/scratchpad/THREAD.md:2232"]
+              evidence: ["C05", "C06"]
 
-          - id: N03
-            type: decision
-            support_level: inferred
-            title: "Stack many small levers vs hunt for a silver-bullet optimizer"
-            choice: "Stack and re-tune many published levers onto the shared backbone."
-            alternatives:
-              - "Replace Muon with a single better optimizer (SOAP/Shampoo/Cautious/...)."
-              - "Invent a novel operator."
-            evidence: "Every single substitution moves the frontier <=1-2% (C01); the baseline is near a sharp optimum."
-            children:
+    # ===================== WAVE novelty (ISOLATED NV subtree) =====================
+    - id: NV
+      type: question
+      question: "Can genuinely-novel mechanisms (hard-isolated, no other-worktree access) beat Muon at 3500?"
+      isolated: true
+      support_level: explicit
+      source_refs: ["novelty/codex/scratchpad/THREAD.md:10-36"]
+      children:
+        - id: NV-D1
+          type: decision
+          decision: "Two mandatory pre-code gates (arXiv novelty + benchmark-rule compliance); novelty bar tightened three times to exclude schedule, then optimizer+schedule, then merely-additive couplings."
+          support_level: explicit
+          source_refs: ["novelty/codex/scratchpad/THREAD.md:130-134", "novelty/codex/scratchpad/THREAD.md:248-253", "novelty/codex/scratchpad/THREAD.md:455-457"]
+          evidence: ["C12"]
+        - id: NV-E1
+          type: experiment
+          experiment: "~3 dozen novel mechanisms benchmarked (TRM/STM/ALR, RSI/VFG/NGI init, PDS/CMU/GMS/BIGE/DPS couplings)."
+          outcome: "Best robust result = a reproduced 25-step (one-bin) gain, explicitly below the noise floor. No promotable submission."
+          support_level: explicit
+          source_refs: ["novelty/codex/scratchpad/THREAD.md:577-580"]
+          evidence: ["C05", "C12"]
+          children:
+            - id: NV-DE1
+              type: dead_end
+              dead_end: "Single-seed crossings (NGI 3475, NDF 3375) fail second-seed reproduction."
+              support_level: explicit
+              source_refs: ["novelty/codex/scratchpad/THREAD.md:574-575", "novelty/codex/scratchpad/THREAD.md:1340-1342"]
+              evidence: ["C05"]
+            - id: NV-DE2
+              type: dead_end
+              dead_end: "Many couplings killed before code: reduce to known Muon literature (Muon2/OrthoGrad/GaLore/Cayley) or are exact-polar algebraic no-ops (UtU=I)."
+              support_level: explicit
+              source_refs: ["novelty/codex/scratchpad/THREAD.md:1214", "novelty/codex/scratchpad/THREAD.md:1855-1856"]
+              evidence: ["C12"]
 
-              - id: N04
-                type: experiment
-                support_level: explicit
-                source_refs: ["§2", "§1", "cc_v1/ideas.md"]
-                title: "v1 lever ladder: integrate MuonEq, train-steps trim, attn-LR, embed-init, mu-sched"
-                result: "Claude reaches 3000, Codex 3150; MuonEq is the strongest single lever (dval -0.00484)."
-                evidence: [C01, C03, C04]
-                children:
+    # ===================== WAVE v2 =====================
+    - id: V2
+      type: question
+      question: "Can the v12 optimizer stack be pushed below 3000 steps while staying compliant?"
+      support_level: explicit
+      source_refs: ["v2/codex/scratchpad/THREAD.md:3-22"]
+      also_depends_on: ["V1-E4"]
+      children:
+        - id: V2-D1
+          type: decision
+          decision: "Use the inherited cc v12 parent (the only known 3025-step parent) as the v2 backbone, provisionally."
+          support_level: explicit
+          source_refs: ["v2/codex/scratchpad/THREAD.md:6"]
+        - id: V2-DE1
+          type: dead_end
+          dead_end: "All v12-derived results QUARANTINED: the inherited RMSNorm.forward / q-k-norm change is a forward-path violation, invalid even though it materially helped."
+          support_level: explicit
+          source_refs: ["v2/codex/scratchpad/THREAD.md:126-128", "v2/codex/scratchpad/THREAD.md:154"]
+          evidence: ["C08"]
+        - id: V2-D2
+          type: decision
+          decision: "Rebuild a byte-identical-compliant legal_v12opt family from the workspace baseline; switch prefix v2cx -> v2cxleg; add a launch-time Architecture gate."
+          support_level: explicit
+          source_refs: ["v2/codex/scratchpad/THREAD.md:130-134"]
+          evidence: ["C08"]
+        - id: V2-E1
+          type: experiment
+          experiment: "Role-specific LR (RoleLR2) + role-specific WD (RoleWD) + Muon lookahead frontier walk on the compliant stack."
+          outcome: "Single-seed frontier reached 2962/2963, but those cohorts' means miss 3.28."
+          support_level: explicit
+          source_refs: ["v2/codex/scratchpad/THREAD.md:476-800"]
+          evidence: ["C04", "C05"]
+        - id: V2-E2
+          type: experiment
+          experiment: "Fixed-cohort significance verification (+25/+50/+75) and v2 leave-one-out pruning at 3037."
+          outcome: "Low-step families fail (3.28-mu)*sqrt(n)>=0.004; the fixed ts3037 cohort passes as the earliest common checkpoint. Submitted bin = 3037 (n=16)."
+          support_level: explicit
+          source_refs: ["v2/codex/scratchpad/THREAD.md:802-810", "record_configs/20260515_codex_v2_legal_3037/README.md:13-26"]
+          evidence: ["C03", "C04", "C06"]
+          children:
+            - id: V2-DE2
+              type: dead_end
+              dead_end: "ts2961 (0/64) and the 2962/2963/2970/2982 cohorts: rejected by the significance gate (negative cohort scores)."
+              support_level: explicit
+              source_refs: ["v2/codex/scratchpad/THREAD.md:800-802"]
+              evidence: ["C05", "C06"]
 
-                  - id: N05
-                    type: dead_end
-                    support_level: explicit
-                    source_refs: ["§2.D.1", "00182-soap-lr3e-2"]
-                    title: "Full-model SOAP on top of Muon"
-                    hypothesis: "A second-order preconditioner adds curvature signal Muon lacks."
-                    failure_mode: "Asymptotes ~3.39, never reaches 3.28; duplicates Muon's NS curvature work globally."
-                    lesson: "NS already captures curvature at 124M; global SOAP is cost without signal. Revisited as a SUBSET lever in v3 (N14)."
-
-                  - id: N06
-                    type: dead_end
-                    support_level: explicit
-                    source_refs: ["§2.D.2", "§6.4", "arXiv:2411.16085"]
-                    title: "Cautious-Muon (sign-agreement masking)"
-                    hypothesis: "Masking updates that disagree with the fresh gradient enforces monotone descent."
-                    failure_mode: "Both agents regress/diverge (codex ends 3.30833); masking destroys NS orthogonality."
-                    lesson: "Muon already gives implicit monotone descent; the mask only removes useful signal. Most robust cross-agent clean negative."
-
-                  - id: N07
-                    type: dead_end
-                    support_level: explicit
-                    source_refs: ["§2.D.2", "§2.D.3", "family=muon2f"]
-                    title: "Lookahead / AdEMAMix / Muon^2 as Muon add-ons"
-                    hypothesis: "Better averaging / 2nd-moment preconditioning improves Muon (Muon^2 showed -175 vs vanilla)."
-                    failure_mode: "Slow components under-converge in <3200 steps; Muon^2 regresses in-stack (best 3190)."
-                    lesson: "A lever's sign depends on the backbone — PR gains vs vanilla Muon do not transfer additively (C05)."
-
-      - id: N08
-        type: pivot
-        support_level: explicit
-        source_refs: ["§4", "§10", "cc_novelty"]
-        title: "Novelty-constrained wave"
-        from: "Tune/stack known-good levers"
-        to: "Invent only genuinely-novel operators (ban known methods + HP tweaks)"
-        trigger: "A deliverable constraint requiring novel ideas, not re-tuning."
-        children:
-
-          - id: N09
-            type: dead_end
-            support_level: explicit
-            source_refs: ["§10.1", "§10.2", "cc_novelty"]
-            title: "Novel operators (trust-region-muon, spectral-momentum, aniso-kron)"
-            hypothesis: "A new operator can beat carefully-tuned Muon."
-            failure_mode: "Best novel op merely matches re-validated plain Muon (3375); SPM with shallow NS drifts to 3.71@2000."
-            lesson: "Operators touching the NS core degrade orthogonalization; on a saturated target novel != better (C10)."
-
-          - id: N10
-            type: dead_end
-            support_level: explicit
-            source_refs: ["§10.3", "scaphd-v1"]
-            title: "softcap-head-lr controller (scaphd-v1)"
-            hypothesis: "An embed/head LR controller orthogonal to Muon could help."
-            failure_mode: "Cancelled mid-run (step 2750) for attaching a forward hook in the Setup section (code-location rule)."
-            lesson: "Code LOCATION matters as much as semantic effect; an infrastructure rule depressed the novelty frontier."
-
-      - id: N11
-        type: decision
-        support_level: explicit
-        source_refs: ["§13", "03141-v12-baseline"]
-        title: "Freeze the v1 frontier as the v12 backbone and sweep around it"
-        choice: "Hardcode every v1 winning lever into 'v12', then run v2/v3 sweeps around a fixed point."
-        alternatives:
-          - "Keep exploring operators from scratch each wave."
-        evidence: "v12 = MuonEq + ts3025 + embed*0.7 + per-role LR + mu-sched, baked in (§13.1)."
-        children:
-
-          - id: N12
-            type: experiment
-            support_level: explicit
-            source_refs: ["§13.3", "rolewd-combo", "§13.2"]
-            title: "v2: per-role weight decay + LR pushed to 0.045"
-            result: "Codex best ~2962; role-WD (attn 0.0275 < MLP 0.03125); v2 is cheaper per step than baseline."
-            evidence: [C04, C06]
-            children:
-
-              - id: N13
-                type: experiment
-                support_level: explicit
-                source_refs: ["§5", "§16", "07070-v88-aurora-proj"]
-                title: "v3: stack SOAP-on-subset + Aurora + Contra-Muon + power-law cooldown"
-                result: "Both agents reach ~2880-2885 single-best-seed; LR re-tuned down to 0.0375."
-                evidence: [C04, C08, C14]
-                also_depends_on: [N05]
-                children:
-
-                  - id: N14
-                    type: decision
-                    support_level: explicit
-                    source_refs: ["§5.3", "§16.2", "SOAP_PARAM_MODE=mlp_plus_v"]
-                    title: "Restrict SOAP to MLP + value-projection (not full, not Q/K)"
-                    choice: "Apply SOAP only where curvature is anisotropic/persistent (MLP, V), gated by trust_gate."
-                    alternatives:
-                      - "Full-model SOAP (failed, N05)."
-                      - "No SOAP (loses ~+85 steps)."
-                    evidence: "Same operator, opposite sign by parameter subset (C05); biggest hitting v3 lever (C13)."
-
-                  - id: N15
-                    type: experiment
-                    support_level: explicit
-                    source_refs: ["§14", "loo01..15"]
-                    title: "Leave-one-out ablation (4 seeds) ranking every component"
-                    result: "Long-tailed: pow_cooldown critical, soap_mlp ~+85, adamw_betas ~+45, normuon ~0."
-                    evidence: [C01, C03, C06, C13]
-                    children:
-
-                      - id: N16
-                        type: dead_end
-                        support_level: explicit
-                        source_refs: ["§14.1", "§15", "loo15_no_pow_cooldown"]
-                        title: "Remove the power-law cooldown"
-                        hypothesis: "Schedule shape was ~neutral at the baseline, so it should be droppable."
-                        failure_mode: "All 4 seeds MISS 3.28 — at the frontier the convex cooldown is load-bearing (sub-0.001 margin)."
-                        lesson: "A lever's importance grows as the rest of the recipe saturates (higher-order backbone-dependence)."
-
-                      - id: N17
-                        type: dead_end
-                        support_level: explicit
-                        source_refs: ["§14.4", "loo14_no_normuon"]
-                        title: "NorMuon at the frontier"
-                        hypothesis: "Post-NS row-norm should still add value."
-                        failure_mode: "LOO ~0 (2930 = full recipe): redundant once Aurora/MuonEq row-normalize."
-                        lesson: "A frontier recipe carries dead weight; redundant levers are not always pruned."
-
-  - id: N18
-    type: experiment
-    support_level: explicit
-    source_refs: ["§9", "§21", "seed_reverify"]
-    title: "Seed-reverify wave: noise floor and miss-rate (13 groups, 152 runs)"
-    also_depends_on: [N04, N13]
-    result: "final-val std ~0.0009-0.0011; ~9% pooled miss; frontier step-std ~14-21; seeds ~8*sigma^2/Delta^2."
-    evidence: [C09, C17]
-    children:
-
-      - id: N19
-        type: decision
-        support_level: explicit
-        source_refs: ["§9.2", "§20.4", "README"]
-        title: "Report seed-verified medians + miss-rate, not best-of-N"
-        choice: "Headline the seed-verified figure (cc 2930) and the miss-rate, not the lucky 2885."
-        alternatives:
-          - "Report single-best-seed records (overstates by ~30-50 steps)."
-        evidence: "~9-12% of frontier seeds miss; std ~ single-lever size (C09)."
-
-  - id: N20
-    type: experiment
-    support_level: explicit
-    source_refs: ["§18", "07070-v88-aurora-proj", "codex worker27"]
-    title: "Cross-agent v3 recipe diff"
-    also_depends_on: [N13]
-    result: "Records are byte-identical except tiny timing offsets (same trust_gate, SOFT_MUON_P=0.1, ...)."
-    evidence: [C15]
-    children:
-
-      - id: N21
-        type: pivot
-        support_level: explicit
-        source_refs: ["§5.5", "§18", "§19"]
-        title: "Correct the 'independent convergence' reading"
-        from: "v3 identity = independent rediscovery of real structure"
-        to: "v3 identity = shared public-PR lineage; the real independent signal is the v1 divergence"
-        trigger: "Byte-identical v3 records cannot be independent invention."
-        children:
-
-          - id: N22
-            type: experiment
-            support_level: explicit
-            source_refs: ["§19", "§12", "launched_at order"]
-            title: "v1 divergence deep-dive (first ~120 launch-ordered runs per agent)"
-            result: "cc breadth-first (~14 families -> MuonEq -> 3000); codex depth-first (106-run NorMuon sweep -> 3150)."
-            evidence: [C12, C15]
+    # ===================== WAVE v3 =====================
+    - id: V3
+      type: question
+      question: "Can the public radial/Soft-Muon frontier be reproduced and compressed below 2950 steps?"
+      support_level: explicit
+      source_refs: ["v3/codex/scratchpad/THREAD.md:411-442"]
+      also_depends_on: ["V2-E2"]
+      children:
+        - id: V3-D1
+          type: decision
+          decision: "Pivot from the internal Aurora lineage to the public PR frontier (PR #291 Soft-Muon, PR #294 radial) as a stronger parent; reproduce the v48 public-frontier parent first, then compress."
+          support_level: explicit
+          source_refs: ["v3/codex/scratchpad/THREAD.md:411", "v3/codex/scratchpad/THREAD.md:552"]
+          evidence: ["C09", "C10"]
+        - id: V3-E1
+          type: experiment
+          experiment: "Reproduce public PRs: radial timing (tail-only vs step-zero), Soft-Muon, SOAP portability."
+          outcome: "Tail-only PR #294 radial and PR #291 Soft-Muon reproduce and are load-bearing; full KL-SOAP-H not portable (zero-init freeze); Muown incompatible."
+          support_level: explicit
+          source_refs: ["v3/codex/scratchpad/THREAD.md:414", "v3/codex/scratchpad/THREAD.md:424", "v3/codex/scratchpad/THREAD.md:439"]
+          evidence: ["C09", "C10"]
+          children:
+            - id: V3-DE1
+              type: dead_end
+              dead_end: "Radial-from-step-zero: a kill (under-2950 cannot recover from a ~0.04 early loss)."
+              support_level: explicit
+              source_refs: ["v3/codex/scratchpad/THREAD.md:414"]
+              evidence: ["C09"]
+            - id: V3-DE2
+              type: dead_end
+              dead_end: "PR #290 full KL-SOAP-H and PR #288 Muown: not portable to this backbone; salvaged only as a warm-start SOAP-skip sidecar."
+              support_level: explicit
+              source_refs: ["v3/codex/scratchpad/THREAD.md:424", "v3/codex/scratchpad/THREAD.md:439"]
+              evidence: ["C10"]
+        - id: V3-E2
+          type: experiment
+          experiment: "u2900 worker campaign: warm SOAP sidecar, conditional radial guard, q/k Contra scale, LACV + q/k floor, schedule-phase retarget (keep PR #287 back-loaded cooldown)."
+          outcome: "Converges on a sub-2950 statistically-viable distribution; hard schedule truncation fails (only phase-shift works)."
+          support_level: explicit
+          source_refs: ["v3/codex/scratchpad/THREAD.md:615-1146", "v3/codex/scratchpad/THREAD.md:1039"]
+          evidence: ["C05", "C09", "C10"]
+        - id: V3-E3
+          type: experiment
+          experiment: "W258 leave-one-out pruning (11 ablations) at the 2940/2949 boundary."
+          outcome: "SOAP and radial are the largest keeps; nosphere (drop sphere-lookahead pull) is the only positive-score simplification; the two sphere removals do not compose. Submitted bin = 2949 (n=16)."
+          support_level: explicit
+          source_refs: ["v3/codex/scratchpad/THREAD.md:1168-1206", "v3/codex/scratchpad/w258_2940_leave_one_out_pruning_20260513.md:10-14", "record_configs/20260515_codex_v3_nosphere_2949/README.md:13-27"]
+          evidence: ["C07", "C09", "C10", "C11"]
+          children:
+            - id: V3-DE3
+              type: dead_end
+              dead_end: "Combined sphere removal nosphere_notangent: loses the 2940 boundary (substitutes, not redundant)."
+              support_level: explicit
+              source_refs: ["v3/codex/scratchpad/THREAD.md:1206"]
+              evidence: ["C11"]
+        - id: V3-DE4
+          type: dead_end
+          dead_end: "Aurora lead abandoned at the public pivot: its adaptive-outlier-control tail never ported the 3027 win one step lower; survives only as the Contra residual."
+          support_level: explicit
+          source_refs: ["v3/codex/scratchpad/THREAD.md:411", "v3/codex/scratchpad/THREAD.md:190"]

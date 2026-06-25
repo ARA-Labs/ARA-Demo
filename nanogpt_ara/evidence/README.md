@@ -1,34 +1,48 @@
-# Evidence Index
+# Evidence index
 
-All evidence is transcribed from the tables/figures of `research_insights/INSIGHTS.md`, which is
-itself grounded to `data/runs_self_contained/runs.csv` (10,428 runs), per-run `train.log` /
-`metadata.json`, and the agents' scratchpads. Source labels point to the INSIGHTS.md section the table
-or figure appears in. Exact cell values are preserved; approximate figure readings are marked "~".
+This artifact has no PDF with numbered `Figure N` / `Table N`. Its evidence objects are the
+**submitted record assets** (the loss-curve and pruning figures, the seed tables, and the
+significance tables) plus the raw pruning data. Every figure is filed with **both** a markdown
+description and its screenshot `.png`; every table is transcribed faithfully from its source. No
+object is omitted.
 
-## Tables
-| File | Source | Claims | Description |
-|------|--------|--------|-------------|
-| [tables/frontier_progression.md](tables/frontier_progression.md) | §1, INSIGHTS.md | C01, C10, C12 | Best step_to_3_28 per wave per agent (baseline->v3) |
-| [tables/baseline_recipe_anatomy.md](tables/baseline_recipe_anatomy.md) | §0, INSIGHTS.md | C01, C02, C03, C04, C06 | The §0 two-optimizer baseline (Muon ref = 3500) |
-| [tables/loo_ablation.md](tables/loo_ablation.md) | §14, INSIGHTS.md | C01, C03, C06, C13 | 4-seed leave-one-out ranking of every component |
-| [tables/cross_agent_v3_constants.md](tables/cross_agent_v3_constants.md) | §18, INSIGHTS.md | C15 | Byte-identical v3 constants across agents |
-| [tables/v1_divergence_families.md](tables/v1_divergence_families.md) | §19, INSIGHTS.md | C12, C15 | First-120-run family split (breadth vs depth) |
-| [tables/seeds_for_significance.md](tables/seeds_for_significance.md) | §21, INSIGHTS.md | C09, C16, C17 | Seeds/arm vs claimed gain (n~8sigma^2/Delta^2) |
-| [tables/noise_floor_seed_groups.md](tables/noise_floor_seed_groups.md) | §9, INSIGHTS.md | C03, C09, C17 | Frontier vs safe 8-seed groups (std, miss-rate) |
-| [tables/search_economy_runs.md](tables/search_economy_runs.md) | §12, INSIGHTS.md | C12 | Runs launched per wave per agent |
-| [tables/temporal_curriculum_phases.md](tables/temporal_curriculum_phases.md) | §17, INSIGHTS.md | C08, C14 | Phase-active levers (explore/converge/soften) |
-| [tables/seed_verified_frontier.md](tables/seed_verified_frontier.md) | §30, INSIGHTS.md | C09, C12, C16, C17 | Distinct-seed re-verify of each wave's record; honest frontier 2930/2950; +0–10 step penalty |
+## Figures (markdown + screenshot)
 
-## Figures
-| File | Source | Claims | Description |
-|------|--------|--------|-------------|
-| [figures/crossover_val_vs_step.md](figures/crossover_val_vs_step.md) | §8, INSIGHTS.md | C08, C14 | Val_loss vs step: record loses early, crosses ~1750, wins |
-| [figures/power_law_lr_trajectory.md](figures/power_law_lr_trajectory.md) | §15, INSIGHTS.md | C02, C06, C13 | Muon-group LR under the convex power-law cooldown |
+| File | Screenshot | Type | Source |
+|---|---|---|---|
+| [figures/v1_loss_curves.md](figures/v1_loss_curves.md) | `figures/v1_loss_curves.png` | quantitative_plot | `record_configs/20260515_codex_v1_v12iso_3205/loss_curves.png` |
+| [figures/v1_pruning.md](figures/v1_pruning.md) | `figures/v1_pruning.png` | quantitative_plot (bar) | `record_configs/20260515_codex_v1_v12iso_3205/pruning.png` |
+| [figures/v2_loss_curves.md](figures/v2_loss_curves.md) | `figures/v2_loss_curves.png` | quantitative_plot | `record_configs/20260515_codex_v2_legal_3037/loss_curves.png` |
+| [figures/v2_pruning.md](figures/v2_pruning.md) | `figures/v2_pruning.png` | quantitative_plot (bar) | `record_configs/20260515_codex_v2_legal_3037/pruning.png` |
+| [figures/v3_loss_curves.md](figures/v3_loss_curves.md) | `figures/v3_loss_curves.png` | quantitative_plot | `record_configs/20260515_codex_v3_nosphere_2949/loss_curves.png` |
+| [figures/v3_pruning.md](figures/v3_pruning.md) | `figures/v3_pruning.png` | quantitative_plot (bar) | `record_configs/20260515_codex_v3_nosphere_2949/pruning.png` |
 
-## Notes on fidelity
-- These are **raw transcriptions** of the synthesis's tables, not derived subsets; each preserves the
-  full row set of its source section.
-- Numbers are copied exactly (e.g. baseline final_val_loss 3.28027; MuonEq dval -0.00484; group A std
-  0.00043; LOO soap_mlp 3010). Figure readings between stated anchors are flagged "~".
-- The underlying per-run data lives at `data/runs_self_contained/` (see `src/environment.md` for the
-  CSV schema and reproduction entry points).
+## Tables (transcribed)
+
+| File | What it is | Source |
+|---|---|---|
+| [tables/v1_seed_table.md](tables/v1_seed_table.md) | 16-seed val @ 3205 + significance | `record_configs/20260515_codex_v1_v12iso_3205/README.md:17-46` |
+| [tables/v2_seed_table.md](tables/v2_seed_table.md) | 16-seed val @ 3037 + significance | `record_configs/20260515_codex_v2_legal_3037/README.md:17-46` |
+| [tables/v3_seed_table.md](tables/v3_seed_table.md) | 16-seed val @ 2949 (and @ 3020) + significance | `record_configs/20260515_codex_v3_nosphere_2949/README.md:18-47` |
+| [tables/v1_pruning_table.md](tables/v1_pruning_table.md) | v1 leave-one-out contributions | `…v1…/pruning_data.json` |
+| [tables/v2_pruning_table.md](tables/v2_pruning_table.md) | v2 leave-one-out contributions | `…v2…/pruning_data.json` |
+| [tables/v3_pruning_table.md](tables/v3_pruning_table.md) | v3 W258 leave-one-out contributions | `…v3…/pruning_data.json` |
+| [tables/novelty_outcomes.md](tables/novelty_outcomes.md) | Novelty-wave mechanism outcomes (negative) | `novelty/codex/scratchpad/THREAD.md` |
+
+## Raw data
+
+| File | Source |
+|---|---|
+| [data/v1_pruning_data.json](data/v1_pruning_data.json) | `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json` (verbatim copy) |
+| [data/v2_pruning_data.json](data/v2_pruning_data.json) | `record_configs/20260515_codex_v2_legal_3037/pruning_data.json` (verbatim copy) |
+| [data/v3_pruning_data.json](data/v3_pruning_data.json) | `record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json` (verbatim copy) |
+
+## Objects accounted for but not separately filed
+
+- **The per-wave loss-curve PNGs are the only plots in the source records** beyond the pruning bars;
+  there are no additional numbered figures. The `THREAD.md` journals reference in-worktree sweep
+  figures (`assets/<sweep-id>/figures.md`) that are not part of the submitted records and are not
+  re-filed here (they are pointers into the run store, indexed in [../src/artifacts.md](../src/artifacts.md)).
+- **The seed and pruning tables are native markdown/JSON in the source** (not figure images), so
+  they are filed as faithful transcriptions; their only "screenshot" form is the pruning **bar
+  chart** (filed) which visualizes the pruning table.

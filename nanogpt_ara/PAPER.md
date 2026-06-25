@@ -1,93 +1,102 @@
 ---
-title: "Where the Gains Live: A Grounded Anatomy of Autonomous nano-GPT Optimizer Speedrunning"
+title: "Codex Autonomous Speedrun of track_3_optimization (modded-nanogpt): the v1 → novelty → v2 → v3 single-agent trajectory"
 authors:
-  - "Autonomous agents: Claude Code (Opus 4.7)"
-  - "Autonomous agents: Codex (GPT-5.5)"
-  - "ARA synthesis (compiled from research_insights/INSIGHTS.md)"
+  - "Codex (autonomous optimization-research agent)"
+  - "human operator (not named in inputs)"
 year: 2026
-venue: "Internal research synthesis — modded-nanogpt track_3_optimization (Prime Intellect)"
-doi: "N/A (internal experiment export); ARA methodology: arXiv:2604.24658"
+venue: "Internal benchmark speedrun — modded-nanogpt track_3_optimization (KellerJordan fork)"
+doi: "Not specified in inputs"
 ara_version: "1.0"
-domain: "Deep-learning optimization / autonomous ML research"
+domain: "neural-network optimization / LLM-pretraining speedrunning"
 keywords:
-  - "Muon optimizer"
-  - "Newton-Schulz orthogonalization"
-  - "nano-GPT speedrun"
-  - "learning-rate schedule"
-  - "SOAP / Shampoo preconditioning"
-  - "second-order optimization"
-  - "autonomous research agents"
-  - "ablation / leave-one-out"
-  - "seed noise floor"
-  - "compositional optimizer levers"
-claims_summary:
-  - "There is no silver-bullet optimizer: the ~16-17% step reduction (3500 -> ~2880-2930) is a compositional stack of ~8-10 published levers, each worth -0 to -0.005 val loss."
-  - "The strongest single Muon-internal lever is MuonEq (per-row L2-normalize momentum BEFORE Newton-Schulz, dval -0.00484, ~11 sigma); the same operator's sign flips with backbone and parameter subset."
-  - "The frontier is a thin tail over a noisy seed floor (std ~0.0004-0.001, ~9-12% of seeds miss 3.28), so single-best-seed records overstate; seeds needed scale as n ~ 8*sigma^2/Delta^2."
-  - "The frontier recipe is a temporal curriculum (explore early -> exploit late) whose lose-early/win-late crossover (~step 1750) is engineered, not incidental."
-  - "A 4-seed leave-one-out ablation shows a long-tailed contribution distribution: power-law cooldown is critical (removing it -> all seeds miss), SOAP-on-MLP is the largest hitting lever (~+85 steps), NorMuon is redundant (~0)."
-abstract: "Two autonomous coding agents (Claude Code / Opus 4.7 and Codex / GPT-5.5) competed on modded-nanogpt track_3_optimization: reach validation loss 3.28 on GPT-124M in as few training steps as possible, changing only the optimizer/schedule/init/hyperparameters (architecture, batch size, and data fixed). Across 10,428 logged runs over five waves (baseline -> v1 -> novelty -> v2 -> v3) they cut the Muon reference from 3500 to ~2880-2885 steps single-best-seed (~2930 seed-verified), ~16-17% fewer steps and ~48% fewer than the AdamW baseline. This ARA is a grounded anatomy of that result. The central finding: the baseline already sits near a sharp local optimum, so gains come not from a silver-bullet optimizer but from stacking many ~0.001-val-loss levers (MuonEq pre-NS row normalization, SOAP-on-subset, Aurora row-rescale, Contra-Muon, Polar-Express Newton-Schulz, per-role LR/WD/schedule differentiation, power-law cooldown, train-steps trimming) re-tuned to a shared backbone. A method's sign is backbone- and parameter-subset-dependent (full SOAP fails at ~3.39 but SOAP on MLP+V is the biggest hitting lever); the frontier recipe is a time-scheduled curriculum; the seed noise floor is comparable to single-lever gains; and the cross-agent v3 records are byte-identical (shared public-PR lineage, not independent rediscovery). Every claim is grounded to the run export (runs.csv, 10,428 runs), agent scratchpads, run code, and training curves."
+  - Muon
+  - NorMuon
+  - MuonEq
+  - Soft-Muon
+  - SOAP preconditioning
+  - optimizer speedrun
+  - modded-nanogpt
+  - step-count compression
+  - leave-one-out pruning
+  - fixed-cohort significance gate
+  - autonomous research agent
+  - negative result (novelty wave)
+claims_summary: >
+  An autonomous agent (Codex) lowered the number of training steps needed to reach 3.28
+  validation loss on a fixed 124M-param GPT speedrun from the Muon baseline of 3500 steps to
+  3205 (v1), 3037 (v2, after a compliance rebuild), and 2949 (v3), each validated over n=16
+  non-cherry-picked seeds under a fixed-cohort significance gate (3.28−μ)·√n ≥ 0.004. The work
+  also produced one hard-isolated negative result (the novelty wave: no promotable submission).
+  The reusable findings are mechanism-level: tail-only weight EMA and factorized second-moment
+  preconditioning are the largest single levers; schedule-horizon/train-step decoupling buys
+  free compression; the sub-frontier region is a seed-fragility map governed by a significance
+  gate rather than a monotone frontier; redundant stack components are found by leave-one-out
+  pruning; and cross-agent results that violate the no-architecture-change rule must be
+  quarantined regardless of how much they helped.
+abstract: >
+  This artifact records the single-agent slice of an autonomous-speedrunning experiment in which
+  the Codex agent attacked track_3_optimization of the modded-nanogpt benchmark — reach 3.28
+  validation loss in as few one-forward-backward training steps as possible on a fixed
+  architecture, data, and batch contract. Over four waves (v1 optimizer/schedule/init screening;
+  a hard-isolated novelty wave; v2 role-specific LR/WD + lookahead on a compliant rebuild; v3
+  reproduction-and-compression of public radial/Soft-Muon PRs) the agent drove the submitted bin
+  from 3500 to 2949. The artifact is compiled directly (one-shot) from the agent's own journals
+  (THREAD.md per wave), the run index (8,224 attached runs), the submitted record configs, and
+  per-component leave-one-out pruning data. It separates the agent's reusable mechanism-level
+  takeaways (the cognitive layer) from the exact submitted numbers and figures (the evidence
+  layer), records the full exploration DAG including dead ends and the novelty-wave negative
+  result, and faithfully attributes the cross-agent touchpoints (a v12 parent inherited from the
+  Claude/cc agent that was tested, flagged non-compliant, and quarantined).
 ---
 
-# Where the Gains Live: A Grounded Anatomy of Autonomous nano-GPT Optimizer Speedrunning
+# Codex Autonomous Speedrun of `track_3_optimization` — Agent-Native Research Artifact
 
-## Overview
+## What this is
 
-Two autonomous agents were tasked with a saturated optimization benchmark — minimize the number
-of training steps GPT-124M needs to reach validation loss 3.28 on FineWeb-10B, holding the
-architecture, batch size, and data fixed and changing only the optimizer, schedule, initialization,
-and a handful of hyperparameters. This ARA compiles the grounded synthesis of that experiment
-(`research_insights/INSIGHTS.md`, 21 sections + TL;DR, backed by `research_insights/PROGRESS.md`).
+A direct (one-shot) ARA compiled from `experiments-autonomous-speedrunning-codex/`: the
+single-agent record of the Codex optimization-research agent lowering the step count to reach
+**3.28 validation loss** on a fixed 124M-parameter GPT speedrun (modded-nanogpt
+`train_gpt_simple.py`, `track_3_optimization`). "Bin" = the step at which val ≤ 3.28 is first
+crossed; lower is better.
 
-The contribution is **negative-and-anatomical** rather than a new method: it maps *where the
-step-count gains actually live* on this benchmark. The headline is that the ~16-17% reduction
-(3500 -> ~2880-2930 steps) is **compositional** — a stack of ~8-10 published levers each worth a
-fraction of a 0.001 val-loss unit, re-tuned to a shared backbone — and that a lever's effect is
-**backbone- and parameter-subset-dependent** (the same operator helps or hurts depending on *where*
-in the recipe it sits). Supporting findings cover the seed noise floor (records are a lucky tail
-with a ~9-12% miss rate), the engineered "lose-early/win-late" temporal curriculum, a leave-one-out
-ablation ranking every component, two opposite agent search economies that reach the same ceiling,
-and a correction showing the cross-agent v3 records are byte-identical (shared lineage, not
-independent discovery).
+**Submitted trajectory:** `3500 (Muon baseline) → 3205 (v1) → 3037 (v2) → 2949 (v3)`, each
+validated over n=16 seeds. The `novelty` wave is a hard-isolated **negative result** (no
+promotable submission).
 
-This artifact follows the ARA structure (arXiv:2604.24658): a cognitive layer (claims/concepts/
-heuristics), a physical layer (configs + executable stubs of the novel levers), an exploration graph
-(the research DAG across five waves, including dead ends), and grounded evidence (the exact tables
-from the synthesis, themselves grounded to `data/runs_self_contained/runs.csv` and run logs).
+> **Compile note.** This ARA is the *direct-compiler* artifact requested by the user, distinct
+> from the time-ordered replay artifact the source repo's top-level `README.md` describes at
+> `ara-pipeline/ara/` (that directory is not present in this copy). A one-shot compile sees the
+> whole trajectory at once; where the agent's running journal and the final submitted record
+> disagree (e.g. v1's journal trails off at a provisional `s3220`/`s3170` while the submitted
+> record is `3205`), the **submitted `record_configs/` READMEs are treated as authoritative**
+> and the journal as the path taken. Such reconciliations are flagged in the relevant claim's
+> `Conditions`/`Sources`.
 
 ## Layer Index
 
-### Cognitive Layer (`/logic`)
-| File | Description |
-|------|-------------|
-| [problem.md](logic/problem.md) | Benchmark + baseline observations -> gaps -> key insight -> assumptions |
-| [claims.md](logic/claims.md) | 17 falsifiable claims (C01-C17) with proof pointers to experiments |
-| [concepts.md](logic/concepts.md) | 16 formal definitions (Muon, MuonEq, NorMuon, SOAP-on-subset, Contra-Muon, trust_gate, WSD/power-law cooldown, step_to_3_28, noise floor, ...) |
-| [experiments.md](logic/experiments.md) | 14 declarative verification plans (E01-E14) |
-| [solution/architecture.md](logic/solution/architecture.md) | The frontier recipe as a component graph (two-optimizer partition + Muon pipeline + schedule controller) |
-| [solution/algorithm.md](logic/solution/algorithm.md) | Math + pseudocode of the Muon update pipeline, SOAP preconditioner, Contra ramp, power-law LR |
-| [solution/constraints.md](logic/solution/constraints.md) | Generalization limits (scale-bound 124M, 3.28-overfit, wallclock tax, best-of-N, fixed arch/data) |
-| [solution/heuristics.md](logic/solution/heuristics.md) | 10 convergence/search heuristics (H01-H10) with code refs |
-| [related_work.md](logic/related_work.md) | Typed dependency graph (Muon, MuonEq, NorMuon, SOAP, Cautious, Polar-Express, Contra/PRs, ...) |
+| Layer | File | Contents |
+|---|---|---|
+| Cognitive | [logic/problem.md](logic/problem.md) | Observations, gaps, key insight, assumptions |
+| Cognitive | [logic/claims.md](logic/claims.md) | C01–C12 falsifiable mechanism-level claims with grounded sources |
+| Cognitive | [logic/concepts.md](logic/concepts.md) | The benchmark's and the agent's technical vocabulary |
+| Cognitive | [logic/experiments.md](logic/experiments.md) | E01–E12 directional verification/analysis plans |
+| Cognitive | [logic/related_work.md](logic/related_work.md) | Typed dependency graph (PRs, papers, prior optimizers) |
+| Method | [logic/solution/constraints.md](logic/solution/constraints.md) | The lawful core, benchmark hard rules, limitations |
+| Method | [logic/solution/method.md](logic/solution/method.md) | The search methodology (gates, pruning, significance) |
+| Method | [logic/solution/optimizer-stack.md](logic/solution/optimizer-stack.md) | The three submitted recipes, component by component |
+| Method (isolated) | [logic/novelty/novelty.md](logic/novelty/novelty.md) | The NV## hard-isolated novelty-wave negative-result subtree |
+| Artifact | [src/environment.md](src/environment.md) | Hardware, code, run protocol, reproducibility |
+| Artifact | [src/artifacts.md](src/artifacts.md) | Pointer index into the 8,224 run exports + record configs |
+| Trace | [trace/exploration_tree.yaml](trace/exploration_tree.yaml) | The research DAG: waves, experiments, decisions, dead ends |
+| Evidence | [evidence/README.md](evidence/README.md) | Index of every filed figure and table |
+| Evidence | [evidence/figures/](evidence/figures/) | 6 record figures (loss curves + pruning bars) + descriptions |
+| Evidence | [evidence/tables/](evidence/tables/) | Seed tables, significance tables, pruning-contribution tables |
+| Evidence | [evidence/data/](evidence/data/) | Raw `pruning_data.json` for the three submitted records |
 
-### Physical Layer (`/src`)
-| File | Description | Claims |
-|------|-------------|--------|
-| [configs/training.md](src/configs/training.md) | Exact optimizer/schedule hyperparameters with rationale + sensitivity | C01-C04, C06, C13 |
-| [configs/model.md](src/configs/model.md) | Fixed GPT-124M architecture, batch, data, logit softcap | (context) |
-| [execution/muon_pipeline.py](src/execution/muon_pipeline.py) | MuonEq row-norm, Newton-Schulz, soft-Muon, Aurora rescale, Contra ramp | C03, C04, C14 |
-| [execution/soap_subset.py](src/execution/soap_subset.py) | SOAP-on-subset preconditioner + trust_gate (MLP+V only) | C05, C13 |
-| [execution/schedule.py](src/execution/schedule.py) | Per-role power-law cooldown, mu-schedule, horizon decoupling | C02, C06, C13 |
-| [execution/diagnostics.py](src/execution/diagnostics.py) | Seed-significance formula, miss-rate, early-kill divergence test | C09, C11, C17 |
+## Reading order
 
-### Exploration Graph (`/trace`)
-| File | Description |
-|------|-------------|
-| [exploration_tree.yaml](trace/exploration_tree.yaml) | 22-node research DAG across baseline->v1->novelty->v2->v3 (incl. dead ends + decisions) |
-
-### Evidence (`/evidence`)
-| File | Description |
-|------|-------------|
-| [README.md](evidence/README.md) | Full index of 9 tables + 2 figures, each mapped to claims |
-| tables/*.md | Frontier progression, LOO ablation, cross-agent constants, seeds-for-significance, search economy, noise-floor seed groups, temporal curriculum, baseline recipe |
-| figures/*.md | Training-curve crossover (val_loss vs step); power-law LR trajectory |
+Start with [logic/problem.md](logic/problem.md) for the gap and the key insight, then
+[logic/claims.md](logic/claims.md) for the reusable findings. [logic/solution/method.md](logic/solution/method.md)
+explains the search discipline that makes the numbers trustworthy;
+[logic/solution/optimizer-stack.md](logic/solution/optimizer-stack.md) explains *what* was built.
+The negative result lives in its own isolated subtree, [logic/novelty/novelty.md](logic/novelty/novelty.md).

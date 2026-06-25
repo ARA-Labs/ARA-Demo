@@ -1,119 +1,89 @@
-# Problem Specification
+# Problem
 
-The benchmark is `track_3_optimization` from [modded-nanogpt](https://github.com/KellerJordan/modded-nanogpt):
-reach validation loss **3.28** on GPT-124M in as few training steps as possible, changing only the
-optimizer / schedule / initialization / a few hyperparameters. Architecture, batch size, and data
-are fixed. The headline metric is `step_to_3_28` = the first training step whose validation loss
-<= 3.28 (lower is better). Wall-clock is irrelevant by design.
+## Setting
 
-## Observations
+`track_3_optimization` of the modded-nanogpt benchmark fixes the architecture, dataset, batch
+size, and the one-forward-backward-per-step contract of a ~124M-parameter GPT, and asks a single
+question: **in how few training steps can validation loss reach 3.28?** The optimizer, its
+hyperparameters, the learning-rate/weight-decay schedule, and parameter initialization are the
+*only* surfaces an entrant may change. The current best at the start of the experiment is **Muon
+(lr=0.025, wd=0.0125) at 3500 steps**; an AdamW baseline reaches the same loss only at 5625
+steps (`v1/codex/goal.md:3-7`, `v1/codex/AGENTS.md:5-6`).
 
-### O1: A strong published baseline already exists
-- **Statement**: The Muon reference reaches 3.28 in **3500 steps** (run `00001-muon-baseline`,
-  `train.log` ends `step:3500 val_loss:3.28027`). The AdamW baseline needs **5625 steps**. The best
-  public record at the start of the experiment was **3225** (README).
-- **Evidence**: §0 of INSIGHTS.md; `runs.csv` row `00001-muon-baseline-1` (`final_step=3500`,
-  `final_val_loss=3.28027`); goal.md reference points.
-- **Implication**: The starting point is already near a well-tuned optimum; remaining headroom is small.
+The agent's standing goal is the open-ended one in `goal.md`: *"Find an optimizer / hyperparameter
+/ schedule / init combination that reaches 3.28 validation loss in fewer than 3500 steps … the
+current stretch target from the user is below 2800 steps"* (`v1/codex/goal.md:3-6`).
 
-### O2: The baseline is a two-optimizer recipe with hand-set per-group learning rates
-- **Statement**: AdamW handles the 1-D / embedding / output params (`embed.weight lr=0.3`,
-  `proj.weight lr=1/320~=0.0031` zero-initialized, scalars `lr=0.01`, betas (0.8,0.95), eps 1e-10,
-  wd 0); Muon handles every 2-D block weight (lr=0.025, wd=0.0125, mu=0.95) via Nesterov momentum ->
-  12-iteration Newton-Schulz orthogonalization -> scale by `max(1, rows/cols)**0.5`. Schedule is WSD
-  (stable 30%, then linear cooldown to 0 over the final 70%, `cooldown_frac=0.7`).
-- **Evidence**: §0; `agents/cc_v1/runs/00001-muon-baseline-1-*/launched_script.py`.
-- **Implication**: There are many independent knobs (per-group LR, NS conditioning, schedule shape,
-  init scale) — gains, if any, must come from second-order details, not the core update.
+## Observations (with numbers)
 
-### O2b: Single levers are individually tiny
-- **Statement**: Documented integrated levers are each worth only -0 to -0.005 val loss:
-  embed-init x0.7 = **dval -0.00091**, NorMuon = **-0.00155**, MuonEq = **-0.00484** (3-seed means).
-- **Evidence**: §2, §9.1; cc_v1 `ideas.md` 3-seed deltas.
-- **Implication**: No single substitution can move the frontier far; gains must compound.
-
-### O3: The seed noise floor is comparable to the single-lever gains
-- **Statement**: Within one config, `final_val_loss` std is ~**0.0004-0.0010** (8-seed frontier
-  group A std 0.00043; safe group B std 0.00100; seed_reverify pooled 0.0009-0.0011). At the
-  frontier ~**9-12% of seeds miss 3.28 entirely** (1/8 in group A; 14/152 = 9% pooled).
-- **Evidence**: §9, §21; `seed_reverify` metadata (13 groups, 152 runs).
-- **Implication**: A single-best-seed record overstates; small-lever claims need multi-seed
-  reproducers, and step counts below ~15 steps are within noise.
-
-### O4: `step_to_3_28` is quantized by the validation cadence
-- **Statement**: The default cadence logs validations every 125 steps (and densely near the end), so
-  the model crosses 3.28 *between* logged validations. Forcing a validation at step 3450 reproduces a
-  hit (3.27844) the default 3500-cadence "misses"; 3425 misses (3.28178).
-- **Evidence**: §6.1, §8.3; `v1/codex/scratchpad/picklist.md` §1a.
-- **Implication**: Part of the train-steps "gain" is a *measurement* artifact; the metric is too
-  coarse to resolve its own frontier without dense late validation or seed-averaging on `min_val_loss`.
-
-### O5: Under a novelty constraint, the frontier got *worse*
-- **Statement**: Forbidding "known methods + hyperparameter tweaks", both agents' best fell from
-  ~3000 (v1) to **3375** (novelty wave). The top novel operator merely matched a re-validated plain-Muon
-  baseline (also 3375).
-- **Evidence**: §4, §10; `runs.csv` families `cc_novelty`/`codex_novelty` best 3375.
-- **Implication**: On this saturated target, most available gain lives in tuning/stacking known-good
-  levers, not in inventing new operators.
-
-### O6: A method's effect flips sign with context
-- **Statement**: Full-model SOAP asymptotes at ~3.39 (fails), but SOAP restricted to MLP + value-
-  projection matrices is the single biggest *hitting* lever in v3 (~+85 steps when removed). Muon^2
-  showed -175 steps against vanilla Muon in a public PR but regressed inside the stacked recipe.
-- **Evidence**: §2.D, §3.2, §5.3, §16; `runs.csv` `family=muon2f` (best 3190), full-SOAP `00182`.
-- **Implication**: Public-PR gains measured against vanilla Muon do not transfer additively; every
-  lever must be re-tested at the *current* backbone.
+- **O1 — The baseline is already close.** Canonical Muon hits 3.28 at 3500 and is only
+  `3.28106` at step 3375 — a near-miss a few thousandths above target (v1 journal,
+  `v1/.../THREAD.md:142-143`). The headroom per step is therefore *small relative to seed noise*.
+- **O2 — Seed noise is comparable to the prize.** The agent's own noise-floor estimate is
+  `step_to_target ≈ 50 steps`, `final_val_loss mean ≈ 0.001` (`v1/codex/AGENTS.md:160-163`).
+  A 50–100-step "win" can be entirely seed noise.
+- **O3 — The literature is unverified and wide.** The benchmark exists because "the optimization
+  literature is a sea of unverified SOTA claims … 100s–1000s of optimizer papers; most have never
+  been compared head-to-head on the same setup" (`v1/codex/goal.md:12-15`). The search space of
+  candidate optimizers/schedules/inits is enormous and mostly untested at this scale.
+- **O4 — Wall-clock is irrelevant.** Methods that are slow per step (Shampoo, SOAP, full-matrix
+  preconditioners) are admissible if they cut *steps* (`v1/codex/goal.md:33-34`). This widens the
+  admissible method set well beyond what a wall-clock speedrun would allow.
+- **O5 — The submitted trajectory.** Codex drove the bin from 3500 to
+  **3205 → 3037 → 2949** across three promotable waves (`README.md:10`,
+  `record_configs/*/README.md`), with one hard-isolated wave producing no promotable submission.
 
 ## Gaps
 
-### G1: "Which optimizer is best" is the wrong question for a saturated benchmark
-- **Statement**: There is no single optimizer swap that captures the available gain.
-- **Caused by**: O1 (strong baseline), O2b (tiny single levers), O6 (sign flips).
-- **Existing attempts**: SOAP/Shampoo, Cautious-Muon, Lookahead-Muon, AdEMAMix-Muon, Muon^2 — all
-  fail or regress as global substitutions (§2.D).
-- **Why they fail**: Muon's Newton-Schulz orthogonalization already captures most cheap curvature at
-  124M scale, so a substitute preconditioner adds cost without signal.
+- **G1 — Which methods actually beat Muon here, and do their gains stack?** Most optimizer papers
+  under-tune baselines and never test head-to-head; it is unknown which post-Muon ideas survive a
+  fair, single-setup comparison, and whether gains from {optimizer, schedule, init, second-order
+  preconditioning, EMA} are orthogonal or redundant (`v1/codex/goal.md:36-48`).
+- **G2 — Where is the noise floor, and what makes a step-count gain real?** Without a reproduction
+  and significance discipline, sub-frontier "wins" are indistinguishable from favorable seeds
+  (`v1/codex/goal.md:49-50`).
+- **G3 — How much of a near-saturated speedrun is reachable by genuinely novel mechanisms** (as
+  opposed to reusing schedule/optimizer tricks already in the literature)? This is the question
+  the hard-isolated novelty wave was built to answer.
+- **G4 — How should an autonomous agent keep its own ledger honest** when it inherits results from
+  another agent or from public PRs whose compliance it cannot take for granted?
 
-### G2: Single-best-seed records are not reproducible science
-- **Statement**: Headline step counts are a lucky tail over a noisy floor.
-- **Caused by**: O3 (seed std ~ lever size), O4 (cadence quantization).
-- **Existing attempts**: Reporting best-of-N from large sweeps.
-- **Why they fail**: ~9-12% of frontier seeds miss the target; two near-frontier configs differing by
-  10-20 steps are dominated by the miss-rate tail.
+## Key insight
 
-### G3: A "good early loss curve" is not the objective
-- **Statement**: The benchmark rewards crossing 3.28 early, not the lowest loss; an optimizer can be
-  *behind* on the loss curve for ~1700 steps and still win on step-to-3.28.
-- **Caused by**: O1, the step-count metric.
-- **Existing attempts**: Greedy early-loss minimization (full SOAP) loses early *and* never recovers.
-- **Why they fail**: A slow start only pays off if it buys conditioning, not always.
+The decisive moves in this trajectory are **methodological, not a single magic optimizer**:
 
-### G4: Where exactly does the ~17% gain come from, and how much is each piece worth?
-- **Statement**: A stacked recipe of ~10 levers gives the gain, but their individual marginal
-  contributions at the frontier were unknown.
-- **Caused by**: O2b (compositional), O6 (context-dependence).
-- **Existing attempts**: Per-lever 3-seed reproducers at the canonical point (good for sign, not for
-  frontier marginal value).
-- **Why they fail**: A lever neutral at the baseline can become critical (or dead) once the rest of
-  the recipe saturates — needs leave-one-out at the frontier.
+1. **Decouple the LR-decay horizon from the optimization horizon.** Holding `schedule_steps`
+   longer than `train_steps` keeps the LR warmer at the forced final validation, crossing target
+   earlier "for free" — the lever that first beat 3500 and recurs across every wave
+   ([C01](claims.md)).
+2. **Treat the sub-frontier region as a seed-fragility map governed by a significance gate**, not
+   as a monotone frontier to be greedily descended ([C05](claims.md), [C06](claims.md)). Every
+   submitted bin is a *fixed-cohort* result that clears `(3.28−μ)·√n ≥ 0.004` over n=16 seeds, not
+   a cherry-picked single crossing.
+3. **Add levers, then prune them.** Each wave ends with a mandatory leave-one-out pruning round
+   that quantifies every component's marginal contribution and drops the redundant ones
+   ([C07](claims.md), [C11](claims.md)) — which is how v3's submitted recipe became *simpler*
+   (`nosphere`) than its parent.
+4. **Quarantine non-compliant inheritance.** A v12 parent inherited from the other agent carried a
+   forward-path precision change; once flagged it was quarantined wholesale and the frontier was
+   rebuilt on a byte-identical-compliant base ([C08](claims.md)).
 
-## Key Insight
-- **Insight**: On a saturated step-count benchmark, the gain is a **compositional stack of many
-  small, published levers re-tuned to a shared backbone**, organized as a **temporal curriculum**
-  (explore early -> exploit late). A lever's value is a property of the *whole stack and the
-  parameter subset it touches*, not of the lever in isolation; and because the per-seed noise floor
-  is the same size as a single lever, claims must be seed-verified medians, not best-of-N.
-- **Derived from**: O1, O2b, O3, O6.
-- **Enables**: A leave-one-out ablation that ranks every component (C13); a per-role differentiation
-  principle across LR, weight decay, and schedule (C06); a seed-budget rule matched to effect size
-  (C17); and an honest account of what transfers vs what is benchmark-specific (C16).
+The *content* levers that moved the metric most — tail-only weight EMA, factorized second-moment
+preconditioning (Muon2F/MuonEq), role-specific LR/WD, outward-radial dampening, and a warm-start
+SOAP sidecar — are the subject of [C02](claims.md)–[C04](claims.md), [C09](claims.md),
+[C10](claims.md).
 
 ## Assumptions
-- A1: The architecture (GPT-124M: 12 layers, dim 768, vocab 50304), batch (8x64x1024 tokens), and
-  data (FineWeb-10B) are fixed by the benchmark rules; all conclusions hold only inside that box.
-- A2: `step_to_3_28` (first val <= 3.28) is the objective; wall-clock / per-step FLOPs are explicitly
-  free (the benchmark permits slower-per-step methods).
-- A3: The 3.28 threshold is exact; the recipe is tuned to cross *that specific number* as early as
-  possible, not to minimize loss generally.
-- A4: Numbers are taken from the run export and logs (`runs.csv`, `train.log`, `metadata.json`,
-  agent scratchpads); they are never invented. Uncertain mechanistic claims are tagged `[HYP]`.
+
+- **A1** — The submitted `record_configs/` READMEs and their `pruning_data.json` are the
+  authoritative final results; the per-wave `THREAD.md` journals are the (messier, point-in-time)
+  trajectory. Where they disagree, the record governs (see PAPER.md compile note).
+- **A2** — `final_val_loss` and the first-crossing step are read from the canonical training log
+  for a submitted run; a run "counts" only if `step_to_3.28` actually fired (a run can dip past
+  3.28 and back — `v1/codex/AGENTS.md:224-226`).
+- **A3** — The noise-floor estimates (`step_to_target ≈ 50`, `final_val_loss ≈ 0.001`) are
+  treated as stable across the experiment; they were refreshed from baseline Muon at 3 seeds and
+  not recomputed every turn (`v1/codex/plan.md:24-27`).
+- **A4** — "Compliant" means the `Architecture` and forward/normalization code of the submitted
+  script is byte-identical to baseline `train_gpt_simple.py`; only the `Optimization` and
+  `Init & Optim Hyperparams` sections differ (`v2/.../THREAD.md:130`).

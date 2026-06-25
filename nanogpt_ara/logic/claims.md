@@ -1,310 +1,438 @@
 # Claims
 
-Falsifiable takeaways from the Codex speedrun trajectory. Each `Statement` is the **mechanism or
-relationship** a result reveals — the reusable WHY — with the named recipes, run IDs, and numbers
-demoted to `Evidence basis` / `Proof` and the evidence layer. Numbers in `**Sources**` are quoted
-verbatim from the cited file and were opened during compilation. Provenance: all claims are
-`ai-executed` (produced by the Codex agent's own runs) unless noted.
+Mechanism-level, falsifiable takeaways from the Codex speedrun. Each `Statement` is the reusable
+*why*; named recipes, run IDs, bins, and scores live in `Evidence basis`/`Proof`/`Sources`, never
+in the `Statement`. `Proof` references experiment IDs in [experiments.md](experiments.md).
+Provenance: all claims are `ai-executed` (the agent ran the experiments); the significance and
+compliance disciplines (C06, C08) were `user-revised` (the human operator set or tightened the
+rule).
+
+Load-bearing numbers are grounded against firsthand-opened sources: the submitted
+`record_configs/*/README.md`, their `pruning_data.json` (also mirrored under
+[../evidence/data/](../evidence/data/)), and the per-wave `*/codex/scratchpad/THREAD.md` journals.
 
 ---
 
-## C01 — Decoupling the LR-decay horizon from the training-stop step is the foundational step-compression lever
+## C01 — Decoupling the LR-decay horizon from the optimization horizon compresses step count
 
-**Statement.** On this benchmark, running the canonical learning-rate cooldown *schedule* to a
-nominal horizon while *stopping* training at a smaller step count crosses the loss target in fewer
-steps than recomputing a shorter cooldown — because the canonical trajectory sits only marginally
-above target at intermediate checkpoints, so the gain comes from *reading the crossing earlier on
-the same curve* rather than from a faster-decaying curve. Every submitted record is built on this
-schedule/stop decoupling.
+**Statement.** Holding the learning-rate schedule's decay length longer than the number of
+optimization steps actually taken keeps the LR warmer at the forced final validation than a
+matched-length cosine would, so a near-miss model crosses the target loss earlier without any
+change to the optimizer — step-count is recovered "for free" from the schedule geometry alone.
 
-**Conditions.** nanoGPT track_3, Muon-family optimizers, 3.28 target, cosine/linear/power-law
-cooldowns. Untested: whether the decoupling helps under schedules with no long shallow tail, or once
-the stop step is pushed far below the schedule horizon (where the cooldown is too steep to have
-flattened).
-**Status.** Supported (foundational across v1/v2/v3).
-**Falsification criteria.** A matched run with `schedule_steps = train_steps` (a genuinely shorter
-cooldown) reaching the same or lower bin would refute the mechanism; so would the decoupled run
-crossing *later* than the shorter-cooldown run at equal stop step.
+**Conditions.** Holds for the Muon/NorMuon/Muon2F/Adam-mini families on this 124M-GPT speedrun
+near the 3.28 threshold, where the matched-length baseline is already a few thousandths above
+target. Untested boundary: how far the decay/optimization horizons can diverge before the colder
+intermediate LR costs more than the warmer endpoint buys (the agent observed a seed-dependent
+cliff below which a too-short optimization horizon lags from mid-training and cannot recover).
+
+**Status.** Supported (corroborated across every wave; it is the first lever that beat 3500 and
+recurs as `h<sched>-stop<train>` and `FINAL_SCHEDULE_STEPS`≠`FINAL_TRAIN_STEPS` throughout).
+
+**Falsification criteria.** If, on this benchmark, runs with `schedule_steps > train_steps` cross
+3.28 no earlier (within the seed noise floor) than the best matched-length schedule at equal
+`train_steps`, the mechanism is refuted. System-level: if the gain disappeared once the
+intermediate LR is held fixed, the effect would not be the schedule-horizon decoupling.
+
 **Proof.** E01.
-**Evidence basis.** v1 record uses `schedule_steps=3375` with submitted bin 3205; v3 record uses
-`train_steps=3020`, `schedule_steps=3025` with submitted bin 2949 (the run continues past the logged
-crossing). The wave's first reproduced improvement was a `stop3450` horizon run.
-**Dependencies.** —
+
+**Evidence basis.** The baseline is `3.28106` at step 3375 vs `3.27658` at 3500, motivating a
+forced early validation under the long schedule; `horizon3500-stop3450` then crossed at step 3450,
+the first sub-3500 hit, reproduced on a second seed. The same lever (`FINAL_SCHEDULE_STEPS=3025`,
+`FINAL_TRAIN_STEPS=3020`) is the backbone of the v3 schedule in `worker192/193`.
+
 **Sources.**
-- "Muon `mu` schedule … **linear LR cooldown on `schedule_steps=3375`**" ← `record_configs/20260515_codex_v1_v12iso_3205/README.md:11` [input]
-- "PR #287 power-law cooldown constants with `train_steps=3020`, `schedule_steps=3025`" ← `record_configs/20260515_codex_v3_nosphere_2949/README.md:11` [input]
-- "The runs continue to `train_steps=3020`, but the submitted bin is the logged step-2949 checkpoint" ← `record_configs/20260515_codex_v3_nosphere_2949/README.md:16` [input]
+- `3.28106`@3375, `3.27658`@3500 ← `v1/codex/scratchpad/THREAD.md:142` «schedule was `3.28106` at step 3375 and `3.27658` at 3500, so a forced final validation at 3450 may already beat the target without compressing cooldown» [result]
+- first sub-3500 hit `3.27844`@3450 ← `v1/codex/scratchpad/THREAD.md:187-189` «Run `horizon3500-stop3450-seed0` hit target: … at step 3450 with `val_loss=3.27844` … This beats the 3500-step baseline» [result]
+- schedule≠train in v3 ← `v3/codex/scratchpad/THREAD.md:1039` «`FINAL_SCHEDULE_STEPS` 3025 and 3015 while keeping `FINAL_TRAIN_STEPS=3020`» [input]
 
 ---
 
-## C02 — Second-moment normalization of the orthogonalized Muon update (NorMuon → Muon2F) is a top-tier optimizer contributor to step compression
+## C02 — Tail-only weight EMA at evaluation is the single largest step-count lever in the v1 stack; uniform tail averaging is worse
 
-**Statement.** Normalizing Muon's Newton–Schulz output by per-row / factorized second moments
-(NorMuon's row normalization, Muon2F's two-factor preconditioning) materially lowers the bin: it
-stabilizes the compressed-cooldown tail by equalizing per-row update magnitudes, buying mid/late-curve
-margin that a single global Muon step does not. In the final v1 stack, removing the factorized
-preconditioner is the second-largest degradation of any single component.
+**Statement.** Evaluating on an exponential moving average of the late-training weights (swapped
+in for the final validation, then restored) supplies a lower-variance evaluation point than the
+still-noisy online weights, converting a near-miss into a crossing without altering the training
+trajectory; a uniform (SWA-style) average of the same tail is consistently inferior because it
+weights stale early-tail weights as heavily as the most-converged ones.
 
-**Conditions.** Muon matrix optimizer on a 124M GPT at a compressed horizon; hidden matrices only
-(the v1 stack applies Muon2F hidden-only). Untested at full horizon or on the auxiliary groups.
-**Status.** Supported.
-**Falsification criteria.** A leave-one-out removal of the factorized preconditioner that changes
-validation loss within ±1× the noise floor would refute its load-bearing status.
-**Proof.** E02.
-**Evidence basis.** v1 component-pruning sweep at step 3195: `noMuon2f` is the 2nd-largest positive
-delta; the NorMuon `beta=0.90` family carried the wave from 3450 down to 3350.
-**Dependencies.** C01.
+**Conditions.** Established on the v1 Muon2F/Adam-mini stack with EMA β≈0.99 starting in the late
+schedule; it is an evaluation-time transformation, so it cannot move the training dynamics, only
+the reported endpoint. Untested boundary: whether the same lever is the *largest* contributor on
+stacks (v2/v3) where role-LR/SOAP already dominate.
+
+**Status.** Supported (largest single leave-one-out contribution in the v1 record; SWA dominated
+by EMA in direct comparison).
+
+**Falsification criteria.** If removing tail-EMA from the submitted v1 stack and re-running n
+seeds changes the crossing step by less than the noise floor, or if a matched uniform-SWA tail
+average matches EMA within noise, the claim is refuted.
+
+**Proof.** E03, E04.
+
+**Evidence basis.** In the v1 leave-one-out pruning rerun, removing tail-EMA is the worst single
+ablation (`noTailEMA` raises val by `+0.00251`, the top bar), ahead of every other component; the
+agent separately recorded that "fixed SWA is consistently worse" and declined to expand it.
+
 **Sources.**
-- `noMuon2f` removal worsens validation by `+0.00229` (`mean 3.28136` vs baseline `3.27907`) ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:104-106` «"delta": 0.0022899999999999032, "label": "noMuon2f", "mean": 3.28136» [result]
-- "NorMuon with Polar-Express-style Newton-Schulz projection and row/column preconditioning on hidden matrices." ← `record_configs/20260515_codex_v1_v12iso_3205/README.md:6` [input]
+- `noTailEMA` Δval `+0.00251` (largest) ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:113-114` «"label": "noTailEMA" … "mean": 3.28158» (delta `0.0025100000000000122` vs baseline `3.27907`) [result]
+- SWA worse ← `v1/codex/scratchpad/THREAD.md:1813` «do not expand SWA because fixed SWA is consistently worse» [result]
+
+**Dependencies.** Builds on C01 (the EMA lever operates at the forced final-validation step set by the schedule decoupling).
 
 ---
 
-## C03 — Eval-only tail weight-averaging (tail-EMA) compresses the bin but is seed-fragile near the floor
+## C03 — Factorized row/column second-moment preconditioning of the matrix update is a large, reusable optimizer contributor
 
-**Statement.** Maintaining an exponential moving average of the weights during the late phase and
-swapping it in *only for validation* lets the loss cross the target a few steps earlier, because it
-averages away late-training weight noise rather than changing the optimization trajectory. It is the
-single most load-bearing component of the v1 stack — but its margin is small relative to seed
-variance, so below ~3195 steps the crossing becomes seed-fragile (some seeds miss).
+**Statement.** Replacing the plain Muon matrix update with one that applies row/column-normalized
+(factorized two-factor) second-moment preconditioning — the Muon2F / MuonEq family — is among the
+largest single optimizer-side step-count gains, independent of and stacking on top of the
+schedule and evaluation levers.
 
-**Conditions.** Eval-only averaging (weights restored under `torch.no_grad()` after eval), decay
-~0.99, start ~step 2000, on the v1 Muon2F/Adam-mini stack. The fragility boundary (~3195) is
-specific to this stack and noise floor.
-**Status.** Supported; bounded by seed fragility.
-**Falsification criteria.** Removing tail-EMA changing validation within ±1× noise floor would
-refute its load-bearing status; conversely, a reproduced multi-seed crossing well below 3195 with
-the same EMA settings would refute the fragility bound.
-**Proof.** E03.
-**Evidence basis.** v1 pruning at step 3195: `noTailEMA` is the largest single positive delta.
-**Dependencies.** C02.
+**Conditions.** Holds on this benchmark's hidden weight matrices (attention and MLP projections);
+in v1 it appears as "Muon2F" hidden-only preconditioning, in the compliant v2 stack as the
+"MuonEq" row-normalized update. Untested boundary: whether the two formulations are
+interchangeable at equal tuning, and whether the gain persists once SOAP-style preconditioning
+(v3) is also present.
+
+**Status.** Supported (second-largest single ablation in v1; largest *inherited* optimizer
+ablation in v2).
+
+**Falsification criteria.** If removing the factorized second-moment preconditioning from the v1
+or v2 submitted stacks and re-running n seeds moves the crossing step by less than the noise
+floor, the contribution is not real.
+
+**Proof.** E02, E04, E07.
+
+**Evidence basis.** v1 leave-one-out: `noMuon2f` is the second-worst ablation (`+0.00229`). v2
+leave-one-out: `noMuonEq` is the single largest *content* ablation (`+0.00353`), ahead of every
+v2-specific addition.
+
 **Sources.**
-- `noTailEMA` removal worsens validation by `+0.00251` (`mean 3.28158`), the largest single delta ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:112-114` «"delta": 0.0025100000000000122, "label": "noTailEMA", "mean": 3.28158» [result]
-- "Tail EMA evaluation starting at step 2000 (`beta=0.99`)." ← `record_configs/20260515_codex_v1_v12iso_3205/README.md:10` [input]
+- v1 `noMuon2f` Δval `+0.00229` ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:104-106` «"label": "noMuon2f" … "mean": 3.28136» (delta `0.0022899999999999032`) [result]
+- v2 `noMuonEq` Δval `+0.00353` ← `record_configs/20260515_codex_v2_legal_3037/pruning_data.json:80-82` «"label": "noMuonEq" … "mean": 3.28238» (delta `0.003530000000000033`) [result]
 
 ---
 
-## C04 — Scheduling the matrix momentum (mu-schedule) is a transferable, load-bearing schedule lever across waves
+## C04 — Splitting learning rate and weight decay by parameter role is a productive lever once a single body-wide value is saturated
 
-**Statement.** Warming the Muon momentum coefficient up early and cooling it down over the final
-steps (the "mu-schedule") improves the bin in more than one independently-built stack, indicating
-the gain attaches to the *training-dynamics regime* (early exploration vs late settling) rather than
-to any one optimizer recipe. It is a meaningful contributor in the v1 stack and the **single
-largest** contributor in the v2 stack.
+**Statement.** Once a single body-wide Muon LR and weight decay are tuned out, assigning
+*role-specific* LR multipliers and weight-decay values to the different parameter groups
+(q/k, v, attn.proj, mlp.fc, mlp.proj) recovers further step-count where uniform scalars and plain
+reseeding stall — different roles want measurably different effective step sizes near the loss
+boundary.
 
-**Conditions.** Muon-family matrix optimizer; `0.85 → 0.95` warmup with a short `0.95 → 0.85` final
-cooldown. Demonstrated in v1 and v2; not isolated as a standalone universal law.
-**Status.** Supported (corroborated across two waves).
-**Falsification criteria.** A leave-one-out removal of the mu-schedule changing validation within
-±1× noise floor in *both* waves would refute its load-bearing status.
-**Proof.** E04.
-**Evidence basis.** v1 pruning (`noMuSched` mid-table positive delta) and v2 pruning (`noMuSched`
-the largest delta) both keep it.
-**Dependencies.** C01.
+**Conditions.** Established on the compliant v2 stack near the ~3000-step regime; role-LR is the
+larger of the two (role-WD is a smaller refinement). Untested boundary: whether the optimal
+per-role split transfers to the v3 public-PR backbone, which re-derives its own role structure
+(Soft/SOAP on MLP+V).
+
+**Status.** Supported (role-LR is a top-four v2 ablation; role-WD a smaller but positive one).
+
+**Falsification criteria.** If collapsing the role-specific LR/WD vectors back to their best
+single body-wide values costs less than the noise floor over n seeds on the v2 stack, the lever is
+not real.
+
+**Proof.** E06, E07.
+
+**Evidence basis.** v2 leave-one-out: `noRoleLR` is the largest v2-*specific* ablation
+(`+0.00292`, fourth overall behind the inherited mu-schedule, cooldown-floor, and MuonEq);
+`noRoleWD` is smaller but positive (`+0.00041`). The submitted record names the per-role
+multipliers (q/k `0.61875`, v `0.625`, attn.proj `0.6375`, mlp.fc `1.0125`, mlp.proj `0.9875` of
+base LR `0.045`) and per-role WD around `0.027..0.0315`.
+
 **Sources.**
-- v2: `noMuSched` removal worsens validation by `+0.00459` (`mean 3.28344`), the largest v2 delta ← `record_configs/20260515_codex_v2_legal_3037/pruning_data.json:96-98` «"delta": 0.004590000000000316, "label": "noMuSched", "mean": 3.28344» [result]
-- v1: `noMuSched` removal worsens validation by `+0.00091` (`mean 3.27998`) ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:96-98` «"delta": 0.0009100000000001884, "label": "noMuSched", "mean": 3.27998» [result]
+- `noRoleLR` Δval `+0.00292` ← `record_configs/20260515_codex_v2_legal_3037/pruning_data.json:72-74` «"label": "noRoleLR" … "mean": 3.28177» (delta `0.0029200000000000337`) [result]
+- `noRoleWD` Δval `+0.00041` ← `record_configs/20260515_codex_v2_legal_3037/pruning_data.json:32-34` «"label": "noRoleWD" … "mean": 3.27926» (delta `0.00041000000000002146`) [result]
+- per-role multipliers ← `record_configs/20260515_codex_v2_legal_3037/README.md:8` «Role-specific Muon LR multipliers: q/k `0.61875`, v `0.625`, attn.proj `0.6375`, mlp.fc `1.0125`, mlp.proj `0.9875` of base LR `0.045`» [input]
 
 ---
 
-## C05 — Role-specific LR/WD splitting of the Muon matrix groups improves the tail at fixed average budget
+## C05 — Below the formal frontier, the low-step region is a seed-fragility map, not a monotone frontier
 
-**Statement.** Splitting the Muon learning rate and weight decay by tensor *role* (q, k, v,
-attn.proj, mlp.fc, mlp.proj) — while holding the parameter-weighted averages at the body-wide
-values — lowers the bin, because different roles want different effective step/shrinkage scales that
-a single body-wide value cannot give. The role-LR split is a top-tier contributor in the v2 stack;
-the role-WD split is real but smaller.
+**Statement.** Near the loss threshold the per-run outcome (cross / miss) is dominated by seed
+noise rather than by the recipe, so a single-seed crossing at a lower step count is overwhelmingly
+likely to be the favorable tail of a distribution whose mean still misses — descending the bin one
+seed at a time measures noise, not progress.
 
-**Conditions.** v2 legal stack, base Muon LR `0.045` / base WD `0.030`, the six-role split. The
-averages are held fixed, so the gain is from *reallocation*, not a net LR/WD change.
-**Status.** Supported.
-**Falsification criteria.** A role-split whose multipliers are reset to the body-wide value (recovering
-the average) matching the split's bin would refute the reallocation mechanism.
-**Proof.** E05.
-**Evidence basis.** v2 pruning: `noRoleLR` is the 4th-largest delta; `noRoleWD` is small but kept.
-**Dependencies.** C04.
+**Conditions.** This is the central methodological regularity of the whole experiment; it holds in
+every wave (v1 lower-stop brackets, v2's sub-2992 frontier, v3's sub-2900 push, and the novelty
+wave's single-seed crossings) wherever step counts approach the point where the cohort mean sits
+near 3.28. It does not say recipes never help — it says *unreproduced single crossings* are not
+evidence that they do.
+
+**Status.** Supported (corroborated across all four waves; the agent's lawful core encodes it as a
+two-seed-reproduction requirement).
+
+**Falsification criteria.** If, on this benchmark, single-seed sub-frontier crossings reproduced
+on independent seeds at a rate far above chance (so that a lone crossing reliably predicted a
+cohort-mean crossing), the "fragility map" framing would be wrong and greedy descent would be
+valid.
+
+**Proof.** E02, E06, E10, E12.
+
+**Evidence basis.** v1: a representative lower-stop bracket splits hit/miss across seeds, prompting
+the agent's own verdict that the region is "a seed-fragility map, not a promotion path by itself."
+v2: every low-step family's *cohort* z-score is negative even where single runs crossed. Novelty:
+single-seed crossings (NGI, NDF, VFG) failed second-seed reproduction or were sub-noise-floor.
+
 **Sources.**
-- `noRoleLR` removal worsens validation by `+0.00292` (`mean 3.28177`) ← `record_configs/20260515_codex_v2_legal_3037/pruning_data.json:72-74` «"delta": 0.0029200000000000337, "label": "noRoleLR", "mean": 3.28177» [result]
-- "Role-specific Muon LR multipliers: q/k `0.61875`, v `0.625`, attn.proj `0.6375`, mlp.fc `1.0125`, mlp.proj `0.9875` of base LR `0.045`." ← `record_configs/20260515_codex_v2_legal_3037/README.md:8` [input]
-- role LR multipliers in the recipe ← `src/execution/v2_legal_v12opt_recipe_ts3037.py:320-323` «_ATTN_Q_LR_MULT = 0.61875 … _ATTN_PROJ_LR_MULT = 0.63750» [input]
+- v1 verdict ← `v1/codex/scratchpad/THREAD.md:976` «the lower-stop region is a seed-fragility map, not a promotion path by itself» [result]
+- v2 cohorts negative ← `v2/codex/scratchpad/THREAD.md:802` «the low-step frontier families do not pass `(3.28 - mu) * sqrt(n) >= 0.004`: `ts2962` n=38 mean 3.28243 score -0.01496 … `ts2982` n=17 mean 3.28131 score -0.00539» [result]
+
+**Dependencies.** Motivates C06 (the significance gate is the operational response to this fragility).
 
 ---
 
-## C06 — A softened Lookahead slow-pull on the matrix weights damps late jitter and contributes a real but modest gain
+## C06 — A speedrun result is claimable only under a fixed-cohort significance margin, not a single best run
 
-**Statement.** A Lookahead variant that interpolates the live matrix weights toward a slow copy
-*without resetting the fast weights to the slow copy* damps late-training matrix-weight jitter and
-lowers the bin. Removing it costs a contribution comparable to the Polar-Express NS coefficients —
-real, but an order of magnitude below the schedule/preconditioner levers — so it is a refinement,
-not a primary driver.
+**Statement.** Because of C05, a valid step-count submission must clear a pre-planned fixed-cohort
+significance margin over many non-cherry-picked seeds — with an anti-"val-spam" same-checkpoint
+scan so the reported bin is the earliest *common* checkpoint whose cohort mean clears the bar —
+rather than resting on a single best run; selecting a lone low-tail crossing is p-hacking and is
+rejected even when that crossing is real.
 
-**Conditions.** v2 legal stack; pull ramped in via a smoothstep from step 2450
-(`ALPHA=0.35, PULL=0.15, INTERVAL=25, RAMP=150`). The "no fast-weight reset" detail distinguishes it
-from standard Lookahead.
-**Status.** Supported (modest effect).
-**Falsification criteria.** Removing the lookahead changing validation within ±1× noise floor, or a
-standard reset-Lookahead matching it, would weaken the claim.
-**Proof.** E06.
-**Evidence basis.** v2 pruning: `noLookahead` ties `noPolarExpress` at `+0.00117`.
-**Dependencies.** C05.
-**Sources.**
-- `noLookahead` removal worsens validation by `+0.00117` (`mean 3.28002`) ← `record_configs/20260515_codex_v2_legal_3037/pruning_data.json:64-66` «"delta": 0.0011700000000001154, "label": "noLookahead", "mean": 3.28002» [result]
-- lookahead params ← `src/execution/v2_legal_v12opt_recipe_ts3037.py:393-397` «_LOOKAHEAD_START_STEP = 2450 … _LOOKAHEAD_ALPHA = 0.35 … _LOOKAHEAD_PULL = 0.15 … _LOOKAHEAD_RAMP_STEPS = 150» [input]
+**Conditions.** This is the benchmark's acceptance rule as the agent operationalized it; all three
+submitted records (v1, v2, v3) were validated at n=16 under it, and lower single-seed crossings
+(v1's 3170, v2's 2962/2963) were rejected by it. The threshold constant `0.004` and the
+σ≈0.0013 z-conversion are properties of this benchmark's stated rule, not of the optimizer.
 
----
+**Status.** Supported (the rule selected every submitted bin and rejected every sub-frontier
+single-seed crossing).
 
-## C07 — In the public-frontier (v3) stack, SOAP preconditioning and outward-radial dampening are the load-bearing components
+**Falsification criteria.** Methodological: if a submission that passed `(3.28−μ)·√n ≥ 0.004` at
+n=16 systematically failed to reproduce its cohort mean on a fresh independent n=16 draw, the gate
+would not be doing its job. If the rejected lower single-seed crossings (e.g. v1 s3170, v2 ts2962)
+had instead passed a fresh fixed cohort, the gate would be too conservative.
 
-**Statement.** When a deep multi-lever public-PR stack (Soft-Muon + Contra + radial + SOAP + LACV +
-power-law cooldown) is compressed, the dominant contributions come from *preconditioning* (SOAP,
-extended to MLP+V) and from *outward-radial update dampening* — removing SOAP is the single largest
-degradation, and removing the radial control is the second. The many late micro-levers around them
-contribute far less. The benefit of preconditioning + radial control therefore concentrates the
-stack's value, mirroring the v1 pattern (preconditioning + averaging dominate).
-
-**Conditions.** v3 nosphere stack at step 2949; SOAP in `mlp_plus_v` mode with V-blend 0.95; radial
-outward scale 0.45 with a tail guard. Demonstrated on the public-PR lineage, not isolated from it.
-**Status.** Supported.
-**Falsification criteria.** A leave-one-out removal of SOAP or radial control changing validation
-within ±1× noise floor would refute their load-bearing status.
-**Proof.** E07.
-**Evidence basis.** v3 W258 leave-one-out at step 2949: `nosoap` and `noradial` are the two largest
-positive deltas; `novsoap` (V-SOAP only) is third.
-**Dependencies.** C01, C08.
-**Sources.**
-- `nosoap` removal worsens validation by `+0.00528` (`mean 3.28370`), the largest v3 delta ← `record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json:64-66` «"delta": 0.005283124999999611, "label": "nosoap", "mean": 3.2836999999999996» [result]
-- `noradial` removal worsens validation by `+0.00374` (`mean 3.28216`), the 2nd-largest delta ← `record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json:56-58` «"delta": 0.0037431249999997362, "label": "noradial", "mean": 3.2821599999999997» [result]
-
----
-
-## C08 — Leave-one-out pruning reveals that late stacked micro-levers contribute within noise and are removable, and that co-located mechanisms need not compose
-
-**Statement.** A mandatory leave-one-out pruning round repeatedly finds that, once a deep stack is
-built, several late-added micro-levers contribute within ±noise (or slightly *negative*) and can be
-dropped at no cost — the "nosphere" result drops the sphere-lookahead pull to zero while preserving
-the step-2940 boundary. Moreover two mechanisms that target the same locus need not compose: removing
-the sphere *pull* helps, and a separate variant removing the tangent *gate* is independently valid,
-but removing *both* loses the boundary. Pruning is thus a load-bearing epistemic step, not bookkeeping.
-
-**Conditions.** Applied to the v1 (step 3195) and v3 (step 2949) stacks; "co-located non-composition"
-shown for the v3 sphere pull vs tangent gate. The specific droppable set is stack-specific.
-**Status.** Supported.
-**Falsification criteria.** If every leave-one-out removal worsened validation by ≥ 1× noise floor
-(no droppable micro-levers), or if the two sphere removals composed without losing the boundary, the
-claim would be refuted.
 **Proof.** E08.
-**Evidence basis.** v1 pruning: `noResPulse`, `noMomRefresh`, `noBeta2Thaw` have ≤ 0 deltas (removal
-does not hurt). v3 pruning: the `nosphere` baseline already *is* the pruned stack; the combined
-`nosphere-notangent` removal carries a positive (degrading) delta.
-**Dependencies.** —
+
+**Evidence basis.** v1's statistical pass selects `s3220`/`s3195`/`s3296` as claimable and
+explicitly *rejects* `s3170` (negative score). v2 switches "from frontier search to
+submission-validity verification," finds the low-step families fail the margin, and certifies the
+fixed +75 cohort `ts3037` (mean `3.2783775`, score `0.004589`, z≈3.53, p≈0.000208) as the earliest
+common checkpoint that passes. The submitted records report n=16 margins of `0.00411250` (v1),
+`0.00588000` (v2), `0.00455500` (v3).
+
 **Sources.**
-- v1 `noResPulse` delta `-0.00007` (removal does not worsen) ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:24-26` «"delta": -7.00000000000145e-05, "label": "noResPulse"» [result]
-- v3 `nosphere-notangent` (combined removal) degrades by `+0.00070` ← `record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json:80-82` «"delta": 0.0007014583333342372, "label": "nosphere-notangent", "mean": 3.2791183333333342» [result]
-- "the sphere-lookahead pull is disabled (`SPHERE_LOOKAHEAD_PULL=0.0`), hence the submitted `nosphere` stack." ← `record_configs/20260515_codex_v3_nosphere_2949/README.md:12` [input]
-- the prune in code (pull 0.0, tangent gate retained) ← `src/execution/v3_nosphere_recipe_ts3020.py:144,156` «SPHERE_LOOKAHEAD_RADIAL_PARAM = "q,k" … SPHERE_LOOKAHEAD_PULL = 0.0» [input]
+- v1 rule + rejection ← `v1/codex/scratchpad/THREAD.md:2232` «Claimable by `((3.28 - mu) * sqrt(n) >= 0.004)`: `v12iso-musched-h3375-s3220` `n=12`, `mu=3.278060`, score `0.006720` … Rejected: `v12iso-musched-h3375-s3170` `n=15`, `mu=3.280266`, negative score» [result]
+- v2 certification ← `v2/codex/scratchpad/THREAD.md:810` «mean 3.2783775; score `(3.28 - mu) * sqrt(8) = 0.004589` … 3025 does not pass (mean 3.279132, score 0.002454), while final step 3037 is the earliest common validation checkpoint that passes» [result]
+- v1 record n=16 margin `0.00411250` ← `record_configs/20260515_codex_v1_v12iso_3205/README.md:21-24` «n = 16 / mean val loss = 3.27897187 / (3.28 - mu) * sqrt(n) = 0.00411250» [result]
+- v3 record n=16 margin `0.00455500` ← `record_configs/20260515_codex_v3_nosphere_2949/README.md:21-25` «n = 16 / mean val loss = 3.27886125 / (3.28 - mu) * sqrt(n) = 0.00455500» [result]
+
+**Dependencies.** C05.
 
 ---
 
-## C09 — Individually-helpful levers do not stack additively near the noise floor; a package can wash out while one isolated lever carries the gain
+## C07 — Stacked modifier packages wash out late even when each gains mid-curve; leave-one-out pruning recovers the real stack
 
-**Statement.** Combining several levers that each help in isolation can *fail* as a package: in the
-v1 wave the full "v12" multi-lever package missed every stop it was tried at, while the **isolated**
-mu-schedule lever — the same wave, one lever — reproduced the frontier. Near the noise floor, lever
-effects are not additive; interactions can cancel, so isolating a single lever can beat stacking
-many. This is a direct counter-instance to the orthogonal-and-additive assumption (gap G2).
+**Statement.** Combining many modifiers that each improve the mid-training curve does not
+reliably preserve the gain to the final validation — the package can miss where an isolated lever
+hits — so an explicit removal mechanism (leave-one-out pruning that measures each component's
+marginal contribution and drops the redundant ones) is required for the stack to stay
+attributable and to keep its smallest faithful form.
 
-**Conditions.** v1 wave, the "v12" lever set (attention-LR, pre-NS row-L2, embed-init, Contra)
-packaged vs the mu-schedule isolated. Shown at the compressed horizon near the seed-noise floor.
-**Status.** Supported (single decisive instance + corroborated by the cross-wave pruning pattern in C08).
-**Falsification criteria.** If the full v12 package had reproduced a bin at or below the isolated
-mu-schedule's bin, the non-additivity claim would be refuted.
-**Proof.** E09.
-**Evidence basis.** v1 `THREAD.md`: full/simplified `v12pack` variants missed all stops; isolated
-`v12iso-musched` hit and reproduced. The submitted v1 record is named the "v12iso/MuSched" stack.
-**Dependencies.** C04, C08.
+**Conditions.** Holds across the experiment: v1 found stacked "v12 packages" missed while the
+isolated mu-schedule lever hit; every wave ends in a mandatory pruning round; v3's submitted
+recipe is *simpler* than its parent because pruning removed a redundant component. Untested
+boundary: the pruning verdicts are single-/few-seed leave-one-out deltas (n=8 in v1/v2, n=3–16 in
+v3), so very small contributions sit within their own noise.
+
+**Status.** Supported (the pruning rounds are first-class artifacts with quantified per-component
+deltas; v1 and v2 leave-one-out tables resolve which modifiers are load-bearing vs droppable).
+
+**Falsification criteria.** If a leave-one-out "redundant" component (Δval ≈ 0 within noise) turned
+out to cost more than the noise floor when removed in a fresh independent cohort, or if a stacked
+package reliably retained all its mid-curve gains at final validation, the claim is wrong.
+
+**Proof.** E04, E07, E11.
+
+**Evidence basis.** v1: stacked `v12pack` packages missed while the isolated mu-schedule lever was
+the reproduced lead; the v1 pruning table spans an order of magnitude in per-component Δval (from
+`noTailEMA +0.00251` down to `noResPulse −0.00007`, i.e. some components are net-removable). v3:
+`nosphere` (C11) is a leave-one-out *removal* that the agent submitted.
+
 **Sources.**
-- "This is the **v12iso/MuSched** codex stack." ← `record_configs/20260515_codex_v1_v12iso_3205/README.md:5` [input]
-- v1 package-vs-isolate finding (full v12 package missed all stops; isolated mu-schedule hit) ← `v1/codex/scratchpad/THREAD.md:2202,2208` [pending: THREAD line read by extraction subagent, not re-opened this compile]
+- v1 isolated lever beats package ← `v1/codex/plan.md:12` «Full `v12pack-hbin` missed all completed seed0 stops … Isolated `mu_schedule` is now the reproduced lead» [result]
+- removable component (negative Δ) ← `record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json:24-29` «"label": "noResPulse" … "delta": -7.00000000000145e-05» [result]
+
+**Dependencies.** Pruning is mandated by the lawful core (see [solution/constraints.md](solution/constraints.md)).
 
 ---
 
-## C10 — An un-audited forward-path precision change can masquerade as an optimizer gain; only provenance + byte-identical compliance lets a speedrun gain be attributed correctly
+## C08 — A cross-agent parent that changes the forward path is non-compliant and must be quarantined regardless of how much it helped
 
-**Statement.** A numerical change inside the model's forward path (here, a `RMSNorm.forward` that
-upcasts via `norm(x.float())` and routes q/k through the same helper, inherited from a *different
-agent's* "v12" stack) materially produced the apparent sub-3000-step advantage — not the optimizer.
-Once flagged as a benchmark-rule (architecture) violation, all v12-derived results had to be
-quarantined and the frontier rebuilt on a byte-identical-compliant base, which regressed the
-submittable bin from a single-seed crossing at 2963 to 3037. The lesson: a speedrun gain is only
-attributable to the optimizer when the forward path is provably unchanged; provenance + a
-compliance gate are prerequisites for any cross-stack comparison.
+**Statement.** Inheriting a high-performing parent from another agent does not transfer its
+validity: when that parent altered the model's forward/normalization path (here, an
+`RMSNorm.forward` casting change and routing q/k normalization through the helper), it violates
+the no-architecture-change rule, so every result derived from it is invalid and must be excluded
+from the frontier — even after confirming the change "materially helped" — and the submittable
+frontier must be rebuilt on a byte-identical-compliant base.
 
-**Conditions.** v2 wave; the inherited parent is the cc/Claude agent's "v12" stack (cross-agent
-provenance). The violation is a bf16 forward-path precision change, not an optimizer change.
-**Status.** Supported (a decisive epistemic event, recorded with attribution).
-**Falsification criteria.** If the compliant rebuild (baseline `RMSNorm.forward`) had reached the
-same sub-3000 bins as the tainted base, the forward-path change would not have been the source of the
-advantage and the claim would be refuted.
-**Proof.** E10.
-**Evidence basis.** The compliant `legal_v12opt` recipe uses the baseline RMSNorm form; the v2 record
-is the legal frontier at 3037; the single-seed crossing reached 2963 only on the search path.
-**Dependencies.** C04, C05.
+**Conditions.** Specific to benchmarks whose rules pin the forward path (here, only the
+`Optimization` and `Init & Optim Hyperparams` sections may change; forward/norm code must be
+byte-identical). The judgement that the change helped means the quarantine *costs* real
+performance — that is the point: epistemic validity outranks the score.
+
+**Status.** Supported (the quarantine was executed: jobs cancelled, the `v2cx` family
+disqualified, the prefix switched to `v2cxleg`, the frontier rebuilt; the submitted v2 record is
+the compliant `legal_v12opt` stack).
+
+**Falsification criteria.** Methodological: if the flagged `RMSNorm.forward` change were shown to
+leave the bf16 forward output bit-identical to baseline across the validation set, it would not be
+a forward-path change and the quarantine would be unnecessary. If the rebuilt compliant frontier
+matched the quarantined one within noise, the change would not in fact have "materially helped."
+
+**Proof.** E05.
+
+**Evidence basis.** The user flagged the inherited `RMSNorm.forward` precision change as a
+forward-path violation; the agent immediately cancelled the live `v2cx` jobs and quarantined all
+v12-derived results, while explicitly recording that the invalid change *had* helped the sub-3000
+behavior, then rebuilt the compliant `legal_v12opt` family.
+
 **Sources.**
-- "the user then flagged its `RMSNorm.forward` / q-k-norm as a forward-path precision change that violates the no-architecture-change rule, and Codex **quarantined** every v12-derived result" ← `README.md:67-69` [input]
-- "The *submittable* v2 frontier (**C04**, `legal_v12opt` @ 3037) is rebuilt on a byte-identical-compliant base." ← `README.md:70-71` [input]
-- "legal frontier bin 3037 (single-seed crossing at 2963)" ← `README.md:18` [input]
-- compliant baseline RMSNorm.forward in the recipe ← `src/execution/v2_legal_v12opt_recipe_ts3037.py:65` «return F.rms_norm(x, (x.size(-1),), weight=self.gains.type_as(x))» [input]
-- the handed parent's provenance ← `v2/codex/goal.md:8` «**Best: 3025 steps** — cc-agent's v12 stack» [input]
+- the flag ← `v2/codex/scratchpad/THREAD.md:126` «User flagged a real architecture/forward-pass violation: every v12-derived codex variant inherited `RMSNorm.forward` as `(norm(x.float()) * self.gains).type_as(x)` instead of the workspace baseline `F.rms_norm(...)` … This is a precision/behavior change in the forward path and is invalid for this track even if mathematically close» [result]
+- the quarantine ← `v2/codex/scratchpad/THREAD.md:128` «all v12-derived `v2cx` results are now quarantined and must not be reported as valid frontier improvements» [result]
+- it helped (cost of compliance) ← `v2/codex/scratchpad/THREAD.md:154` «the invalid forward-path change materially helped the sub-3000 behavior» [result]
 
 ---
 
-## C11 — Under a hard novelty constraint plus isolation, the noise-dominated regime yields a negative result: no derived novel mechanism survived both reproduction and the 2× noise-floor gate
+## C09 — Outward-radial dampening helps because it preserves the late "catch-up" tail, and only tail-activated
 
-**Statement.** Requiring every submission to contain a non-published mechanism, while forbidding the
-search from porting-and-tuning published methods, produced no promotable result on this benchmark.
-The best *reproduced* novel crossing was a 25-step gain — below the 2× (≈100-step) noise-floor gate —
-and the two best *apparent* crossings failed exact-seed reproduction. The combination of a
-noise-dominated regime and a constraint that pushes the search off the methods most likely to work
-makes a clean negative result the honest outcome. A clean negative on a hard constraint is itself a
-contribution.
+**Statement.** Damping the outward-radial drift of the matrix update after it is formed (with a
+post-step radius correction) keeps the optimizer on the productive radius so the back-loaded
+cooldown can keep reducing loss into the final steps; the benefit is specifically a preserved
+late-training catch-up, which is why applying the same damping from step zero is harmful — it
+suppresses early progress the run cannot recover from at low step budgets.
 
-**Conditions.** The hard-isolated novelty wave (no access to other worktrees); novelty enforced by a
-pre-run arXiv existence-check subagent and a refined "materially non-additive interaction" bar.
-**Status.** Supported (faithful negative result).
-**Falsification criteria.** A novel mechanism reaching a ≥ 2×-noise-floor bin improvement reproduced
-over ≥ 2 seeds would refute the negative result.
+**Conditions.** Established on the v3 public-PR backbone (the KellerJordan PR #294 radial brake) at
+low step budgets; the damping is tail-activated (guard window late in training). Untested
+boundary: whether the same tail-only timing is optimal at higher step budgets where the cooldown
+is less back-loaded.
+
+**Status.** Supported (radial is a top-two v3 ablation; radial-from-step-zero was an explicit
+kill).
+
+**Falsification criteria.** If removing tail outward-radial damping from the submitted v3 stack
+costs less than the noise floor, the contribution is not real. If radial-from-step-zero performed
+no worse than tail-only at equal budget, the "preserves the late catch-up" mechanism is wrong.
+
+**Proof.** E09, E11.
+
+**Evidence basis.** v3 leave-one-out: `noradial` is the second-worst ablation (`+0.00374`), and the
+agent's stated reason is that removing it "destroys the tail catch-up rather than merely moving the
+crossing later"; separately, radial-from-step-zero was ruled a kill because "under-2950 cannot
+recover from a ~0.04 early loss."
+
+**Sources.**
+- `noradial` Δval `+0.00374` + mechanism ← `record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json:56-58` «"label": "noradial" … "mean": 3.2821599999999997» (delta `0.0037431249999997362`); reason ← `v3/codex/scratchpad/THREAD.md:1186` «removing radial damping destroys the tail catch-up rather than merely moving the crossing later» [result]
+- step-zero kill ← `v3/codex/scratchpad/THREAD.md:414` «Early ablation made radial-from-step-zero a kill … under-2950 cannot recover from a ~0.04 early loss» [result]
+
+---
+
+## C10 — A warm-start SOAP-skip sidecar is the single most load-bearing component of the v3 stack; the full SOAP recipe was not portable
+
+**Statement.** Second-moment SOAP-basis preconditioning of the MLP (and attention-V) updates,
+warm-started from the first gradient and *skipped* on step 0, is the largest single contributor to
+the v3 stack — but only as a norm-matched sidecar behind the Muon/Soft update; the corresponding
+*full* SOAP recipe (KL-SOAP-H) was not portable because the benchmark zero-initializes the
+projection matrices, so a scale-invariant update tied to `‖W‖` leaves zero-norm projections frozen.
+
+**Conditions.** Holds on the v3 public-PR backbone with `SOAP_PARAM_MODE=mlp_plus_v`. The
+zero-init freeze is a property of this benchmark's initialization; the "sidecar, not replacement"
+qualification is essential — all-params SOAP did not work.
+
+**Status.** Supported (`nosoap` is the worst v3 ablation; the full KL-SOAP-H branch was killed as
+non-portable).
+
+**Falsification criteria.** If removing the SOAP sidecar from the submitted v3 stack costs less
+than the noise floor, it is not load-bearing. If full KL-SOAP-H were made to converge on this
+zero-init backbone without the warm-start-skip, the portability obstruction would be mischaracterized.
+
+**Proof.** E09, E10, E11.
+
+**Evidence basis.** v3 leave-one-out: `nosoap` is the largest ablation (`+0.00528`), with the
+agent's reason "removing SOAP breaks the whole tail"; the full KL-SOAP-H recipe was killed as "not
+portable as currently wired into this stack."
+
+**Sources.**
+- `nosoap` Δval `+0.00528` ← `record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json:65-67` «"label": "nosoap" … "mean": 3.2836999999999996» (delta `0.005283124999999611`); reason ← `v3/codex/scratchpad/THREAD.md:1192` «removing SOAP breaks the whole tail» [result]
+- full recipe not portable ← `v3/codex/scratchpad/THREAD.md:424` «PR #290's full KL-SOAP-H recipe is not portable as currently wired into this stack» [result]
+
+---
+
+## C11 — Two substitute "sphere" mechanisms: the lookahead pull is removable given the radial gate, but removing both loses the boundary
+
+**Statement.** When two mechanisms shape the same tail geometry (here a tangent-sphere radial gate
+and a sphere-lookahead pull), they act as substitutes rather than complements: keeping one lets the
+other be pruned with no loss (and a slight simplification), but removing both together loses the
+result — so the canonical pruning move is to drop exactly one, not to greedily drop every
+"redundant-looking" component.
+
+**Conditions.** Established in the v3 W258 leave-one-out round; the submitted "nosphere" recipe
+removes the sphere-lookahead pull while keeping the tangent-sphere radial gate. The substitution is
+specific to this pair on this backbone; it is the reason the submitted recipe is simpler than its
+W258 parent.
+
+**Status.** Supported (`nosphere` is the only positive-score leave-one-out and was submitted;
+`nosphere_notangent` was demoted).
+
+**Falsification criteria.** If the combined removal `nosphere_notangent` had preserved the 2940/2949
+boundary within noise, the two mechanisms would be redundant (not substitutes) and both should be
+dropped. If `nosphere` alone had cost more than noise, the pull would not be removable.
+
 **Proof.** E11.
-**Evidence basis.** Novelty `plan.md` "Current state": the single reproducible sub-3500 crossing is
-25 steps (below the gate); the two best 3375 crossings failed reproduction. No promotable submission.
-**Dependencies.** C12.
+
+**Evidence basis.** `nosphere` reached statistical viability and "is the only leave-one-out that
+both simplifies the stack and preserves the 2940 statistical boundary"; the combined removal
+`nosphere_notangent` "closed at N=12 and is clearly worse," with the final rule "the two sphere
+removals do not compose."
+
 **Sources.**
-- "Reproducible but not promotable: `vfg001_gain080_lr026_t3475` reached `3.27960` at 3475 … and `3.27962` on seed 1234. This is only a 25-step grid improvement, below the 2x noise-floor gate" ← `novelty/codex/plan.md:13-15` [result]
-- "Failed reproduction: `ngi001_n0875_m1125_t3450` reached the target at observed step 3375 on one seed, but exact repeat `9003` missed 3375 (`3.28149`)" ← `novelty/codex/plan.md:18-19` [result]
-- "every submitted recipe must contain at least one idea that has not been published on arXiv" ← `novelty/codex/goal.md:11-12` [input]
-- "a **negative result** (no promotable submission)" ← `README.md:17` [input]
+- nosphere is the only simplifying+preserving prune ← `v3/codex/scratchpad/THREAD.md:1200` «this is the only leave-one-out that both simplifies the stack and preserves the 2940 statistical boundary» [result]
+- non-composition ← `v3/codex/scratchpad/THREAD.md:1206` «keep the tangent-sphere radial gate if sphere-lookahead pull is removed; the canonical prune from this round is `nosphere` only … the two sphere removals do not compose» [result]
+- pruning summary ← `v3/codex/scratchpad/w258_2940_leave_one_out_pruning_20260513.md:14` «Do not combine the two sphere removals. `nosphere_notangent` loses the 2940 boundary» [result]
+
+**Dependencies.** C07 (this is the pruning discipline applied to a specific substitute pair).
 
 ---
 
-## C12 — Single-seed sub-frontier crossings systematically fail cohort significance; the submittable bin sits well above the single-seed frontier
+## C12 — Under hard isolation and a tightened novelty bar, an already-saturated optimizer track yields no promotable submission (negative result)
 
-**Statement.** On this benchmark a single-seed crossing is a hypothesis, not a result: seed variance
-is comparable to the entire sub-threshold margin, so a fixed-step cohort z-test
-`(3.28 − μ)·√n ≥ 0.004` repeatedly demotes the lowest single-seed crossings and the submittable bin
-lands tens of steps higher. v2's single-seed crossing at 2963 became a submittable 3037; v3's viable
-bin (~2940) sits above its lowest observed crossings. The discipline that converts a seed-lottery win
-into a defensible record is the cohort gate, not the lucky seed.
+**Statement.** When the only surfaces that move a near-saturated speedrun metric (schedule and
+optimizer+schedule combinations) are ruled out as non-novel, the genuinely-new mechanisms that
+remain — function-preserving init rescales and "non-additive" optimizer couplings — systematically
+fail to produce a reproducible gain: many such couplings reduce to mechanisms already in the Muon
+literature or, built from the *exact* polar factor (UᵀU = I), are algebraic no-ops, and the few
+that run produce only single-seed or sub-noise-floor effects. Novelty-as-a-constraint, on a
+saturated track, predicts a negative result.
 
-**Conditions.** All four waves; `σ ≈ 0.0013`, n=16 seed cohorts for the submitted records, the
-`(3.28 − μ)·√n ≥ 0.004` bar (p < 0.001).
-**Status.** Supported (governs every submission).
-**Falsification criteria.** A single-seed sub-frontier crossing that, re-run as an n≥8 cohort at the
-same step, cleared the `0.004` bar would refute the systematic gap.
+**Conditions.** Established in the hard-isolated novelty wave (forbidden from inspecting other
+worktrees; novelty bar tightened three times to exclude schedule/optimizer+schedule and then
+merely-additive couplings). The claim is about this regime — a track where Muon is already at the
+noise floor — not a statement that novel optimizers can never help.
+
+**Status.** Supported as a negative result (the wave produced no promotable submission; its best
+robust outcome was a reproduced one-bin gain explicitly below the noise floor). Recorded in the
+isolated subtree [novelty/novelty.md](novelty/novelty.md).
+
+**Falsification criteria.** If a later run under the same novelty bar produced a reproducible,
+significance-passing sub-frontier submission from a genuinely novel optimizer/init mechanism, the
+"saturated track + novelty constraint ⇒ no promotable result" claim would be refuted. If the
+"algebraic no-op" diagnoses were shown to be wrong (the signals are non-zero in practice), the
+mechanism for the failures would be mischaracterized.
+
 **Proof.** E12.
-**Evidence basis.** All three records report n=16 cohorts with explicit scores; the v2 single-seed
-2963 vs submittable 3037 gap; the noise floor ≈ 50 steps vs the ~0.0011 sub-threshold margin.
-**Dependencies.** —
+
+**Evidence basis.** The best robust novelty-wave result was a reproduced crossing one 25-step grid
+bin below baseline, which the agent itself flags as "below the required 2x step noise floor"; the
+novelty bar explicitly excluded schedule and optimizer+schedule combinations; and representative
+new couplings were diagnosed as exact-polar no-ops ("for exact polar `U`, input-column norms
+satisfy `‖U[:,j]‖² = 1`").
+
 **Sources.**
-- v2 cohort: "n = 16 / mean val loss = 3.27853000 / (3.28 - mu) * sqrt(n) = 0.00588000 … `p < 0.001`" ← `record_configs/20260515_codex_v2_legal_3037/README.md:21-26` [result]
-- "legal frontier bin 3037 (single-seed crossing at 2963)" ← `README.md:18` [input]
-- noise floor "`step_to_target` ≈ 50 steps … `final_val_loss` mean ≈ 0.001" ← `v1/codex/AGENTS.md:161-162` [input]
-- v3 cohort score `0.00455500` at the submitted bin 2949 ← `record_configs/20260515_codex_v3_nosphere_2949/README.md:24` [result]
+- sub-noise-floor best ← `novelty/codex/scratchpad/THREAD.md:579` «`3.27960` crossing at 3475. This is only a 25-step grid improvement from 3500, below the … required 2x step noise floor» [result]
+- novelty bar excludes the metric-moving surfaces ← `novelty/codex/scratchpad/THREAD.md:248-250` «optimizer+schedule and schedule-only combinations do not count as novel … Optimizer-level combinations can count only when one optimizer mechanism's output materially shapes another mechanism's behavior» [input]
+- exact-polar no-op ← `novelty/codex/scratchpad/THREAD.md:1214` «the proposed signal is identically zero: for exact polar `U`, input-column norms satisfy `‖U[:,j]‖² = 1`» [result]
+
+**Dependencies.** C05 (the same seed-fragility that makes single crossings untrustworthy here).
