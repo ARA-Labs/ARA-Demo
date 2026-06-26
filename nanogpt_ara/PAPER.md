@@ -1,102 +1,92 @@
 ---
-title: "Codex Autonomous Speedrun of track_3_optimization (modded-nanogpt): the v1 → novelty → v2 → v3 single-agent trajectory"
+title: "Codex Autonomous Speedrun — Optimizer Search on track_3_optimization (v1 · novelty · v2 · v3)"
 authors:
-  - "Codex (autonomous optimization-research agent)"
-  - "human operator (not named in inputs)"
+  - "Codex (autonomous research agent)"
+  - "human operator (mission framing, compliance gating, submission approval)"
 year: 2026
-venue: "Internal benchmark speedrun — modded-nanogpt track_3_optimization (KellerJordan fork)"
-doi: "Not specified in inputs"
-ara_version: "1.0"
-domain: "neural-network optimization / LLM-pretraining speedrunning"
+venue: "Internal autonomous-research experiment (modded-nanogpt speedrun, track_3_optimization)"
+doi: null
+ara_version: 1
+domain: "Machine learning — neural-network optimization / autonomous AI research"
 keywords:
-  - Muon
-  - NorMuon
-  - MuonEq
-  - Soft-Muon
-  - SOAP preconditioning
-  - optimizer speedrun
-  - modded-nanogpt
-  - step-count compression
-  - leave-one-out pruning
-  - fixed-cohort significance gate
-  - autonomous research agent
-  - negative result (novelty wave)
+  - "Muon"
+  - "optimizer speedrun"
+  - "nanoGPT / modded-nanogpt"
+  - "tail-EMA evaluation"
+  - "Soft-Muon / radial dampening"
+  - "SOAP preconditioning"
+  - "leave-one-out pruning"
+  - "statistical claimability"
+  - "autonomous research agent"
 claims_summary: >
-  An autonomous agent (Codex) lowered the number of training steps needed to reach 3.28
-  validation loss on a fixed 124M-param GPT speedrun from the Muon baseline of 3500 steps to
-  3205 (v1), 3037 (v2, after a compliance rebuild), and 2949 (v3), each validated over n=16
-  non-cherry-picked seeds under a fixed-cohort significance gate (3.28−μ)·√n ≥ 0.004. The work
-  also produced one hard-isolated negative result (the novelty wave: no promotable submission).
-  The reusable findings are mechanism-level: tail-only weight EMA and factorized second-moment
-  preconditioning are the largest single levers; schedule-horizon/train-step decoupling buys
-  free compression; the sub-frontier region is a seed-fragility map governed by a significance
-  gate rather than a monotone frontier; redundant stack components are found by leave-one-out
-  pruning; and cross-agent results that violate the no-architecture-change rule must be
-  quarantined regardless of how much they helped.
+  A single autonomous agent (Codex) lowered the step count to reach 3.28 validation loss on the
+  fixed-architecture modded-nanogpt `track_3_optimization` benchmark from the Muon baseline of
+  3500 steps to a sequence of statistically-validated records: 3205 (v1, "v12iso/MuSched"),
+  3037 (v2, "legal" frontier), and 2949 (v3, "nosphere"; statistically viable to ~2940 at N=16).
+  A parallel hard-isolated, novelty-constrained wave produced a documented terminal negative
+  result (no promotable submission). The artifact distills the reusable mechanisms — the
+  horizon≠stop lever, tail-EMA evaluation, factorized hidden-matrix preconditioning, role-specific
+  LR/WD + lookahead, faithful public-PR reproduction-then-compression, leave-one-out pruning, the
+  statistical-claimability gate, and the exact-polar no-op laws that bounded the novelty search —
+  together with the full exploration trace (8,224 runs across four waves), the cross-agent v12
+  compliance quarantine, and grounded evidence.
 abstract: >
-  This artifact records the single-agent slice of an autonomous-speedrunning experiment in which
-  the Codex agent attacked track_3_optimization of the modded-nanogpt benchmark — reach 3.28
-  validation loss in as few one-forward-backward training steps as possible on a fixed
-  architecture, data, and batch contract. Over four waves (v1 optimizer/schedule/init screening;
-  a hard-isolated novelty wave; v2 role-specific LR/WD + lookahead on a compliant rebuild; v3
-  reproduction-and-compression of public radial/Soft-Muon PRs) the agent drove the submitted bin
-  from 3500 to 2949. The artifact is compiled directly (one-shot) from the agent's own journals
-  (THREAD.md per wave), the run index (8,224 attached runs), the submitted record configs, and
-  per-component leave-one-out pruning data. It separates the agent's reusable mechanism-level
-  takeaways (the cognitive layer) from the exact submitted numbers and figures (the evidence
-  layer), records the full exploration DAG including dead ends and the novelty-wave negative
-  result, and faithfully attributes the cross-agent touchpoints (a v12 parent inherited from the
-  Claude/cc agent that was tested, flagged non-compliant, and quarantined).
+  `track_3_optimization` is a wallclock-irrelevant speedrun: with the model architecture, data,
+  and batch fixed, reach 3.28 validation loss on a 124M-parameter GPT in as few optimizer steps
+  ("bin") as possible. The Muon baseline is 3500 steps; AdamW is 5625. Operating under a six-rule
+  "lawful core" (benchmark hard rules, a two-seed reproduction requirement, a 2× noise-floor gate,
+  a stuck detector, a ≤3-modifier slug cap, and a mandatory pre-submission pruning round), the
+  Codex agent ran four waves. v1 screened optimizer/schedule/init levers (NorMuon, factorized
+  preconditioning, Adam-mini, tail-EMA evaluation) and a transplanted "mu-schedule" to a validated
+  3205-step record. A novelty wave derived and tested dozens of not-on-arXiv optimizer mechanisms;
+  all reduced to a scalar coefficient or a no-op under Muon's exact polar map, or failed seed
+  reproduction — a clean negative result. v2 inherited a cross-agent "v12" stack, discovered (after
+  a user flag) that it carried an illegal forward-path precision change, quarantined every
+  v12-derived result, and rebuilt a byte-identical-compliant frontier with role-specific LR/WD and
+  Muon lookahead to a 3037-step record. v3 pivoted to faithfully reproducing the public
+  modded-nanogpt PR frontier (Contra→Soft-Muon scheduling, outward-radial dampening, MLP+V SOAP,
+  power-law LR), compressed it by shifting phase endpoints rather than truncating the horizon, and
+  applied a W258 leave-one-out pruning sweep that found the sphere-lookahead pull redundant —
+  yielding the "nosphere" 2949-step record. Across all waves the governing lesson is that
+  statistical claimability `(3.28 − μ)·√n ≥ 0.004`, not a single lucky low crossing, defines a
+  record.
 ---
 
-# Codex Autonomous Speedrun of `track_3_optimization` — Agent-Native Research Artifact
+# Codex Autonomous Speedrun — `track_3_optimization`
 
-## What this is
+This Agent-Native Research Artifact (ARA) was compiled directly (one-shot `compiler`) from the
+**single-agent Codex slice** of the autonomous-speedrunning experiment
+(`experiments-autonomous-speedrunning-codex/`). It captures only work the Codex agent executed
+itself, plus faithfully-attributed cross-agent and public-PR touchpoints.
 
-A direct (one-shot) ARA compiled from `experiments-autonomous-speedrunning-codex/`: the
-single-agent record of the Codex optimization-research agent lowering the step count to reach
-**3.28 validation loss** on a fixed 124M-parameter GPT speedrun (modded-nanogpt
-`train_gpt_simple.py`, `track_3_optimization`). "Bin" = the step at which val ≤ 3.28 is first
-crossed; lower is better.
-
-**Submitted trajectory:** `3500 (Muon baseline) → 3205 (v1) → 3037 (v2) → 2949 (v3)`, each
-validated over n=16 seeds. The `novelty` wave is a hard-isolated **negative result** (no
-promotable submission).
-
-> **Compile note.** This ARA is the *direct-compiler* artifact requested by the user, distinct
-> from the time-ordered replay artifact the source repo's top-level `README.md` describes at
-> `ara-pipeline/ara/` (that directory is not present in this copy). A one-shot compile sees the
-> whole trajectory at once; where the agent's running journal and the final submitted record
-> disagree (e.g. v1's journal trails off at a provisional `s3220`/`s3170` while the submitted
-> record is `3205`), the **submitted `record_configs/` READMEs are treated as authoritative**
-> and the journal as the path taken. Such reconciliations are flagged in the relevant claim's
-> `Conditions`/`Sources`.
+**Trajectory (submitted record bins, lower = better):**
+`3500 (Muon baseline) → 3205 (v1) → 3037 (v2) → 2949 (v3)`, with the **novelty** wave a documented
+negative result. The metric is `step_to_3.28` ("bin"): the first training step at which a fixed
+N-seed cohort mean crosses 3.28 validation loss with statistical margin.
 
 ## Layer Index
 
-| Layer | File | Contents |
-|---|---|---|
-| Cognitive | [logic/problem.md](logic/problem.md) | Observations, gaps, key insight, assumptions |
-| Cognitive | [logic/claims.md](logic/claims.md) | C01–C12 falsifiable mechanism-level claims with grounded sources |
-| Cognitive | [logic/concepts.md](logic/concepts.md) | The benchmark's and the agent's technical vocabulary |
-| Cognitive | [logic/experiments.md](logic/experiments.md) | E01–E12 directional verification/analysis plans |
-| Cognitive | [logic/related_work.md](logic/related_work.md) | Typed dependency graph (PRs, papers, prior optimizers) |
-| Method | [logic/solution/constraints.md](logic/solution/constraints.md) | The lawful core, benchmark hard rules, limitations |
-| Method | [logic/solution/method.md](logic/solution/method.md) | The search methodology (gates, pruning, significance) |
-| Method | [logic/solution/optimizer-stack.md](logic/solution/optimizer-stack.md) | The three submitted recipes, component by component |
-| Method (isolated) | [logic/novelty/novelty.md](logic/novelty/novelty.md) | The NV## hard-isolated novelty-wave negative-result subtree |
-| Artifact | [src/environment.md](src/environment.md) | Hardware, code, run protocol, reproducibility |
-| Artifact | [src/artifacts.md](src/artifacts.md) | Pointer index into the 8,224 run exports + record configs |
-| Trace | [trace/exploration_tree.yaml](trace/exploration_tree.yaml) | The research DAG: waves, experiments, decisions, dead ends |
-| Evidence | [evidence/README.md](evidence/README.md) | Index of every filed figure and table |
-| Evidence | [evidence/figures/](evidence/figures/) | 6 record figures (loss curves + pruning bars) + descriptions |
-| Evidence | [evidence/tables/](evidence/tables/) | Seed tables, significance tables, pruning-contribution tables |
-| Evidence | [evidence/data/](evidence/data/) | Raw `pruning_data.json` for the three submitted records |
+### `logic/` — cognitive layer
+- [problem.md](logic/problem.md) — observations, gaps, the key insights, assumptions
+- [claims.md](logic/claims.md) — C01–C12 falsifiable claims (mechanisms/takeaways), each grounded
+- [concepts.md](logic/concepts.md) — the benchmark, the optimizer family, and every load-bearing term
+- [experiments.md](logic/experiments.md) — E01–E16 directional verification plans (no exact numbers)
+- [related_work.md](logic/related_work.md) — typed dependency graph (public PRs, papers, cross-agent)
+- `solution/`
+  - [constraints.md](logic/solution/constraints.md) — the lawful core, hard rules, compliance boundary, scope
+  - [search_methodology.md](logic/solution/search_methodology.md) — the autonomous search process
+  - [optimizer_recipes.md](logic/solution/optimizer_recipes.md) — the four wave stacks, at mechanism level
+  - [novelty_derivation.md](logic/solution/novelty_derivation.md) — the novel-idea method + the no-op laws
 
-## Reading order
+### `src/` — artifact layer
+- [environment.md](src/environment.md) — hardware, software, model/data, run command, reproducibility
+- [artifacts.md](src/artifacts.md) — comprehensive pointer index into the 8,224-run store + record configs
 
-Start with [logic/problem.md](logic/problem.md) for the gap and the key insight, then
-[logic/claims.md](logic/claims.md) for the reusable findings. [logic/solution/method.md](logic/solution/method.md)
-explains the search discipline that makes the numbers trustworthy;
-[logic/solution/optimizer-stack.md](logic/solution/optimizer-stack.md) explains *what* was built.
-The negative result lives in its own isolated subtree, [logic/novelty/novelty.md](logic/novelty/novelty.md).
+### `trace/` — exploration graph
+- [exploration_tree.yaml](trace/exploration_tree.yaml) — the research DAG across all four waves
+  (decisions, dead ends, the isolated `NV##` novelty subtree, the cross-wave lineage)
+
+### `evidence/` — grounded results
+- [README.md](evidence/README.md) — the evidence ledger
+- `figures/` — the six record figures (loss curves + component-pruning bars for v1/v2/v3)
+- `tables/` — the trajectory summary, the three N=16 record seed tables, the three pruning tables

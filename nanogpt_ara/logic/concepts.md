@@ -1,93 +1,97 @@
 # Concepts
 
-The technical vocabulary of this benchmark and the agent's stack. Definitions are formal and
-field-specific; named optimizers credited to external work are detailed in
-[related_work.md](related_work.md).
+Load-bearing terms, defined as this experiment uses them. Grounded in the goals, AGENTS.md, record
+configs, submitted scripts, and journals.
 
-## Benchmark / protocol terms
+## Benchmark & metric
 
-- **track_3_optimization.** The modded-nanogpt speedrun track that fixes the model architecture,
-  dataset (FineWeb-10B cache), batch size, sequence length, and the one-forward-backward-per-step
-  contract of a ~124M-parameter GPT, and scores entrants by the number of training steps to reach
-  **3.28 validation loss**. Only optimizer, hyperparameters, schedule, and init may change
-  (`v1/codex/goal.md:3-8`).
-- **Bin / step-to-target.** The training step at which validation loss first crosses ≤ 3.28. The
-  submission metric; lower is better. A run that dips past 3.28 and back must have its crossing
-  confirmed from the log, not inferred from the final loss (`v1/codex/AGENTS.md:224-226`).
-- **Noise floor.** The agent's estimate of seed-to-seed variability used to judge whether a gain
-  is real: `step_to_target ≈ 50 steps`, `final_val_loss mean ≈ 0.001`
-  (`v1/codex/AGENTS.md:160-163`).
-- **Fixed-cohort significance gate.** The acceptance rule `(3.28 − μ)·√n ≥ 0.004` over n
-  non-cherry-picked seeds (equivalently z ≈ (3.28−μ)/(σ/√n) with σ ≈ 0.0013, requiring p < 0.001),
-  with an anti-"val-spam" same-checkpoint scan so the bin is the earliest *common* checkpoint whose
-  cohort mean passes (`record_configs/*/README.md`, `v2/.../THREAD.md:810`). See [C06](claims.md).
-- **Lawful core.** The six always-binding rules in `v1/codex/AGENTS.md:11-28` (benchmark hard
-  rules, noise-floor gate, stuck detector, ≤3-modifier slug stack, two-seed reproduction, mandatory
-  pre-submission pruning). Detailed in [solution/constraints.md](solution/constraints.md).
-- **Leave-one-out (LOO) pruning round.** Mandatory pre-submission step: for each modifier in the
-  stack, build a variant with exactly that modifier removed, re-run, and measure the change in
-  val loss (`Δval when removed`; positive ⇒ the component helped). Drops a modifier only on a
-  two-seed mean inside ±0.5× the noise floor (`v1/codex/AGENTS.md:169-205`). See [C07](claims.md).
-- **Slug / family / stuck detector.** A run is named by a `<optimizer>-<modifier>-…` slug capped at
-  3 modifiers; the "family" is the slug prefix; the stuck detector rules a family out after 30
-  consecutive runs without a step-to-target improvement (`v1/codex/AGENTS.md:141-154`).
-- **Wave.** One mission segment with its own worktree and journal: **v1** (optimizer/schedule/init
-  screening), **novelty** (hard-isolated, novelty-constrained), **v2** (role LR/WD + lookahead on a
-  compliant rebuild), **v3** (public-PR reproduction + compression). The submitted lineage is
-  v1 → v2 → v3; novelty is an isolated negative-result subtree.
+- **`track_3_optimization`** — A fixed-architecture optimizer speedrun on the modded-nanogpt
+  `train_gpt_simple.py` benchmark. Architecture, dataset, and batch size are frozen; exactly one
+  forward-backward per step; hyperparameters hardcoded in the submitted script. A run counts only if
+  validation loss reaches **3.28**.
+- **Bin (`step_to_3.28` / `first_step_le_3p28`)** — The metric: the first training step at which the
+  (cohort) validation loss crosses 3.28. Lower is better. The Muon baseline bin is 3500; AdamW is 5625.
+- **Noise floor** — The per-seed variance scale: ≈50 steps on `step_to_3.28` and ≈0.001 on
+  `final_val_loss`, estimated from baseline Muon. A "win" smaller than this is not signal until
+  reproduced.
+- **Statistical claimability / z-margin** — The submission gate: a fixed-step N-seed cohort passes only
+  if `(3.28 − μ)·√n ≥ 0.004` (equivalently z ≥ ~3.08 at σ=0.0013, one-sided p < 0.001). The submitted
+  **bin** is the earliest common validation checkpoint whose cohort clears this — not the lowest
+  single-seed crossing. → C06.
+- **Lawful core** — The six always-binding rules (benchmark hard rules; noise-floor gate; stuck
+  detector at 30 same-family runs; ≤3-modifier slug cap; two-seed reproduction; mandatory
+  pre-submission pruning). A result violating any is invalid regardless of its loss. → constraints.md.
 
-## Optimizer / update terms
+## Optimizer family (Muon and its descendants)
 
-- **Muon.** The baseline matrix optimizer: momentum update orthogonalized by a Newton–Schulz
-  iteration (polar factor) before application. Baseline lr=0.025, wd=0.0125, 3500 steps.
-- **Newton–Schulz orthogonalization / polar factor `U`.** The iterative map producing the
-  (approximate) orthogonal polar factor of the momentum matrix; "exact polar" satisfies UᵀU = I, a
-  fact the novelty wave repeatedly used to detect algebraic no-ops ([C12](claims.md)).
-- **NorMuon.** A Muon variant with row-wise second-moment normalization applied after Newton–Schulz
-  and RMS-matched back to the canonical update scale (`v1/.../THREAD.md:124-126`).
-- **Muon2F / MuonEq.** Factorized two-factor row/column second-moment preconditioning of the matrix
-  update (Muon2F in v1; the compliant MuonEq row-normalized update in v2). The subject of
-  [C03](claims.md).
-- **Soft-Muon.** A scheduled softening of the Muon update (Contra → normal → Soft) with a ceiling
-  (`SOFT_MUON_CEIL`) and ramp end step, from public PR #291; load-bearing in v3.
-- **Contra-Muon.** A pre-Newton–Schulz shaping term (`_CONTRA_MUON` constant); v2 lowered it to
-  0.225; v3 carries a reduced q/k Contra residual scale (0.125).
-- **AggMo3.** Three-factor aggregated momentum on the hidden matrices (`aggmom3hidden`); a v1 stack
-  component.
-- **Adam-mini.** A memory-light Adam variant used as the AdamW-side ("optimizer1") replacement for
-  embedding/head/scalar groups in v1.
-- **SOAP (sidecar) / V-SOAP.** Second-moment preconditioning in a SOAP eigenbasis, applied to
-  MLP (and attention-V) updates as a warm-started, step-0-skipped *sidecar* behind the matrix
-  optimizer (`SOAP_PARAM_MODE=mlp_plus_v`). The subject of [C10](claims.md).
-- **Outward-radial dampening / radial brake (PR #294).** Damping of the update's outward-radial
-  component after it is formed, plus a post-step radius correction; tail-activated in v3. The
-  subject of [C09](claims.md).
-- **Tangent-sphere radial gate / sphere-lookahead pull.** Two tail-geometry mechanisms in the v3
-  W258 stack that act as substitutes; `nosphere` removes the lookahead pull and keeps the radial
-  gate ([C11](claims.md)).
-- **LACV (lookahead control-variate).** A seed-offset correction that reuses lookahead state to
-  remove seed-dependent tangent energy, with a q/k u/w "floor" (`LACV_FLOOR_LAMBDA = 0.060`) that
-  refills exactly that energy on q/k.
-- **Lookahead (Muon).** A slow-weight pull toward an averaged copy; a v2 frontier lever
-  (from step 2450, interval 25, α 0.35, pull 0.15, 150-step ramp).
-- **Tail-EMA evaluation.** Validation on an exponential moving average of late weights (swapped in
-  for eval, then restored), β≈0.99 from a late start; the largest single v1 lever ([C02](claims.md)).
-  Distinguished from **SWA** (uniform tail averaging), which was consistently worse.
-- **Role-specific LR / WD (RoleLR2 / RoleWD).** Per-parameter-group LR multipliers and weight-decay
-  values (q/k, v, attn.proj, mlp.fc, mlp.proj) instead of one body-wide value ([C04](claims.md)).
-- **CGI (gain split) / di-fc init / embed init ×0.7.** Init-side levers inherited in v3 from the
-  public "v48" parent (CGI Rademacher gain split shown variance-neutral; depth-scaled mlp.fc init;
-  embedding init scaled by 0.7).
-- **Horizon vs train_steps (schedule decoupling).** Running a longer LR-decay `schedule_steps`
-  while taking fewer optimization `train_steps`, forcing final validation while the LR is still
-  warm. The first sub-3500 lever ([C01](claims.md)).
+- **Muon** — The baseline matrix optimizer: orthogonalize the momentum update (via Newton-Schulz) and
+  step. The standing SOTA at 3500 steps (lr=0.025, wd=0.0125).
+- **Polar / polar factor U** — The orthogonal factor of the momentum matrix `M = U·P`; Muon's update is
+  essentially `U`. "Pre-polar" mechanisms perturb `M` before the polar map; the novelty wave's no-op
+  laws (C10) are statements about how such perturbations behave under exact `U`.
+- **Newton-Schulz (NS) / Polar-Express NS-5** — The iterative orthogonalization used to approximate the
+  polar factor. "Polar-Express" is a non-uniform NS-5 variant (external lineage, arXiv:2505.16932).
+- **NorMuon / MuonEq** — Row/column-variance–normalized Muon updates (NorMuon-lite, and MuonEq's
+  row-normalized update, arXiv:2603.28254). The v1 corridor used NorMuon (β=0.90, lr=0.030).
+- **Muon2F (2-factor / factorized preconditioning)** — A factorized preconditioner on the Muon update;
+  in v1 it helps the **hidden** (non-`mlp.proj`) matrices specifically. → C03.
+- **Contra-Muon** — A Contra update term added to the Muon step (external lineage, PR #275). v3 scales
+  the q/k Contra residual.
+- **Soft-Muon** — A late-schedule "softened" Muon update (basis stacking, p=0.1, ending at an ~80%
+  blend), reached via a Contra → normal → Soft schedule (external lineage, PR #291). Buys tail slope,
+  not early loss.
+- **Outward-radial dampening** — Scaling the radial (outward) component of the update down and applying
+  a post-step weight-radius correction (external lineage, PR #294). Works as a **tail** correction;
+  radial-from-step-0 is harmful. → C08.
+- **SOAP preconditioning** — A second-order preconditioner (external lineage, PR #278); v3 extends the
+  SOAP set to MLP + attention value (V) matrices ("`mlp_plus_v`"). The single most load-bearing v3
+  component. → C08.
+- **Adam-mini** — A row-wise second-moment AdamW variant used as the auxiliary ("optimizer1") optimizer;
+  a genuine v1 signal distinct from tuning.
+- **AggMo3 / 2-factor preconditioning** — Aggregated-momentum + two-factor preconditioning on the
+  non-`mlp.proj` hidden matrices in v1.
 
-## Compliance terms
+## Schedule, init, and state levers
 
-- **Compliant / "legal" rebuild.** A submitted script whose `Architecture` and forward/normalization
-  code is byte-identical to baseline `train_gpt_simple.py`; only `Optimization` and
-  `Init & Optim Hyperparams` differ (`v2/.../THREAD.md:130-132`). The v2 `legal_v12opt` family.
-- **Quarantine.** Disqualifying every result derived from a non-compliant parent (here the
-  forward-path-altering v12) from the frontier, regardless of its score ([C08](claims.md)).
-- **Cross-agent touchpoint.** A point where Codex's trajectory used another agent's (Claude/cc)
-  output or a public PR; recorded attributed, never as Codex's own result (`README.md:57-82`).
+- **Horizon ≠ stop** — Running with `train_steps` (forced final-validation step) **below**
+  `schedule_steps` (LR-decay horizon). The foundational v1/v2 lever. → C01.
+- **Power-law LR cooldown (PowerCool)** — `min(flat_lr, c·(t_end − step)^1.2)`; a back-loaded cooldown
+  (external lineage, PR #287). Because the cooldown is back-loaded, early-curve loss is **not** a valid
+  kill signal on this schedule.
+- **Tail-EMA evaluation** — Validating on an exponential moving average of late-training weights (swap
+  in for eval, restore the online weights), as opposed to training on them. The strongest v1
+  endpoint-smoothing lever; β=0.99 > β=0.995. Distinct from SWA (fixed-window average) and from
+  EMA-extrapolated evaluation, both of which were worse. → C02.
+- **Muon mu (μ) schedule** — A momentum schedule `0.85 → 0.95` then `0.95 → 0.85` over the last steps;
+  the load-bearing isolated lever from the transplanted "v12" idea set, and the largest v2 pruning
+  contributor.
+- **Role-specific LR / WD** — Per-parameter-role Muon learning-rate and weight-decay multipliers
+  (q/k vs v vs attn.proj vs mlp.fc vs mlp.proj) instead of one body-wide value. → C04.
+- **Muon lookahead** — Late-training interpolation toward a slow weight copy (start ≈ step 2450,
+  interval 25, α=0.35, pull=0.15, with a smoothstep ramp). Moves the crossing step earlier. → C04.
+- **LACV (lookahead control variate) / LACV-floor** — A variance-control lever gating q/k/mlp.proj
+  updates; introduced in v3 to fix mid-run seed-offset pathology (the high-tail failure mode).
+- **Sphere-lookahead pull / tangent-sphere gate** — Two radius-aware lookahead/radial terms in the v3
+  stack. Leave-one-out found the **sphere-lookahead pull** redundant ("nosphere") once LACV +
+  tangent-sphere are present; the two sphere terms do **not** compose. → C09.
+- **CGI gain split / depth-scaled init / embed init ×0.7 / zero-init proj** — Init levers carried into
+  the v2/v3 stacks (embedding init scaled by 0.7; depth-scaled `mlp.fc` init; zero-init projection
+  weights).
+
+## Process & search concepts
+
+- **Wave** — One autonomous mission slice: **v1** (optimizer/schedule/init screen → 3205), **novelty**
+  (hard-isolated, novelty-constrained → negative), **v2** (legal frontier → 3037), **v3** (public-PR
+  reproduction + compression + pruning → 2949).
+- **Slug / family** — A run's short modifier name; the "family" is its first 1–3 tokens and is the unit
+  for the stuck detector (≤3 modifiers before a rename).
+- **Leave-one-out (LOO) pruning** — Removing each stack modifier in turn and re-measuring, to find
+  redundant components before submission. → C09.
+- **The exact-polar no-op law** — For exact polar `U`, input-column norms satisfy `‖U[:,j]‖² = 1`, and
+  for square q/k/v and tall mlp.fc targets `UᵀU = I`; therefore many pre-polar perturbations are
+  identically zero or collapse to a scalar Nesterov blend. The structural reason the novelty wave was a
+  negative result. → C10, novelty_derivation.md.
+- **Quarantine** — Marking a set of results invalid (non-compliant) so they are recorded as journey but
+  never reported as records — applied to every v12-derived result after the forward-path flag. → C05.
+- **Preempt fanout** — Launching parallel benchmark runs into the cluster's `preempt` partition behind
+  an idle-node gate, to multiply throughput while the main thread runs one job at a time.

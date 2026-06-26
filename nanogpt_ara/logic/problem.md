@@ -2,88 +2,91 @@
 
 ## Setting
 
-`track_3_optimization` of the modded-nanogpt benchmark fixes the architecture, dataset, batch
-size, and the one-forward-backward-per-step contract of a ~124M-parameter GPT, and asks a single
-question: **in how few training steps can validation loss reach 3.28?** The optimizer, its
-hyperparameters, the learning-rate/weight-decay schedule, and parameter initialization are the
-*only* surfaces an entrant may change. The current best at the start of the experiment is **Muon
-(lr=0.025, wd=0.0125) at 3500 steps**; an AdamW baseline reaches the same loss only at 5625
-steps (`v1/codex/goal.md:3-7`, `v1/codex/AGENTS.md:5-6`).
-
-The agent's standing goal is the open-ended one in `goal.md`: *"Find an optimizer / hyperparameter
-/ schedule / init combination that reaches 3.28 validation loss in fewer than 3500 steps … the
-current stretch target from the user is below 2800 steps"* (`v1/codex/goal.md:3-6`).
+`track_3_optimization` is a fixed-architecture optimizer speedrun on the modded-nanogpt
+`train_gpt_simple.py` benchmark. With the model architecture, dataset, and batch size **frozen**,
+and exactly **one forward-backward per step**, the objective is to reach **3.28 validation loss**
+in as few optimizer steps as possible. The step count at which a cohort crosses 3.28 is the **bin**
+(`step_to_3.28` / `first_step_le_3p28`); a lower bin is a better record. The benchmark is explicitly
+**wallclock-irrelevant** — methods that are slow per step are fair game if they cut steps.
 
 ## Observations (with numbers)
 
-- **O1 — The baseline is already close.** Canonical Muon hits 3.28 at 3500 and is only
-  `3.28106` at step 3375 — a near-miss a few thousandths above target (v1 journal,
-  `v1/.../THREAD.md:142-143`). The headroom per step is therefore *small relative to seed noise*.
-- **O2 — Seed noise is comparable to the prize.** The agent's own noise-floor estimate is
-  `step_to_target ≈ 50 steps`, `final_val_loss mean ≈ 0.001` (`v1/codex/AGENTS.md:160-163`).
-  A 50–100-step "win" can be entirely seed noise.
-- **O3 — The literature is unverified and wide.** The benchmark exists because "the optimization
-  literature is a sea of unverified SOTA claims … 100s–1000s of optimizer papers; most have never
-  been compared head-to-head on the same setup" (`v1/codex/goal.md:12-15`). The search space of
-  candidate optimizers/schedules/inits is enormous and mostly untested at this scale.
-- **O4 — Wall-clock is irrelevant.** Methods that are slow per step (Shampoo, SOAP, full-matrix
-  preconditioners) are admissible if they cut *steps* (`v1/codex/goal.md:33-34`). This widens the
-  admissible method set well beyond what a wall-clock speedrun would allow.
-- **O5 — The submitted trajectory.** Codex drove the bin from 3500 to
-  **3205 → 3037 → 2949** across three promotable waves (`README.md:10`,
-  `record_configs/*/README.md`), with one hard-isolated wave producing no promotable submission.
+- **O1 — The standing baselines.** The current SOTA optimizer is **Muon** (lr=0.025, wd=0.0125)
+  crossing 3.28 at **3500 steps** (`baseline-muon-3500-seed0`, final val 3.27658). The **AdamW**
+  baseline crosses at **5625 steps**. Anything below 3500 is progress. [src: `v1/codex/goal.md`,
+  `data/.../runs.csv` baseline row]
+- **O2 — Prior agents had reached the low-3000s.** At v2's start the best known parents were a
+  cross-agent "v12" stack at **3025 steps** and Codex's own EMA branch at ~3195; at v3's start the
+  bar was **3035 (opus v15)** and **3037 (codex)**. [src: `v2/codex/goal.md`, `v3/codex/goal.md`]
+- **O3 — An empirical ~3000-step floor for optimizer-only mechanics.** The prior iteration "hit an
+  empirical ts=3000 floor with optimizer-only mechanisms — Newton-Muon, Tail-EMA, AdamMini,
+  Skylight, cubic Contra, and many others all came in at parity or worse." In v1, direct
+  sub-3050 compression by tail/init/optimizer-state mechanics repeatedly landed ~3.29–3.30 at the
+  target step. [src: `v2/codex/goal.md`; v1 trace]
+- **O4 — Variance is real and large relative to the prize.** The per-seed noise floor is
+  ≈50 steps on `step_to_3.28` and ≈0.001 on `final_val_loss`. A 50–100-step "win" on one seed is
+  routinely inside the noise; the limiting seed (often "seed 2") fails brackets the mean clears.
+  [src: `v1/codex/AGENTS.md` noise-floor section]
+- **O5 — A public PR frontier existed below the local line.** The KellerJordan modded-nanogpt repo
+  carried public submissions below ~2990 steps (PR #294 ≈2990, PR #291 ≈3030, PR #290 ≈3125,
+  PR #288 ≈3075) built on Contra/Soft-Muon scheduling, outward-radial dampening, SOAP, and a
+  power-law LR schedule. [src: `v3/codex/goal.md` "public-frontier pivot"]
 
 ## Gaps
 
-- **G1 — Which methods actually beat Muon here, and do their gains stack?** Most optimizer papers
-  under-tune baselines and never test head-to-head; it is unknown which post-Muon ideas survive a
-  fair, single-setup comparison, and whether gains from {optimizer, schedule, init, second-order
-  preconditioning, EMA} are orthogonal or redundant (`v1/codex/goal.md:36-48`).
-- **G2 — Where is the noise floor, and what makes a step-count gain real?** Without a reproduction
-  and significance discipline, sub-frontier "wins" are indistinguishable from favorable seeds
-  (`v1/codex/goal.md:49-50`).
-- **G3 — How much of a near-saturated speedrun is reachable by genuinely novel mechanisms** (as
-  opposed to reusing schedule/optimizer tricks already in the literature)? This is the question
-  the hard-isolated novelty wave was built to answer.
-- **G4 — How should an autonomous agent keep its own ledger honest** when it inherits results from
-  another agent or from public PRs whose compliance it cannot take for granted?
+- **G1 — Which levers actually stack vs. saturate?** The literature is "a sea of unverified SOTA
+  claims"; most optimizers have never been compared head-to-head on one setup. Which post-Muon and
+  pre-Muon ideas beat Muon *here*, and are their gains orthogonal or redundant when combined?
+- **G2 — How do you break the ~3000-step optimizer-only floor?** Tail/init/state mechanics
+  plateau near 3.29–3.30 below 3050. Is the floor a property of the mechanism class or of the
+  parent it is attached to?
+- **G3 — What is a *defensible* record, not a lucky crossing?** With ~50-step seed variance, when
+  is a lower bin real? How many seeds, and what statistic, separate signal from a low-tail
+  singleton?
+- **G4 — Is there headroom under a hard novelty constraint?** If every submitted recipe must
+  contain a not-on-arXiv idea, is the reachable mechanism space non-empty, or has the literature
+  already occupied everything that matters?
+- **G5 — What does "fixed architecture" actually bind?** When a strong parent is inherited from
+  another agent, is its forward path compliant, and what does compliance cost in steps?
 
-## Key insight
+## Key insights (the load-bearing ideas)
 
-The decisive moves in this trajectory are **methodological, not a single magic optimizer**:
-
-1. **Decouple the LR-decay horizon from the optimization horizon.** Holding `schedule_steps`
-   longer than `train_steps` keeps the LR warmer at the forced final validation, crossing target
-   earlier "for free" — the lever that first beat 3500 and recurs across every wave
-   ([C01](claims.md)).
-2. **Treat the sub-frontier region as a seed-fragility map governed by a significance gate**, not
-   as a monotone frontier to be greedily descended ([C05](claims.md), [C06](claims.md)). Every
-   submitted bin is a *fixed-cohort* result that clears `(3.28−μ)·√n ≥ 0.004` over n=16 seeds, not
-   a cherry-picked single crossing.
-3. **Add levers, then prune them.** Each wave ends with a mandatory leave-one-out pruning round
-   that quantifies every component's marginal contribution and drops the redundant ones
-   ([C07](claims.md), [C11](claims.md)) — which is how v3's submitted recipe became *simpler*
-   (`nosphere`) than its parent.
-4. **Quarantine non-compliant inheritance.** A v12 parent inherited from the other agent carried a
-   forward-path precision change; once flagged it was quarantined wholesale and the frontier was
-   rebuilt on a byte-identical-compliant base ([C08](claims.md)).
-
-The *content* levers that moved the metric most — tail-only weight EMA, factorized second-moment
-preconditioning (Muon2F/MuonEq), role-specific LR/WD, outward-radial dampening, and a warm-start
-SOAP sidecar — are the subject of [C02](claims.md)–[C04](claims.md), [C09](claims.md),
-[C10](claims.md).
+- **KI1 — Decouple the training horizon from the schedule horizon ("horizon ≠ stop").** Set
+  `train_steps` (the forced final-validation step) *below* `schedule_steps` (the LR-decay horizon).
+  Because canonical Muon under the 3500-step schedule was 3.28106 at step 3375 but 3.27658 at 3500,
+  a forced early validation can already cross the target **without compressing the cooldown**. Every
+  promoted recipe carried `schedule_steps > train_steps`. → [C01]
+- **KI2 — Evaluate on a tail-EMA of the weights.** Validating on an exponential moving average of
+  the late-training weights (restoring the online weights afterward) is the strongest single
+  endpoint-smoothing lever, converting near-misses into crossings; β=0.99 beats β=0.995. → [C02]
+- **KI3 — A record is a *statistic*, not a crossing.** Submission is gated by
+  `(3.28 − μ)·√n ≥ 0.004` over a fixed-step N-seed cohort. A lower single-seed bin is rejected when
+  its cohort mean fails the z-test; trading a few steps for a tighter mean is the real win. → [C06]
+- **KI4 — Break the floor by changing the parent, not the knob.** The ~3000 floor was a property of
+  the *local optimizer-only family*. Reproducing a stronger **public** parent (Soft-Muon + radial +
+  SOAP) faithfully, then compressing it by moving phase endpoints (not truncating the horizon),
+  reached sub-2950. → [C07, C08]
+- **KI5 — Prune before you submit.** Leave-one-out ablation of a converged stack reveals redundant
+  modifiers (a component added when it helped can stop pulling weight as the stack changes), and is
+  mandatory before a record. It is how the v3 "nosphere" simplification was found. → [C09]
+- **KI6 — Under exact polar, most "novel" pre-polar mechanisms are inert.** A perturbation built
+  from the polar factor U that preserves singular vectors satisfies `polar(Z)=polar(M)`; for square
+  q/k/v and tall mlp.fc targets `UᵀU = I`, so off-diagonal commutator/metric tensors vanish
+  identically. The genuinely-novel survivors collapse to a scalar Nesterov blend. → [C10]
 
 ## Assumptions
 
-- **A1** — The submitted `record_configs/` READMEs and their `pruning_data.json` are the
-  authoritative final results; the per-wave `THREAD.md` journals are the (messier, point-in-time)
-  trajectory. Where they disagree, the record governs (see PAPER.md compile note).
-- **A2** — `final_val_loss` and the first-crossing step are read from the canonical training log
-  for a submitted run; a run "counts" only if `step_to_3.28` actually fired (a run can dip past
-  3.28 and back — `v1/codex/AGENTS.md:224-226`).
-- **A3** — The noise-floor estimates (`step_to_target ≈ 50`, `final_val_loss ≈ 0.001`) are
-  treated as stable across the experiment; they were refreshed from baseline Muon at 3 seeds and
-  not recomputed every turn (`v1/codex/plan.md:24-27`).
-- **A4** — "Compliant" means the `Architecture` and forward/normalization code of the submitted
-  script is byte-identical to baseline `train_gpt_simple.py`; only the `Optimization` and
-  `Init & Optim Hyperparams` sections differ (`v2/.../THREAD.md:130`).
+- **A1** The benchmark's hard rules are binding and non-negotiable; a result that changes the
+  forward path / data / batch is invalid regardless of its loss. (Enforced; see [C05].)
+- **A2** Per-seed variance is stationary enough that the noise floor (≈50 steps / ≈0.001 loss)
+  estimated from baseline Muon transfers to the candidate stacks.
+- **A3** The fixed-step cohort z-test with σ=0.0013 is the operative definition of a "passing"
+  record (the Track-3 README threshold).
+- **A4** Public modded-nanogpt PRs and external papers are legitimate parents/sources when
+  reproduced faithfully under the architecture guard and attributed; they are not the agent's own
+  contribution.
+- **A5** The novelty wave's "not on arXiv" test is adjudicated by a search subagent before any code
+  runs; a porting of a published method fails the mission even if it would lower the bin.
+
+See [solution/constraints.md](solution/constraints.md) for the full lawful core and scope, and
+[claims.md](claims.md) for the falsifiable claims these insights become.

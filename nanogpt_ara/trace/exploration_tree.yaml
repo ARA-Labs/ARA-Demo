@@ -1,226 +1,576 @@
-# Exploration tree — Codex track_3_optimization speedrun
-# Root = the mission question; waves nest as children; experiments, decisions, and dead_ends
-# are typed nodes. The novelty wave is an isolated NV## subtree, read-scoped off the lineage.
-# support_level: explicit (in the inputs, with source_refs) | inferred (reconstructed).
-# evidence: entries are claim IDs (C##) from logic/claims.md.
+# Exploration Tree — Codex Autonomous Speedrun (track_3_optimization)
+# Research DAG: nested tree with cross-edges (also_depends_on) forming a DAG.
+# Node types: question | experiment | dead_end | decision | pivot
+# Four waves (v1, novelty [isolated NV subtree], v2, v3) under one root mission; the three
+# submitted records converge at N80. Numbers live in evidence/ and claims.md, not in node titles.
+# source_refs cite the journals (v{N}/codex/scratchpad/THREAD.md), goals, record configs, and run index.
 
-root:
-  id: M0
-  type: question
-  question: "In how few one-fwd-bwd steps can a fixed 124M-GPT reach 3.28 val loss, changing only optimizer/schedule/init?"
-  support_level: explicit
-  source_refs: ["v1/codex/goal.md:3-8", "v1/codex/AGENTS.md:3-6"]
-  children:
+tree:
+  - id: N01
+    type: question
+    support_level: explicit
+    source_refs: ["v1/codex/goal.md", "v1/codex/AGENTS.md", "README.md"]
+    title: "Lower the track_3_optimization step count below the Muon 3500-step baseline"
+    description: >-
+      On a fixed-architecture 124M-GPT speedrun, reach 3.28 validation loss in as few optimizer
+      steps ("bin") as possible. Muon baseline = 3500 steps; AdamW = 5625; stretch target < 2800.
+      Run autonomously under the six-rule lawful core (two-seed reproduction, 2x noise-floor gate,
+      stuck detector, <=3-modifier slug cap, mandatory pre-submission pruning). The mission ran as
+      four waves; the trajectory of submitted records is 3500 -> 3205 (v1) -> 3037 (v2) -> 2949 (v3),
+      with a hard-isolated novelty wave a documented negative.
+    children:
 
-    # ===================== WAVE v1 =====================
-    - id: V1
-      type: question
-      question: "Which post-Muon optimizer/schedule/init combination beats Muon at 3500 steps?"
-      support_level: explicit
-      source_refs: ["v1/codex/scratchpad/THREAD.md:10-60"]
-      children:
-        - id: V1-D1
-          type: decision
-          decision: "Order the search conservatively: schedule/LR-floor and EMA before heavy optimizer replacements, because the baseline is already near target at 3375."
-          support_level: explicit
-          source_refs: ["v1/codex/scratchpad/THREAD.md:51-54"]
-        - id: V1-E1
-          type: experiment
-          experiment: "Schedule-horizon vs train-step decoupling (horizon<sched>-stop<train>)."
-          outcome: "First sub-3500 hit at step 3450, reproduced on seed 1 — the core compression lever."
-          support_level: explicit
-          source_refs: ["v1/codex/scratchpad/THREAD.md:142-198"]
-          evidence: ["C01"]
-        - id: V1-E2
-          type: experiment
-          experiment: "Optimizer-family screen vs the 3500-step Muon bar (NorMuon, Muon2F, Adam-mini, and dozens more)."
-          outcome: "NorMuon, Muon2F, Adam-mini survive; most families ruled out as clean negatives."
-          support_level: explicit
-          source_refs: ["v1/codex/plan.md:35-71", "v1/codex/scratchpad/THREAD.md:253-1620"]
-          evidence: ["C03", "C05"]
-          children:
-            - id: V1-DE1
-              type: dead_end
-              dead_end: "Cautious-Muon / sign-mask updates: degrade the early curve (final 3.30833, no crossing)."
-              support_level: explicit
-              source_refs: ["v1/codex/scratchpad/THREAD.md:93"]
-            - id: V1-DE2
-              type: dead_end
-              dead_end: "MARS-M (all gammas), FWA, SOAP/Shampoo full, APOLLO, Lookahead-NorMuon, Sophia-F, RAdamW, SWATS, NovoGrad: rejected at early/mid gates."
-              support_level: explicit
-              source_refs: ["v1/codex/scratchpad/THREAD.md:221-222", "v1/codex/scratchpad/THREAD.md:245-251", "v1/codex/plan.md:56-71"]
-            - id: V1-DE3
-              type: dead_end
-              dead_end: "Residual-projection small-init / tied-head / semi-orthogonal init family: no broad gain; do not stack with Muon2F."
-              support_level: explicit
-              source_refs: ["v1/codex/scratchpad/THREAD.md:1732-1736", "v1/codex/plan.md:55"]
-        - id: V1-E3
-          type: experiment
-          experiment: "Endpoint smoothing — tail-EMA (beta 0.99, late start) vs uniform SWA."
-          outcome: "Tail-EMA is the strongest endpoint lever; SWA consistently worse."
-          support_level: explicit
-          source_refs: ["v1/codex/scratchpad/THREAD.md:1806-1813"]
-          evidence: ["C02"]
-        - id: V1-D2
-          type: decision
-          decision: "Prefer the isolated mu-schedule lever over stacked v12 packages (packages miss late despite mid-curve gains)."
-          support_level: explicit
-          source_refs: ["v1/codex/plan.md:12", "v1/codex/scratchpad/THREAD.md:2202-2208"]
-          evidence: ["C07"]
-        - id: V1-E4
-          type: experiment
-          experiment: "Leave-one-out pruning of the v12iso stack at the 3195 screen, then statistical-relevance pass."
-          outcome: "Tail-EMA and Muon2F dominate; late-LR/pulse/mom-refresh net-removable. Stat pass rejects s3170; submitted record bin = 3205 (n=16)."
-          support_level: explicit
-          source_refs: ["v1/codex/scratchpad/THREAD.md:2170-2232", "record_configs/20260515_codex_v1_v12iso_3205/README.md:13-26"]
-          evidence: ["C06", "C07"]
-          children:
-            - id: V1-DE4
-              type: dead_end
-              dead_end: "s3170 single-seed floor: rejected by the significance gate (negative score at n=15)."
-              support_level: explicit
-              source_refs: ["v1/codex/scratchpad/THREAD.md:2232"]
-              evidence: ["C05", "C06"]
+      # ================= v1 wave =================
+      - id: N10
+        type: question
+        support_level: explicit
+        source_refs: ["v1/codex/goal.md", "v1/codex/scratchpad/THREAD.md"]
+        title: "v1 — which optimizer/schedule/init levers beat Muon@3500, and do they stack?"
+        description: >-
+          Screen post-Muon and pre-Muon optimizers, schedules, and inits head-to-head on this exact
+          setup; promote only two-seed, above-noise-floor wins; compose the survivors into a record.
+        children:
+          - id: N11
+            type: experiment
+            support_level: explicit
+            source_refs: ["data/runs_self_contained/runs.csv (baseline rows)", "v1/codex/scratchpad/THREAD.md:62"]
+            title: "Baseline calibration (Muon 3500, AdamW 5625)"
+            result: >-
+              baseline-muon-3500-seed0 reproduces the published best: step_to_3.28 = 3500, final val
+              3.27658. AdamW crosses at 5625. These set the bar every later candidate must clear.
+            evidence: ["evidence/tables/trajectory_summary.md"]
 
-    # ===================== WAVE novelty (ISOLATED NV subtree) =====================
-    - id: NV
-      type: question
-      question: "Can genuinely-novel mechanisms (hard-isolated, no other-worktree access) beat Muon at 3500?"
-      isolated: true
-      support_level: explicit
-      source_refs: ["novelty/codex/scratchpad/THREAD.md:10-36"]
-      children:
-        - id: NV-D1
-          type: decision
-          decision: "Two mandatory pre-code gates (arXiv novelty + benchmark-rule compliance); novelty bar tightened three times to exclude schedule, then optimizer+schedule, then merely-additive couplings."
-          support_level: explicit
-          source_refs: ["novelty/codex/scratchpad/THREAD.md:130-134", "novelty/codex/scratchpad/THREAD.md:248-253", "novelty/codex/scratchpad/THREAD.md:455-457"]
-          evidence: ["C12"]
-        - id: NV-E1
-          type: experiment
-          experiment: "~3 dozen novel mechanisms benchmarked (TRM/STM/ALR, RSI/VFG/NGI init, PDS/CMU/GMS/BIGE/DPS couplings)."
-          outcome: "Best robust result = a reproduced 25-step (one-bin) gain, explicitly below the noise floor. No promotable submission."
-          support_level: explicit
-          source_refs: ["novelty/codex/scratchpad/THREAD.md:577-580"]
-          evidence: ["C05", "C12"]
-          children:
-            - id: NV-DE1
-              type: dead_end
-              dead_end: "Single-seed crossings (NGI 3475, NDF 3375) fail second-seed reproduction."
-              support_level: explicit
-              source_refs: ["novelty/codex/scratchpad/THREAD.md:574-575", "novelty/codex/scratchpad/THREAD.md:1340-1342"]
-              evidence: ["C05"]
-            - id: NV-DE2
-              type: dead_end
-              dead_end: "Many couplings killed before code: reduce to known Muon literature (Muon2/OrthoGrad/GaLore/Cayley) or are exact-polar algebraic no-ops (UtU=I)."
-              support_level: explicit
-              source_refs: ["novelty/codex/scratchpad/THREAD.md:1214", "novelty/codex/scratchpad/THREAD.md:1855-1856"]
-              evidence: ["C12"]
+          - id: N12
+            type: decision
+            support_level: explicit
+            source_refs: ["v1/codex/scratchpad/THREAD.md:50-54"]
+            title: "Rank schedule/EMA levers ahead of heavy optimizer replacements"
+            choice: "Search conservatively: LR floor/schedule -> EMA/SWA -> Cautious-Muon -> aux AdamW -> NorMuon -> SOAP/Kron last"
+            alternatives:
+              - "Lead with heavy second-order optimizer replacements (SOAP/Shampoo/PSGD-Kron)"
+              - "Lead with novel optimizer derivations"
+            evidence: "Local records show the baseline is already near target at 3375; heavy replacements carry higher implementation risk and weaker local evidence."
 
-    # ===================== WAVE v2 =====================
-    - id: V2
-      type: question
-      question: "Can the v12 optimizer stack be pushed below 3000 steps while staying compliant?"
-      support_level: explicit
-      source_refs: ["v2/codex/scratchpad/THREAD.md:3-22"]
-      also_depends_on: ["V1-E4"]
-      children:
-        - id: V2-D1
-          type: decision
-          decision: "Use the inherited cc v12 parent (the only known 3025-step parent) as the v2 backbone, provisionally."
-          support_level: explicit
-          source_refs: ["v2/codex/scratchpad/THREAD.md:6"]
-        - id: V2-DE1
-          type: dead_end
-          dead_end: "All v12-derived results QUARANTINED: the inherited RMSNorm.forward / q-k-norm change is a forward-path violation, invalid even though it materially helped."
-          support_level: explicit
-          source_refs: ["v2/codex/scratchpad/THREAD.md:126-128", "v2/codex/scratchpad/THREAD.md:154"]
-          evidence: ["C08"]
-        - id: V2-D2
-          type: decision
-          decision: "Rebuild a byte-identical-compliant legal_v12opt family from the workspace baseline; switch prefix v2cx -> v2cxleg; add a launch-time Architecture gate."
-          support_level: explicit
-          source_refs: ["v2/codex/scratchpad/THREAD.md:130-134"]
-          evidence: ["C08"]
-        - id: V2-E1
-          type: experiment
-          experiment: "Role-specific LR (RoleLR2) + role-specific WD (RoleWD) + Muon lookahead frontier walk on the compliant stack."
-          outcome: "Single-seed frontier reached 2962/2963, but those cohorts' means miss 3.28."
-          support_level: explicit
-          source_refs: ["v2/codex/scratchpad/THREAD.md:476-800"]
-          evidence: ["C04", "C05"]
-        - id: V2-E2
-          type: experiment
-          experiment: "Fixed-cohort significance verification (+25/+50/+75) and v2 leave-one-out pruning at 3037."
-          outcome: "Low-step families fail (3.28-mu)*sqrt(n)>=0.004; the fixed ts3037 cohort passes as the earliest common checkpoint. Submitted bin = 3037 (n=16)."
-          support_level: explicit
-          source_refs: ["v2/codex/scratchpad/THREAD.md:802-810", "record_configs/20260515_codex_v2_legal_3037/README.md:13-26"]
-          evidence: ["C03", "C04", "C06"]
-          children:
-            - id: V2-DE2
-              type: dead_end
-              dead_end: "ts2961 (0/64) and the 2962/2963/2970/2982 cohorts: rejected by the significance gate (negative cohort scores)."
-              support_level: explicit
-              source_refs: ["v2/codex/scratchpad/THREAD.md:800-802"]
-              evidence: ["C05", "C06"]
+          - id: N13
+            type: experiment
+            support_level: explicit
+            source_refs: ["v1/codex/scratchpad/THREAD.md:139-198"]
+            title: "Horizon != stop: decouple train_steps from schedule_steps"
+            result: >-
+              horizon3500/stop3450 is the first improvement over the 3500 baseline (hit 3450, val
+              3.27844; seed1 reproduced 3.27777). The lever recurs in every later promoted recipe.
+            evidence: ["C01", "evidence/tables/trajectory_summary.md"]
+            thinking: >-
+              It sets `train_steps=3450` but keeps a separate `schedule_steps=3500` for LR decay
+              progress. Rationale: canonical Muon with the 3500-step schedule was `3.28106` at step
+              3375 and `3.27658` at 3500, so a forced final validation at 3450 may already beat the
+              target without compressing cooldown.
+            children:
+              - id: N14
+                type: experiment
+                support_level: explicit
+                source_refs: ["v1/codex/scratchpad/THREAD.md:251-386"]
+                title: "NorMuon (beta 0.90, lr 0.030) corridor: descend stop 3450 -> 3350"
+                result: >-
+                  NorMuon beta.90 lr.030 becomes the workhorse hidden-matrix corridor; the two-seed
+                  reproduced frontier walks down to 3350 (3.27848 / 3.27835). beta.95 and lr.025 are worse.
+                evidence: ["C12"]
+                children:
+                  - id: N15
+                    type: dead_end
+                    support_level: explicit
+                    source_refs: ["v1/codex/scratchpad/THREAD.md:386-465"]
+                    title: "3325 stop is single-seed only (seed-2 limiter)"
+                    hypothesis: "A colder schedule / wd / beta sweep can stabilize the 3325 stop across seeds."
+                    failure_mode: "Only seed1 hits 3325 (3.27960); seed0/seed2 miss. Dozens of wd/beta/horizon probes fail to rescue seed2."
+                    lesson: "The lower-stop region is a seed-fragility map; the limiting seed (often seed 2) decides, not the lucky one. Promotion needs the cohort, not the crossing."
 
-    # ===================== WAVE v3 =====================
-    - id: V3
-      type: question
-      question: "Can the public radial/Soft-Muon frontier be reproduced and compressed below 2950 steps?"
-      support_level: explicit
-      source_refs: ["v3/codex/scratchpad/THREAD.md:411-442"]
-      also_depends_on: ["V2-E2"]
-      children:
-        - id: V3-D1
-          type: decision
-          decision: "Pivot from the internal Aurora lineage to the public PR frontier (PR #291 Soft-Muon, PR #294 radial) as a stronger parent; reproduce the v48 public-frontier parent first, then compress."
-          support_level: explicit
-          source_refs: ["v3/codex/scratchpad/THREAD.md:411", "v3/codex/scratchpad/THREAD.md:552"]
-          evidence: ["C09", "C10"]
-        - id: V3-E1
-          type: experiment
-          experiment: "Reproduce public PRs: radial timing (tail-only vs step-zero), Soft-Muon, SOAP portability."
-          outcome: "Tail-only PR #294 radial and PR #291 Soft-Muon reproduce and are load-bearing; full KL-SOAP-H not portable (zero-init freeze); Muown incompatible."
-          support_level: explicit
-          source_refs: ["v3/codex/scratchpad/THREAD.md:414", "v3/codex/scratchpad/THREAD.md:424", "v3/codex/scratchpad/THREAD.md:439"]
-          evidence: ["C09", "C10"]
-          children:
-            - id: V3-DE1
-              type: dead_end
-              dead_end: "Radial-from-step-zero: a kill (under-2950 cannot recover from a ~0.04 early loss)."
-              support_level: explicit
-              source_refs: ["v3/codex/scratchpad/THREAD.md:414"]
-              evidence: ["C09"]
-            - id: V3-DE2
-              type: dead_end
-              dead_end: "PR #290 full KL-SOAP-H and PR #288 Muown: not portable to this backbone; salvaged only as a warm-start SOAP-skip sidecar."
-              support_level: explicit
-              source_refs: ["v3/codex/scratchpad/THREAD.md:424", "v3/codex/scratchpad/THREAD.md:439"]
-              evidence: ["C10"]
-        - id: V3-E2
-          type: experiment
-          experiment: "u2900 worker campaign: warm SOAP sidecar, conditional radial guard, q/k Contra scale, LACV + q/k floor, schedule-phase retarget (keep PR #287 back-loaded cooldown)."
-          outcome: "Converges on a sub-2950 statistically-viable distribution; hard schedule truncation fails (only phase-shift works)."
-          support_level: explicit
-          source_refs: ["v3/codex/scratchpad/THREAD.md:615-1146", "v3/codex/scratchpad/THREAD.md:1039"]
-          evidence: ["C05", "C09", "C10"]
-        - id: V3-E3
-          type: experiment
-          experiment: "W258 leave-one-out pruning (11 ablations) at the 2940/2949 boundary."
-          outcome: "SOAP and radial are the largest keeps; nosphere (drop sphere-lookahead pull) is the only positive-score simplification; the two sphere removals do not compose. Submitted bin = 2949 (n=16)."
-          support_level: explicit
-          source_refs: ["v3/codex/scratchpad/THREAD.md:1168-1206", "v3/codex/scratchpad/w258_2940_leave_one_out_pruning_20260513.md:10-14", "record_configs/20260515_codex_v3_nosphere_2949/README.md:13-27"]
-          evidence: ["C07", "C09", "C10", "C11"]
-          children:
-            - id: V3-DE3
-              type: dead_end
-              dead_end: "Combined sphere removal nosphere_notangent: loses the 2940 boundary (substitutes, not redundant)."
-              support_level: explicit
-              source_refs: ["v3/codex/scratchpad/THREAD.md:1206"]
-              evidence: ["C11"]
-        - id: V3-DE4
-          type: dead_end
-          dead_end: "Aurora lead abandoned at the public pivot: its adaptive-outlier-control tail never ported the 3027 win one step lower; survives only as the Contra residual."
-          support_level: explicit
-          source_refs: ["v3/codex/scratchpad/THREAD.md:411", "v3/codex/scratchpad/THREAD.md:190"]
+                  - id: N16
+                    type: experiment
+                    support_level: explicit
+                    source_refs: ["v1/codex/scratchpad/THREAD.md:529-766"]
+                    title: "Role-specific mlp.proj LR (1.25x) + beta2 tail-thaw -> two-seed 3345"
+                    result: >-
+                      A 1.25x LR on mlp.proj (1.225/1.275/1.30 all worse) plus a linear beta2 tail-thaw
+                      0.90->0.82 reproduces a two-seed 3345 frontier; mlp.proj wants its own higher LR.
+                    evidence: ["C04 (role-specific LR lineage)"]
+
+      - id: N17
+        type: dead_end
+        support_level: explicit
+        source_refs: ["v1/codex/plan.md:34-71", "v1/codex/scratchpad/THREAD.md:858-1453"]
+        title: "Optimizer1 / matrix-replacement screen: dozens rejected"
+        hypothesis: "Some well-cited optimizer (QHAdamW, AdanW, RAdamW, AdaBelief, Lion, SOAP/Shampoo, OLion, DION, Sophia, NovoGrad, MADGRAD, SM3, Scion, MVR, Padam, ...) beats the NorMuon corridor when properly tuned."
+        failure_mode: "Almost all fail their pre-declared mid-curve kill gate (e.g. SOAP 6.16@250, DION 4.70@500, RAdamW 3.93@3200, OLion >0.03 behind). Clean negatives, reproduced as 'ruled out, here's why'."
+        lesson: "On this setup most claimed-SOTA optimizers are at parity or worse than a tuned NorMuon; the field is undertuned-baseline-confounded. A clean negative is a real result."
+
+      - id: N18
+        type: experiment
+        support_level: explicit
+        source_refs: ["v1/codex/scratchpad/THREAD.md:1071-1314"]
+        title: "Adam-mini auxiliary optimizer is a genuine signal"
+        result: >-
+          Adam-mini (rowwise second-moment) beats the matched parent-AdamW control at matched stop where
+          every beta/LR knob ablation fails; a real optimizer1 signal, though it does not make low stops
+          seed-stable (seed2 limits near 3280).
+        evidence: ["C12"]
+
+      - id: N19
+        type: experiment
+        support_level: explicit
+        source_refs: ["v1/codex/scratchpad/THREAD.md:1449-1620"]
+        title: "Muon2F factorized preconditioning — hidden-only positive"
+        result: >-
+          Stack-level Muon2F (pre_eps 1e-3) on the HIDDEN (non-mlp.proj) matrices reproduces a 3-seed
+          stop-3250 hit; attention-only, MLP-only, and APOLLO-all partitions are neutral-to-negative.
+          The benefit is role-specific.
+        evidence: ["C03"]
+        children:
+          - id: N20
+            type: dead_end
+            support_level: explicit
+            source_refs: ["v1/codex/scratchpad/THREAD.md:1473-1744"]
+            title: "Muon2F at stop3200 + short/long horizon compression: all miss"
+            hypothesis: "Horizon compression (h3202..h3450) or init tricks (resproj-smallinit, tied-head, semiortho) push raw Muon2F below stop 3200."
+            failure_mode: "Every horizon cell misses at 3200 (best h3300 3.28115); Grokfast, SPAM-reset, MARS-diff, init screens all negative."
+            lesson: "Tail/init mechanics alone cannot break the ~3000-step optimizer-only floor; the floor is a property of the mechanism class (-> v3 C07)."
+
+      - id: N21
+        type: experiment
+        support_level: explicit
+        source_refs: ["v1/codex/scratchpad/THREAD.md:1745-1951", "record_configs/20260515_codex_v1_v12iso_3205/pruning.png"]
+        title: "Tail-EMA evaluation — strongest endpoint-smoothing lever (beta .99 > .995)"
+        result: >-
+          Validating on a tail-EMA of the weights (swap-in for eval, restore online) converts near-misses
+          to crossings; beta=0.99 beats 0.995; fixed-window SWA and EMA-extrapolation are worse. It is the
+          single largest contributor in the v1 pruning sweep.
+        evidence: ["C02", "evidence/figures/v1_pruning.png"]
+        thinking: >-
+          `ema099s2500-h3375-stop3200` seed0 completed stronger than the `.995` seed0 cell
+          (`3200 / 3.27953`, with `3125=3.28270`). Because this is a real hit and the best seed0 EMA
+          beta so far ...
+
+      - id: N22
+        type: decision
+        support_level: explicit
+        source_refs: ["v1/codex/scratchpad/THREAD.md:2186-2222"]
+        title: "Adopt the isolated v12 mu-schedule; reject the full v12 package"
+        choice: "Use the mu-schedule lever ALONE (it hits and reproduces 3-seed) as the v12iso lead"
+        alternatives:
+          - "Adopt the full v12 package (mu-schedule + attn LR + cooldown floor + embed init + Contra)"
+          - "Adopt the simplified v12 package"
+        evidence: "Full and simplified v12 packages all miss while the isolated mu-schedule hits; combining many good levers washes out the late curve."
+
+      - id: N23
+        type: experiment
+        support_level: explicit
+        source_refs: ["record_configs/20260515_codex_v1_v12iso_3205/pruning_data.json"]
+        title: "v1 leave-one-out component pruning"
+        result: >-
+          At the 3195-step screen (n=8), removing tail-EMA (+0.00251) and Muon2F (+0.00229) hurts most;
+          mu-schedule (+0.00091) and error-feedback (+0.00076) next; respulse/momrefresh/beta2-thaw are
+          droppable. Establishes the load-bearing pair.
+        evidence: ["C02", "C03", "C09", "evidence/tables/v1_component_pruning.md"]
+
+      - id: N24
+        type: experiment
+        support_level: explicit
+        source_refs: ["v1/codex/scratchpad/THREAD.md:2231-2233", "record_configs/20260515_codex_v1_v12iso_3205/README.md"]
+        title: "v1 statistical-claimability pass -> submit record bin 3205 (n=16)"
+        result: >-
+          Recomputing cohort scores `(3.28 - mu)*sqrt(n) >= 0.004`, the v12iso/mu-schedule stack is
+          validated over 16 seeds at step 3205 (mean 3.27897187, score 0.00411250). Submitted record.
+        evidence: ["C06", "C11", "evidence/tables/v1_record_seeds.md", "evidence/figures/v1_loss_curves.png"]
+        children:
+          - id: N25
+            type: dead_end
+            support_level: explicit
+            source_refs: ["v1/codex/scratchpad/THREAD.md:2232"]
+            title: "Lower s3170 crossing rejected (negative cohort score)"
+            hypothesis: "The lower 3-seed s3170 crossing is a better record than a higher-step cohort."
+            failure_mode: "s3170 cohort: n=15, mu=3.280266, NEGATIVE score; fails the z-margin despite a 3-seed crossing."
+            lesson: "A record is a statistic, not a crossing; +25 steps with a tighter mean (s3220 / the 3205 cohort) is the cleaner claim. -> C06."
+            thinking: >-
+              Rejected: `v12iso-musched-h3375-s3170` `n=15`, `mu=3.280266`, negative score. User
+              suggested +25 steps; `s3220` worked and is the cleaner v12 claim.
+
+      # ================= novelty wave (isolated NV subtree) =================
+      - id: N30
+        type: question
+        support_level: explicit
+        source_refs: ["novelty/codex/goal.md", "novelty/codex/scratchpad/THREAD.md"]
+        title: "novelty (read-isolated) — can a not-on-arXiv mechanism beat Muon?"
+        description: >-
+          A hard-isolated wave (forbidden from looking at any other worktree), recorded as an isolated
+          NV## subtree read-scoped off the v1/v2/v3 lineage. Every submitted recipe must contain >=1 idea
+          not published on arXiv; porting a published method fails the mission. Terminal result is linked
+          into the lineage only at the seal step.
+        children:
+          - id: N31
+            type: decision
+            support_level: explicit
+            source_refs: ["novelty/codex/scratchpad/THREAD.md:132-140"]
+            title: "Two mandatory gates before any code: compliance + arXiv novelty"
+            choice: "Run a benchmark-compliance subagent AND an arXiv existence/novelty subagent before implementing any idea"
+            alternatives:
+              - "Implement promising ideas first, check novelty after"
+              - "Rely on the orchestrator's own judgment of novelty"
+            evidence: "The literature is huge; the opportunity is in derivations/interactions nobody has run, so novelty must be adjudicated before spending a run."
+
+          - id: N32
+            type: experiment
+            support_level: explicit
+            source_refs: ["novelty/codex/scratchpad/THREAD.md:195-298"]
+            title: "Init-only gain families (RSI/VFG/NGI/SVC/QKP) — best class, baseline parity"
+            result: >-
+              Init-only residual-stream / value-fc / norm-gain-imbalance gains are the best-performing
+              novelty-legal class, but all sit at Muon baseline parity; apparent crossings come from
+              cooldown-schedule truncation, which the agent refuses to credit.
+            evidence: ["C10"]
+            children:
+              - id: N33
+                type: dead_end
+                support_level: explicit
+                source_refs: ["novelty/codex/scratchpad/THREAD.md:577-580"]
+                title: "VFG best survivor: 25-step crossing, below the noise floor"
+                hypothesis: "The VFG value/fc-gain init is a genuine improvement worth promoting."
+                failure_mode: "vfg001_gain080_lr026_t3475 reproduces (seed1234 3.27962 vs default 3.27960) but is only a 25-step grid improvement from 3500 — below the 2x step noise floor."
+                lesson: "Reproducibility is necessary but not sufficient; a sub-noise-floor reproducible crossing is still not a record."
+                thinking: >-
+                  VFG reproduction succeeded but is not promotable under the noise-floor gate:
+                  `vfg001_gain080_lr026_t3475_seed1234` completed at `3.27962`, matching the default-seed
+                  `3.27960` crossing at 3475. This is only a 25-step grid improvement from 3500, below the
+                  required 2x step noise floor.
+
+              - id: N34
+                type: dead_end
+                support_level: explicit
+                source_refs: ["novelty/codex/scratchpad/THREAD.md:574", "novelty/codex/scratchpad/THREAD.md:1340"]
+                title: "Genuine 3375 crossings (NGI, NDF) fail distinct-seed reproduction"
+                hypothesis: "NGI n0875/m1125 and NDF alpha=0.05 cross at 3375 and are real improvements."
+                failure_mode: "Both fail the reproduction seed: NGI 3.27978 -> seed2 3.28149; NDF 3.27999 -> seed1234 3.28289."
+                lesson: "The decisive empirical failure mode of the wave: deeper single-seed crossings do not reproduce. Seed reproduction is where novelty dies here."
+
+          - id: N35
+            type: experiment
+            support_level: explicit
+            source_refs: ["novelty/codex/scratchpad/THREAD.md:541-1846"]
+            title: "Pre-polar momentum / gain-Gram / cross-optimizer families (dozens)"
+            result: >-
+              PDS, CMU, QKT, GMS, PWG, BIGE, BCW, CBC, GSB, PSE, DDM, SAM, ABP, PAM and more were
+              implemented and run; the strongest reach a single 3450/3475-only crossing, all recenter
+              near 3.282, none reproduce a deeper crossing.
+            evidence: ["C10"]
+            children:
+              - id: N36
+                type: dead_end
+                support_level: explicit
+                source_refs: ["novelty/codex/scratchpad/THREAD.md:1212-1216", "novelty/codex/scratchpad/THREAD.md:1853"]
+                title: "Exact-polar no-op law kills CPD/GLC/NMA/DPF/MNL/JSP/BIC"
+                hypothesis: "A pre-polar perturbation built from column energy / off-diagonal commutators of U materially reshapes the Muon update."
+                failure_mode: "For exact polar U, ||U[:,j]||^2 = 1 and U^T U = I (square/tall targets), so the proposed signal is identically zero — the update reduces to ordinary Muon + decoupled WD. Killed before code."
+                lesson: "An entire sub-class of 'novel' pre-polar mechanisms is algebraically inert under Muon's polar map. -> C10."
+                thinking: >-
+                  for exact polar `U`, input-column norms satisfy `||U[:,j]||^2 = 1`, so the q/k/v-vs-fc
+                  column-energy imbalance collapses to ordinary Muon plus decoupled WD. No run.
+
+              - id: N37
+                type: dead_end
+                support_level: explicit
+                source_refs: ["novelty/codex/scratchpad/THREAD.md:1782", "novelty/codex/scratchpad/THREAD.md:2001"]
+                title: "Scalar-collapse law: ITP/PJD reduce to a Nesterov blend"
+                hypothesis: "Finite-differencing / blending the polar update yields a materially new optimizer tensor."
+                failure_mode: "Z = N + alpha(D - beta N) = (1 - alpha*beta)N + alpha*D — only a scalar Nesterov/de-Nesterov blend coefficient, non-novel plumbing under the refined bar."
+                lesson: "The other half of the survivors collapse to a scalar coefficient. Between the no-op law and the scalar-collapse law, the reachable novel space is near-empty. -> C10."
+
+      - id: N38
+        type: dead_end
+        support_level: explicit
+        source_refs: ["novelty/codex/scratchpad/THREAD.md:2016-2028"]
+        title: "novelty wave terminates with no promotable submission"
+        hypothesis: "The novelty-constrained search space contains a reproducible, above-floor improvement."
+        failure_mode: "The search tail collapses into successive algebraic no-op / scalar-collapse kills; the last idea (DPD, data-parallel disagreement) is killed before code as PCGrad/Fisher-Orthogonal. No submission."
+        lesson: "Structural negative result: genuinely-novel survivors cannot matter (no-op/scalar) while mechanisms that would matter are already published. A clean negative with the math reason is the deliverable. -> C10."
+
+      # ================= v2 wave =================
+      - id: N40
+        type: question
+        support_level: explicit
+        source_refs: ["v2/codex/goal.md", "v2/codex/scratchpad/THREAD.md"]
+        title: "v2 — push below 3000 from the v12 parent"
+        description: >-
+          Start from the strongest known parent (the cross-agent v12 stack at 3025) and find legal levers
+          that push the crossing step below 3000, then validate statistically.
+        children:
+          - id: N41
+            type: decision
+            support_level: explicit
+            source_refs: ["v2/codex/scratchpad/THREAD.md:6"]
+            title: "Adopt the cross-agent v12 stack as the experimental backbone"
+            choice: "Use cc's v12 (the only known 3025-step parent) as the v2 backbone rather than the public baseline"
+            alternatives:
+              - "Build forward from the public modded-nanogpt baseline"
+              - "Continue from codex's own v1 EMA branch"
+            evidence: "v12 is the only known 3025-step parent and codex's 3195 EMA branch does not stack on top of v12."
+            thinking: >-
+              Decision: use cc v12 as the experimental backbone rather than the public baseline in this
+              worktree, because v12 is the only known 3025-step parent and prior reports show codex's 3195
+              EMA branch does not stack on top of v12.
+            children:
+              - id: N42
+                type: experiment
+                support_level: explicit
+                source_refs: ["v2/codex/scratchpad/THREAD.md:26-123"]
+                title: "v12 descent to bin 2999 (pre-compliance)"
+                result: >-
+                  On the inherited v12 base, train-step-only squeezing reaches a 2999 crossing. (These
+                  results are later quarantined as non-compliant.)
+                evidence: ["C05"]
+
+          - id: N43
+            type: pivot
+            support_level: explicit
+            source_refs: ["v2/codex/scratchpad/THREAD.md:124-134"]
+            title: "Architecture compliance stop: v12 forward path is illegal"
+            from: "Descending the frontier on the inherited v12 stack"
+            to: "Quarantine every v12-derived result and rebuild a byte-identical-compliant optimizer family"
+            trigger: "User flags that v12's RMSNorm.forward / q-k-norm is a forward-path precision change, illegal for this track even though mathematically close."
+            evidence: ["C05"]
+            thinking: >-
+              every v12-derived codex variant inherited `RMSNorm.forward` as
+              `(norm(x.float()) * self.gains).type_as(x)` instead of the workspace baseline
+              `F.rms_norm(x, (x.size(-1),), weight=self.gains.type_as(x))` ... This is a precision/behavior
+              change in the forward path and is invalid for this track even if mathematically close.
+            children:
+              - id: N44
+                type: experiment
+                support_level: explicit
+                source_refs: ["v2/codex/scratchpad/THREAD.md:132-176"]
+                title: "Legal rebuild legal_v12opt (byte-identical Architecture)"
+                result: >-
+                  Rebuilt the v12 optimizer family from the workspace train_gpt_simple.py; Architecture diff
+                  empty, norm lines identical. The legal stack reaches target but the illegal forward-path
+                  change had materially helped sub-3000 behavior — compliance costs real steps.
+                evidence: ["C05"]
+                children:
+                  - id: N45
+                    type: experiment
+                    support_level: explicit
+                    source_refs: ["v2/codex/scratchpad/THREAD.md:276-380"]
+                    title: "Two legal levers (Contra 0.225 + attn Muon LR 0.625) -> bin 2993"
+                    result: >-
+                      Of ~50 screened legal levers, only cm0225 and attn0625 produce live ts2998 crossings;
+                      their exact combination, train-step-only, descends to a 2993 crossing.
+                    evidence: ["C04"]
+                    children:
+                      - id: N46
+                        type: dead_end
+                        support_level: explicit
+                        source_refs: ["v2/codex/scratchpad/THREAD.md:362-544"]
+                        title: "~50 parent-screen optimizer/init variants at ts2998 — all cold"
+                        hypothesis: "Some fresh optimizer/init lever (QKV-tensor, AdamMini, BlockOrtho, BranchCov, QKTrust, GradCenter, ProjInit, ...) crosses ts2998 robustly."
+                        failure_mode: "All cold or single-seed lucky (best near-misses BranchCov 3.28020, QKTrust 3.28012) and never reproduce a crossing."
+                        lesson: "The v12 backbone already absorbs most orthogonal levers; the remaining space is cross-tensor/per-entry state, mostly empty."
+
+                      - id: N47
+                        type: experiment
+                        support_level: explicit
+                        source_refs: ["v2/codex/scratchpad/THREAD.md:542-620"]
+                        title: "Role-split Muon weight decay (rolewd) -> first crossing 2975"
+                        result: >-
+                          Adding role-specific Muon weight decay moves the first crossing step to 2975 inside
+                          a longer schedule (judge by trajectory checkpoints, not endpoint loss).
+                        evidence: ["C04"]
+                        children:
+                          - id: N48
+                            type: experiment
+                            support_level: explicit
+                            source_refs: ["v2/codex/scratchpad/THREAD.md:738-800"]
+                            title: "rolelr2 + Muon lookahead -> single-seed crossing 2962"
+                            result: >-
+                              Role-split Muon LR plus a late Muon lookahead pull the single-seed crossing to
+                              2962 where train-step shortening alone stalls. (Not yet a record.)
+                            evidence: ["C04"]
+                            children:
+                              - id: N50
+                                type: dead_end
+                                support_level: explicit
+                                source_refs: ["v2/codex/scratchpad/THREAD.md:802"]
+                                title: "Low-step single-seed frontier (ts2962-2982) fails the z-test"
+                                hypothesis: "The 2962-2982 single-seed crossings are submittable records."
+                                failure_mode: "Cohort z-test: ts2962 n=38 score -0.01496, ts2963 -0.01163, ts2970 -0.00724, ts2982 -0.00539 — all fail."
+                                lesson: "Single-seed low-step crossings are low-tail singletons; the cohort mean sits well above threshold. -> C11."
+
+                              - id: N49
+                                type: experiment
+                                support_level: explicit
+                                source_refs: ["v2/codex/scratchpad/THREAD.md:802-810", "record_configs/20260515_codex_v2_legal_3037/README.md"]
+                                title: "v2 significance cohort: only +75 ts3037 passes -> submit bin 3037"
+                                result: >-
+                                  Fixed-step cohorts at +25/+50/+75 of the clean stack: only +75 (ts3037) passes,
+                                  8-seed mean 3.2783775 score 0.004589 (z=3.53). Step 3025 fails the
+                                  same-checkpoint scan. Submitted record bin 3037 (n=16).
+                                evidence: ["C06", "C11", "evidence/tables/v2_record_seeds.md", "evidence/figures/v2_loss_curves.png"]
+                                thinking: >-
+                                  mean 3.2783775; score `(3.28 - mu) * sqrt(8) = 0.004589`, equivalent z = 3.53
+                                  with sigma 0.0013 and one-sided p about 0.000208 ... final step 3037 is the
+                                  earliest common validation checkpoint that passes.
+
+          - id: N51
+            type: experiment
+            support_level: explicit
+            source_refs: ["record_configs/20260515_codex_v2_legal_3037/pruning_data.json"]
+            title: "v2 leave-one-out component pruning"
+            result: >-
+              At step 3037 (n=8), mu-schedule (+0.00459), cooldown-floor cf1.0 (+0.00388) and MuonEq
+              (+0.00353) are largest; role-LR (+0.00292) is the key v2-specific addition; Contra-Muon is
+              nearly free (+0.00008).
+            evidence: ["C04", "C09", "evidence/figures/v2_pruning.png", "evidence/tables/v2_component_pruning.md"]
+
+      # ================= v3 wave =================
+      - id: N60
+        type: question
+        support_level: explicit
+        source_refs: ["v3/codex/goal.md", "v3/codex/scratchpad/THREAD.md"]
+        title: "v3 — break the ~3000-step floor and push below 2950"
+        description: >-
+          The local optimizer-only family centers near 3.280 at 2999. Find a way below 2950 and validate
+          a statistically viable record.
+        children:
+          - id: N61
+            type: experiment
+            support_level: explicit
+            source_refs: ["v3/codex/scratchpad/THREAD.md:23-195"]
+            title: "Aurora local sub-line (bin 3037 -> 3027)"
+            result: >-
+              Transplanting leverage-aware row/Stiefel correction + KL/SOAP into the strongest local stacks
+              passes down to 3027, committed as records.
+            evidence: ["C12"]
+            children:
+              - id: N62
+                type: dead_end
+                support_level: explicit
+                source_refs: ["v3/codex/scratchpad/THREAD.md:298-410"]
+                title: "Aurora sub-3000: recenters near 3.280 at 2999"
+                hypothesis: "An adaptive KL/SOAP/cautious Aurora variant breaks below 3000."
+                failure_mode: "Dozens of variants all cluster ~3.2786-3.2790; every distribution recenters near 3.280 at 2999 — a clean negative."
+                lesson: "The ~3000 floor is a property of the local mechanism class, not the benchmark; a stronger parent is needed. -> C07."
+
+          - id: N63
+            type: pivot
+            support_level: explicit
+            source_refs: ["v3/codex/scratchpad/THREAD.md:411"]
+            title: "Public-frontier pivot: reproduce the public PR parent, then compress"
+            from: "Inventing local Aurora/SOAP mechanisms"
+            to: "Faithfully reproduce the public modded-nanogpt PR #294/#291 frontier, then compress it below 2950"
+            trigger: "User supplies the KellerJordan PR frontier (PR#294 ~2990, PR#291 ~3030) below the local v3 line."
+            evidence: ["C07"]
+            thinking: >-
+              Public frontier pivot. User supplied the KellerJordan PR frontier below our v3 line ... the
+              prior SOAP/Aurora family repeatedly centered near 3.280 at 2999; public Soft/radial is a
+              stronger parent and the user wants a real step-count compression beyond the current public record.
+            children:
+              - id: N64
+                type: dead_end
+                support_level: explicit
+                source_refs: ["v3/codex/scratchpad/THREAD.md:412-551"]
+                title: "Radial-from-step-0 and Soft-Muon-alone: harmful or insufficient"
+                hypothesis: "Outward-radial dampening applied from step 0, or Soft-Muon alone, gets below 2950."
+                failure_mode: "Radial from step 0 kills the early curve (~0.04 behind, hard kill); Soft-only is a clean negative (3.28345). Hyperball/AdamP-tail/thermostat/tangent families all ~3.282-3.284."
+                lesson: "The radial brake must be a TAIL correction, not a from-zero one; Soft-Muon buys tail slope, not early loss. -> C08."
+
+              - id: N65
+                type: decision
+                support_level: explicit
+                source_refs: ["v3/codex/scratchpad/THREAD.md:552"]
+                title: "Reproduce-then-compress v48 (after the v41 early-kill correction)"
+                choice: "First reproduce/extend the proven v48 public parent faithfully, THEN compress its schedule toward 2949/2950"
+                alternatives:
+                  - "Keep spending slots on local micro-variants with 3.282 ceilings"
+                  - "Early-kill public-frontier schedules on their slow early curve"
+                evidence: "PR#294/v41's power-law cooldown is back-loaded, so early kills are invalid; v48 (PR#294 + CGI + di-fc + b2.99) reaches bin 2980 N=15."
+                thinking: >-
+                  first reproduce/extend the proven v48 public-frontier parent, then compress its schedule
+                  toward 2949/2950 instead of spending more slots on micro-variants with 3.282 ceilings.
+                children:
+                  - id: N66
+                    type: experiment
+                    support_level: explicit
+                    source_refs: ["v3/codex/scratchpad/THREAD.md:552", "data/runs_self_contained/agents/codex_v3/runs/10389-v3prune-w258loo-nosphere-r3-preempt-a81eb0c72f/launched_script.py:13-31"]
+                    title: "Faithful v48 public reproduction (PR#294 + #291 + MLP+V SOAP + power-law LR)"
+                    result: >-
+                      Faithful port under the architecture guard (radial projection/sign/placement and
+                      Soft-Muon/Frobenius norm audited against the public code; SOAP extended to MLP+V). A
+                      stronger parent than the local family.
+                    evidence: ["C07", "C08"]
+                    children:
+                      - id: N67
+                        type: experiment
+                        support_level: explicit
+                        source_refs: ["v3/codex/scratchpad/THREAD.md:560-1167"]
+                        title: "Compression by phase-endpoint shift (Worker70 -> W211 -> W258)"
+                        result: >-
+                          Moving Soft/radial/LR phase endpoints earlier while KEEPING the long back-loaded
+                          cooldown, plus LACV variance control for the mid-run seed-offset pathology, reaches
+                          statistically-viable 2940-boundary parents.
+                        evidence: ["C07"]
+                        thinking: >-
+                          do not hard-compress the whole schedule to 2900; W198-W200 were cold, while W211
+                          improved the boundary by keeping a 3025 LR horizon and aligning the Soft/radial tail.
+                        children:
+                          - id: N68
+                            type: dead_end
+                            support_level: explicit
+                            source_refs: ["v3/codex/scratchpad/THREAD.md:1052-1098"]
+                            title: "Hard horizon truncation to 2900 (W198-W200); q/k no-Soft"
+                            hypothesis: "Hard-compressing the whole schedule horizon to 2900 reaches the target bin."
+                            failure_mode: "W198-W200 are cold (step2900 ~3.2837-3.2839); q/k no-Soft is a hard failure (3.28448)."
+                            lesson: "Compress by re-phasing, not horizon truncation; q/k needs Soft-Muon in this geometry. -> C07, C08."
+
+                          - id: N69
+                            type: experiment
+                            support_level: explicit
+                            source_refs: ["v3/codex/scratchpad/THREAD.md:1154-1206", "v3/codex/scratchpad/w258_2940_leave_one_out_pruning_20260513.md", "record_configs/20260515_codex_v3_nosphere_2949/pruning_data.json"]
+                            title: "W258 leave-one-out pruning -> 'nosphere'"
+                            result: >-
+                              11-ablation sweep at step 2949: SOAP (nosoap +0.00528) and radial (noradial
+                              +0.00374) are load-bearing; the sphere-lookahead pull is redundant. 'nosphere'
+                              confirmed statistically viable at N=16 (step2940 mean 3.278848 score +0.004608).
+                            evidence: ["C08", "C09", "evidence/figures/v3_pruning.png", "evidence/tables/v3_component_pruning.md"]
+                            thinking: >-
+                              Nosphere reached statistically viable 2940 at N=9 ... This is the only
+                              leave-one-out that both simplifies the stack and preserves the 2940 statistical boundary.
+                            children:
+                              - id: N70
+                                type: dead_end
+                                support_level: explicit
+                                source_refs: ["v3/codex/scratchpad/THREAD.md:1206"]
+                                title: "Combined sphere removal does not compose"
+                                hypothesis: "If sphere-lookahead pull and tangent-sphere radial are each individually removable, both can be removed together."
+                                failure_mode: "Combined nosphere_notangent demoted at N=12 (step2940 mean 3.279551, clearly worse) — loses the 2940 boundary."
+                                lesson: "Individually-removable modifiers are not jointly removable; pruning must check interactions, not just single deletions. -> C09."
+
+                              - id: N71
+                                type: experiment
+                                support_level: explicit
+                                source_refs: ["record_configs/20260515_codex_v3_nosphere_2949/README.md"]
+                                title: "Submit v3 'nosphere' record bin 2949 (n=16; viable to ~2940)"
+                                result: >-
+                                  The pruned nosphere stack is submitted at bin 2949 (n=16 seeds 0-15, mean
+                                  3.27886125, score 0.00455500), statistically viable to ~2940 at N=16.
+                                evidence: ["C06", "C08", "C09", "evidence/tables/v3_record_seeds.md", "evidence/figures/v3_loss_curves.png"]
+
+      # ================= cross-wave convergence =================
+      - id: N80
+        type: experiment
+        support_level: explicit
+        source_refs: ["README.md", "record_configs/"]
+        title: "Cross-wave trajectory: 3500 -> 3205 -> 3037 -> 2949"
+        also_depends_on: [N24, N49, N71]
+        result: >-
+          The three submitted records form a continuous single-agent lineage (v1 levers -> v2 legal
+          frontier -> v3 public-parent compression), every bin fixed by the statistical-claimability gate
+          rather than a lucky crossing; the novelty wave is the documented negative. The recurring lesson
+          across all four waves is C12: compliance + reproduction + noise-floor discipline is what makes a
+          result survive.
+        evidence: ["C01", "C06", "C12", "evidence/tables/trajectory_summary.md"]

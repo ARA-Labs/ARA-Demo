@@ -1,206 +1,191 @@
 # Experiments
 
-Directional verification/analysis plans. **No exact numbers** — those live in
-[../evidence/](../evidence/). "Experiment" here means a benchmark eval campaign, an ablation
-sweep, or a statistical verification. Claims and experiments are many-to-many; a claim that
-generalizes across waves lists several experiments in its `Proof`.
+Declarative verification/analysis plans. **No exact numbers here** — exact values live in
+[evidence/](../evidence/) and in the trace. Each experiment lists what it `Verifies` (claim IDs),
+its `Setup`/`Procedure`/`Expected outcome`, where results are filed (`Evidence`), and the run family
+that produced it (`Run`). "Experiment" generalizes to a benchmark eval run, a statistical test, an
+ablation sweep, or a derivation check. Claims↔experiments are many-to-many.
 
-Each run is one execution of the canonical `train_gpt_simple.py` (or a `scratchpad/variants/`
-copy for diagnostics only); results are filed in [../src/artifacts.md](../src/artifacts.md) (the
-8,224 attached run exports) and summarized in [../evidence/](../evidence/).
-
----
-
-## E01 — Schedule-horizon vs train-step decoupling
-
-**Verifies.** C01.
-**Setup.** Baseline Muon on the fixed benchmark; vary `schedule_steps` (LR-decay length)
-independently of `train_steps` (optimization length), forcing final validation at `train_steps <
-schedule_steps`.
-**Procedure.** Establish the baseline crossing; run `horizon<sched>-stop<train>` variants holding a
-long schedule while shortening the optimization horizon; reproduce any crossing on a second seed;
-map the seed-dependent cliff below which the shortened horizon lags from mid-training.
-**Expected outcome.** A long-schedule/short-optimization run crosses target earlier than the
-matched-length baseline, down to a seed-dependent floor; directionally the schedule geometry
-buys step-count without an optimizer change.
-**Evidence.** [../evidence/figures/v1_loss_curves.md](../evidence/figures/v1_loss_curves.md).
-**Run.** v1 `horizon*` / `h<sched>-stop<train>` families (`v1/codex/scratchpad/THREAD.md:139-261`).
+The run index for every experiment is [src/artifacts.md](../src/artifacts.md)
+(`data/runs_self_contained/runs.csv`, filtered to the four Codex waves, 8,224 runs).
 
 ---
 
-## E02 — Optimizer-family screen against the Muon baseline
+## E01 — Horizon vs. stop decoupling (v1)
+- **Verifies:** C01
+- **Setup:** Muon baseline on `track_3_optimization`; a variant that sets `train_steps` below
+  `schedule_steps` (forced early final validation under the uncompressed LR decay).
+- **Procedure:** Compare the early-stop variant against (a) the 3500-step baseline and (b) schedules
+  whose decay is compressed to the same stop; sweep the stop downward across seeds.
+- **Expected outcome:** The decoupled variant crosses the target at a lower step than the baseline and
+  than the compressed-decay schedules, until the stop is pulled below the useful cooldown tail.
+- **Evidence:** evidence/tables/trajectory_summary.md (v1 entry).
+- **Run:** `family=normuon`, `family=v12iso`, purpose=statistical_verification (codex_v1).
 
-**Verifies.** C03, C05.
-**Setup.** A breadth screen of post-Muon and older optimizers (NorMuon, Muon2F, MARS-M, Adam-mini,
-SOAP/Shampoo, APOLLO, Lookahead, Sophia-F, CAME, LAMB, …) each LR/WD/schedule-tuned against the
-Muon baseline bar.
-**Procedure.** Coarse log-spaced LR sweep, refine around any peak, sweep WD and schedule shape,
-two-seed reproduction at the best cell, kill a family at the stuck-detector threshold; record clean
-negatives.
-**Expected outcome.** Most families are ruled out (negative or worse than Muon); NorMuon, Muon2F,
-and Adam-mini survive as positive; the surviving gains are seed-fragile near the frontier.
-**Evidence.** [../evidence/figures/v1_pruning.md](../evidence/figures/v1_pruning.md) (component
-contributions of the survivors), [../evidence/tables/v1_pruning_table.md](../evidence/tables/v1_pruning_table.md).
-**Run.** v1 optimizer screens and `picklist.md` graveyard (`v1/codex/plan.md:35-71`).
+## E02 — Optimizer/schedule/init lever screen → NorMuon corridor (v1)
+- **Verifies:** C12, C03 (negative space), C01
+- **Setup:** Broad screen of post-Muon and pre-Muon optimizers, schedules, and inits against the
+  3500-step Muon bar, under the ≤3-modifier slug cap and the stuck detector.
+- **Procedure:** One isolated lever per family; kill at a pre-declared mid-curve gate; promote only on
+  two-seed reproduction beating the bar by ≥2× the noise floor. NorMuon (β=0.90, lr=0.030) becomes the
+  workhorse corridor.
+- **Expected outcome:** Most well-cited optimizers are at parity or worse (clean negatives); a small
+  set (NorMuon corridor, role-specific mlp.proj LR, beta2 tail-thaw) survives as the v1 backbone.
+- **Evidence:** trace dead_end nodes; evidence/tables/v1_component_pruning.md.
+- **Run:** `family=normuon` (507 runs), `family=muon2f` (413), `family=adammini` (66), codex_v1.
 
----
+## E03 — Factorized hidden-matrix preconditioning ablation (Muon2F) (v1)
+- **Verifies:** C03
+- **Setup:** Two-factor preconditioner applied to different parameter-role partitions (hidden-only,
+  attention-only, MLP-only, all/APOLLO-style).
+- **Procedure:** Run each partition variant at matched stop/seed; compare mid-curve and target-step
+  behavior; reproduce the positive partition across ≥3 seeds.
+- **Expected outcome:** Only the hidden-only partition is a live positive; other partitions are
+  neutral-to-negative.
+- **Evidence:** evidence/tables/v1_component_pruning.md (`noMuon2f`).
+- **Run:** `family=muon2f` (codex_v1).
 
-## E03 — Tail-EMA vs SWA endpoint smoothing
+## E04 — Tail-EMA evaluation sweep (v1)
+- **Verifies:** C02
+- **Setup:** Validation on an EMA of late-training weights (swap-in for eval, restore online), sweeping
+  EMA start step and β; baselines = fixed-window SWA and EMA-extrapolated evaluation.
+- **Procedure:** Bisect the stop boundary under tail-EMA; compare β=0.99 vs β=0.995; check seed
+  robustness near the practical floor.
+- **Expected outcome:** Tail-EMA evaluation converts near-misses to crossings; β=0.99 beats β=0.995;
+  SWA and extrapolation are worse; the gain is seed-fragile below the practical stop.
+- **Evidence:** evidence/tables/v1_component_pruning.md (`noTailEMA`, the top contributor).
+- **Run:** EMA/SWA variants within codex_v1 (`tailresrmsstack`, `formalprune`).
 
-**Verifies.** C02.
-**Setup.** On the v1 Muon2F/Adam-mini stack, compare evaluation-time weight EMA (β≈0.99, late
-start) against uniform tail averaging (SWA) and against no smoothing.
-**Procedure.** Swap an EMA/SWA average of late weights in for the final validation only, then
-restore; sweep β and start step; reproduce across seeds; compare crossing steps.
-**Expected outcome.** Tail-EMA converts near-misses into crossings and is the strongest endpoint
-lever; SWA is consistently worse than EMA.
-**Evidence.** [../evidence/figures/v1_pruning.md](../evidence/figures/v1_pruning.md) (`noTailEMA` is
-the top bar).
-**Run.** v1 EMA/SWA support jobs (`v1/codex/plan.md:102-104`, `THREAD.md:1745-2030`).
+## E05 — Transplanted "mu-schedule" isolation (v1)
+- **Verifies:** C12 (stacking saturates)
+- **Setup:** A handed-over "v12" idea set (Muon mu schedule, attn LR, cooldown floor, embed init,
+  Contra) tested as full/simplified packages vs. each lever isolated.
+- **Procedure:** Run the full package, a simplified package, and each isolated lever; reproduce the
+  positive across seeds.
+- **Expected outcome:** Full/simplified packages miss (combined levers wash out the late curve) while
+  the **isolated mu-schedule** lever hits and reproduces — the load-bearing modifier, not the bundle.
+- **Evidence:** trace v1 nodes; evidence/tables/trajectory_summary.md.
+- **Run:** `family=v12iso` (120), `family=v12musched` (27), codex_v1.
 
----
+## E06 — v1 leave-one-out component pruning (v1)
+- **Verifies:** C02, C03, C09
+- **Setup:** Leave-one-out ablation of the v1 stack at the pruning step, single seed first, second seed
+  on borderline candidates (the lawful-core pruning procedure).
+- **Procedure:** For each modifier, remove it and compare cohort val loss; rank by delta; drop only on a
+  2-seed mean inside ±0.5× the noise floor.
+- **Expected outcome:** Tail-EMA and factorized preconditioning are the largest contributors; several
+  tail mechanics (respulse, momrefresh, late_lr) are droppable.
+- **Evidence:** evidence/figures/v1_pruning.png, evidence/tables/v1_component_pruning.md.
+- **Run:** `family=formalprune` (162), `family=prune` (codex_v1).
 
-## E04 — v1 leave-one-out component pruning
+## E07 — v1 statistical-claimability cohort (v1)
+- **Verifies:** C06, C11
+- **Setup:** Fixed-step N-seed cohorts of the v12iso/mu-schedule stack at several stops; the z-margin
+  `(3.28 − μ)·√n ≥ 0.004`.
+- **Procedure:** Recompute cohort means/scores from individual trainer logs; reject stops with negative
+  or sub-threshold score; submit the earliest passing common checkpoint.
+- **Expected outcome:** The lowest crossing (`s3170`) is rejected (negative score); a +25-step / 16-seed
+  cohort passes → submitted record bin **3205**.
+- **Evidence:** evidence/tables/v1_record_seeds.md, evidence/figures/v1_loss_curves.png.
+- **Run:** purpose=statistical_verification (codex_v1), record_configs/…_v1_v12iso_3205.
 
-**Verifies.** C02, C03, C07.
-**Setup.** The v12iso stack at its 3195-step screen; remove each component in turn.
-**Procedure.** For each modifier build a leave-one-out variant, run an n-seed cohort, measure
-`Δval when removed`; rank components; drop only those whose removal is within ±0.5× noise.
-**Expected outcome.** Tail-EMA and Muon2F dominate; mu-schedule and error-feedback are moderate;
-late-LR / momentum-refresh / residual-pulse are net-removable.
-**Evidence.** [../evidence/figures/v1_pruning.md](../evidence/figures/v1_pruning.md),
-[../evidence/tables/v1_pruning_table.md](../evidence/tables/v1_pruning_table.md),
-[../evidence/data/v1_pruning_data.json](../evidence/data/v1_pruning_data.json).
-**Run.** v1 `formalprune` / pruning-rerun runs (family `formalprune`, 162 runs in `runs.csv`).
+## E08 — Novelty-constrained derivation screen (novelty wave; isolated)
+- **Verifies:** C10
+- **Setup:** Hard-isolated wave; every recipe must carry a not-on-arXiv idea, adjudicated by a search
+  subagent and a benchmark-compliance subagent before any run.
+- **Procedure:** Derive a novel pre-polar Muon / init mechanism; pass both gates; run a small α-sweep +
+  target-step probes; reproduce any crossing on a distinct seed; record the math reason for failure.
+- **Expected outcome:** Survivors reach at best a sub-noise-floor single-seed crossing; genuine
+  crossings fail seed reproduction; the search tail collapses into algebraic no-op / scalar-collapse
+  proofs. No promotable submission.
+- **Evidence:** trace `NV##` subtree; evidence/tables/trajectory_summary.md (novelty row).
+- **Run:** `version=novelty` (254 runs), codex_novelty.
 
----
+## E09 — v2 v12 compliance audit & quarantine (v2)
+- **Verifies:** C05
+- **Setup:** The inherited cross-agent "v12" parent; an Architecture-section diff against the workspace
+  baseline `train_gpt_simple.py`.
+- **Procedure:** Diff the forward path; on a flagged `RMSNorm.forward` / q-k-norm precision change,
+  quarantine every v12-derived result and rebuild a byte-identical-compliant optimizer family.
+- **Expected outcome:** The v12-derived sub-3000 frontier is non-compliant; the compliant rebuild
+  reaches the target but the illegal change had materially helped — compliance costs real steps.
+- **Evidence:** trace v2 decision node; quarantined config noted in src/artifacts.md.
+- **Run:** `family=v12` (2,672 runs, includes quarantined), codex_v2.
 
-## E05 — v2 compliance audit, quarantine, and compliant rebuild
+## E10 — Legal rebuild + role-LR/WD + lookahead descent (v2)
+- **Verifies:** C04, C01
+- **Setup:** The byte-identical-compliant `legal_v12opt` base; orthogonal legal levers (Contra-Muon
+  scale, attention Muon LR) then role-specific WD, role-specific LR, and Muon lookahead.
+- **Procedure:** Combine the two live legal signals, then add role-split decay/LR and lookahead;
+  walk the crossing step down across seeds while preserving horizon≠stop.
+- **Expected outcome:** Role-LR/WD + lookahead move the crossing step earlier where train-step
+  shortening stalls, reaching a low single-seed crossing (not yet a record).
+- **Evidence:** evidence/tables/v2_component_pruning.md; trace v2 nodes.
+- **Run:** `family=v12` (legal_v12opt variants), codex_v2.
 
-**Verifies.** C08.
-**Setup.** The inherited v12 parent (traced to the Claude/cc agent) used as the v2 backbone.
-**Procedure.** Run a code-comparison subagent against the public script; on the flagged
-`RMSNorm.forward` / q-k-norm forward-path change, cancel live jobs, quarantine all v12-derived
-results, add a launch-time Architecture gate that blocks non-byte-identical forward/norm code, and
-rebuild the `legal_v12opt` family from the workspace baseline.
-**Expected outcome.** The non-compliant family is excluded from the frontier (even though it
-helped); a byte-identical-compliant frontier is re-established and becomes the submission base.
-**Evidence.** [../evidence/tables/v2_seed_table.md](../evidence/tables/v2_seed_table.md) (the
-compliant submitted cohort).
-**Run.** v2 `v12` (quarantined) vs `v12iso`/`legal_v12opt` families (`v2/.../THREAD.md:124-214`).
+## E11 — v2 significance cohort → record bin 3037 (v2)
+- **Verifies:** C06, C11
+- **Setup:** Fixed-step cohorts at +25/+50/+75 steps of the clean stack; the z-margin and an
+  anti-val-spam same-checkpoint scan.
+- **Procedure:** Evaluate cohort means; reject low-step families and intermediate steps that fail;
+  submit the earliest common checkpoint that passes.
+- **Expected outcome:** All low-step single-seed frontiers fail; only the +75-step cohort passes; step
+  3025 fails the same-checkpoint scan → submitted record bin **3037**.
+- **Evidence:** evidence/tables/v2_record_seeds.md, evidence/figures/v2_loss_curves.png.
+- **Run:** purpose=statistical_verification (codex_v2), record_configs/…_v2_legal_3037.
 
----
+## E12 — v2 leave-one-out component pruning (v2)
+- **Verifies:** C04, C09
+- **Setup:** Leave-one-out ablation of the legal 3037 stack at step 3037.
+- **Procedure:** Remove each modifier; rank by delta; identify load-bearing vs. droppable.
+- **Expected outcome:** Mu-schedule, cooldown-floor, and MuonEq are largest; role-LR is a major v2
+  addition; Contra-Muon is nearly free.
+- **Evidence:** evidence/figures/v2_pruning.png, evidence/tables/v2_component_pruning.md.
+- **Run:** pruning-rerun (codex_v2).
 
-## E06 — v2 role-specific LR/WD + lookahead frontier search
+## E13 — Aurora local sub-line (v3)
+- **Verifies:** C07 (the floor it failed to break), C12
+- **Setup:** Transplant leverage-aware row/Stiefel correction + KL/SOAP preconditioning into the
+  strongest local (rolewd/rolelr2/lookahead/Soft-Muon) stacks.
+- **Procedure:** Walk the Aurora frontier (3037→3027) with dozens of adaptive-mechanism variants; test
+  sub-3000.
+- **Expected outcome:** The family passes down to ~3027 but every distribution recenters near 3.280 at
+  2999 — a clean negative that motivates the parent pivot.
+- **Evidence:** trace v3 Aurora nodes.
+- **Run:** Aurora `v3aur…` variants, codex_v3.
 
-**Verifies.** C04, C05.
-**Setup.** The compliant v2 stack; add role-specific LR multipliers, role-specific weight decay,
-and Muon lookahead.
-**Procedure.** Screen each lever at a fixed step budget, then walk the step frontier by copying a
-verified parent with only `train_steps` changed; track single-seed crossings vs cohort means.
-**Expected outcome.** Role-LR/WD and lookahead extend the single-seed frontier lower, but the
-cohort means at those low steps still miss (motivating E08).
-**Evidence.** [../evidence/figures/v2_pruning.md](../evidence/figures/v2_pruning.md),
-[../evidence/figures/v2_loss_curves.md](../evidence/figures/v2_loss_curves.md).
-**Run.** v2 `rolewd` / `rolelr2` / `lookahead` families (`v2/.../THREAD.md:476-800`).
+## E14 — Faithful public-PR reproduction (v3)
+- **Verifies:** C07, C08
+- **Setup:** Faithful reproduction of the public modded-nanogpt frontier — PR #291 (Contra→Soft-Muon,
+  Gram-Frobenius/Schatten-4 norm), PR #294 (outward-radial dampening + radius correction), PR #278
+  (MLP SOAP, extended to MLP+V), PR #287 (power-law LR) — under the architecture guard.
+- **Procedure:** Audit each ported mechanism against the public code; verify the radial projection/sign/
+  placement and the Soft-Muon/Frobenius norm match; extend SOAP to MLP+V.
+- **Expected outcome:** A faithful, stronger parent (v48) than the local family, reproducing the public
+  bin before compression.
+- **Evidence:** src/artifacts.md (submitted script header credits); related_work.md.
+- **Run:** `v3u2950…v48…` families, codex_v3.
 
----
+## E15 — Compression by phase-endpoint shifting (v3)
+- **Verifies:** C07
+- **Setup:** The faithful v48/PR#294 parent; compression by moving the Soft-Muon / radial / LR phase
+  endpoints earlier while keeping the long back-loaded cooldown horizon.
+- **Procedure:** Contrast phase-endpoint shifts (W205/W211) against hard horizon truncation (W198–W200);
+  add variance-control levers (LACV) to fix mid-run seed offset.
+- **Expected outcome:** Phase-endpoint shifts reach a statistically-viable 2940-boundary parent; hard
+  horizon truncation is cold.
+- **Evidence:** trace v3 compression nodes; evidence/tables/trajectory_summary.md.
+- **Run:** `v3u2900-worker…` families (Worker70/98/171/188/205/211/247/251), codex_v3.
 
-## E07 — v2 leave-one-out pruning at the submitted step budget
-
-**Verifies.** C03, C04, C07.
-**Setup.** The submitted `legal_v12opt` stack at its submitted step budget; remove each component.
-**Procedure.** Leave-one-out each modifier over an n-seed cohort; rank by `Δval when removed`.
-**Expected outcome.** Inherited MuonEq and the mu-schedule are the largest contributors; role-LR is
-the largest v2-specific addition; lookahead and role-WD are smaller; Contra-Muon is near-zero.
-**Evidence.** [../evidence/figures/v2_pruning.md](../evidence/figures/v2_pruning.md),
-[../evidence/tables/v2_pruning_table.md](../evidence/tables/v2_pruning_table.md),
-[../evidence/data/v2_pruning_data.json](../evidence/data/v2_pruning_data.json).
-**Run.** v2 pruning-rerun cohort (`record_configs/20260515_codex_v2_legal_3037/`).
-
----
-
-## E08 — Fixed-cohort statistical verification (submission gate)
-
-**Verifies.** C06.
-**Setup.** Candidate step budgets from each wave; cohorts of n non-cherry-picked seeds with
-distinct `--seed N`.
-**Procedure.** Compute the cohort mean and the significance margin; scan all common checkpoints for
-the earliest that passes the fixed-cohort threshold (anti-val-spam); reject single-seed crossings
-and low-step families whose cohort margin is negative.
-**Expected outcome.** Each wave's submitted bin is the earliest common checkpoint passing the gate
-over its seed cohort; lower single-seed crossings are rejected by the gate.
-**Evidence.** [../evidence/tables/v1_seed_table.md](../evidence/tables/v1_seed_table.md),
-[../evidence/tables/v2_seed_table.md](../evidence/tables/v2_seed_table.md),
-[../evidence/tables/v3_seed_table.md](../evidence/tables/v3_seed_table.md).
-**Run.** v1 stat pass (`v1/.../THREAD.md:2231-2232`), v2 significance cohorts (`v2/.../THREAD.md:802-810`),
-v3 `v3prune-w258loo-nosphere` cohort.
-
----
-
-## E09 — v3 public-PR reproduction (Soft-Muon, radial brake)
-
-**Verifies.** C09, C10.
-**Setup.** The public modded-nanogpt frontier below the v3 line: PR #294 (radial), PR #291
-(Contra→Soft-Muon), PR #290 (KL-SOAP-H), PR #288 (Muown).
-**Procedure.** Port each PR onto the v3 backbone with an audit subagent confirming faithfulness;
-test radial timing (from-step-zero vs tail-only); test SOAP portability against the zero-init
-projections.
-**Expected outcome.** PR #294 radial (tail-only) and PR #291 Soft-Muon reproduce and are
-load-bearing; PR #290 full KL-SOAP-H is not portable (salvaged only as a warm-start sidecar);
-PR #288 Muown is incompatible.
-**Evidence.** [../evidence/figures/v3_pruning.md](../evidence/figures/v3_pruning.md) (`noradial`,
-`nosoap`, `nosoft` contributions).
-**Run.** v3 public-frontier port (`v3/.../THREAD.md:411-552`).
-
----
-
-## E10 — v3 SOAP / LACV / radial mechanism search (the u2900 worker campaign)
-
-**Verifies.** C05, C10.
-**Setup.** The reproduced v48 public-frontier parent; goal reset below the prior frontier.
-**Procedure.** A long numbered-worker search over warm-start SOAP-skip, conditional radial guard
-windows, q/k Contra scaling, LACV and its q/k floor, radius-preserving lookahead, and schedule-phase
-retargeting (keeping the back-loaded PR #287 cooldown rather than truncating it).
-**Expected outcome.** A small set of levers (warm SOAP sidecar, tail-radial guard, LACV floor)
-converge on a sub-2950 statistically-viable distribution; hard schedule truncation fails.
-**Evidence.** [../evidence/figures/v3_loss_curves.md](../evidence/figures/v3_loss_curves.md).
-**Run.** v3 `v3u2900-worker*` families (hundreds of runs in `runs.csv`).
-
----
-
-## E11 — v3 W258 leave-one-out pruning → nosphere
-
-**Verifies.** C07, C09, C10, C11.
-**Setup.** The W258 tangent-sphere stack at its statistical boundary; the leave-one-out ablation set
-(nosoft, nocontra, noqkcontrascale, noradial, notailradial, nolacv, nolacvfloor, nosphere,
-notangentsphere, nosoap, novsoap).
-**Procedure.** Run each ablation as an n-seed cohort at the boundary; rank by `Δval when removed`;
-identify the only removal that both simplifies and preserves the statistical boundary; test the
-combined sphere removal for composition.
-**Expected outcome.** SOAP and radial are the largest keeps; `nosphere` (drop the sphere-lookahead
-pull) is the only positive-score, submittable simplification; `nosphere_notangent` loses the
-boundary (the two sphere terms do not compose).
-**Evidence.** [../evidence/figures/v3_pruning.md](../evidence/figures/v3_pruning.md),
-[../evidence/tables/v3_pruning_table.md](../evidence/tables/v3_pruning_table.md),
-[../evidence/data/v3_pruning_data.json](../evidence/data/v3_pruning_data.json).
-**Run.** v3 `v3prune-w258loo-*` runs (16 `nosphere` runs in `runs.csv`),
-`v3/.../w258_2940_leave_one_out_pruning_20260513.md`.
-
----
-
-## E12 — Novelty wave: novelty-constrained mechanism search (negative)
-
-**Verifies.** C05, C12.
-**Setup.** Hard-isolated worktree; a novelty bar tightened three times (excluding schedule, then
-optimizer+schedule, then merely-additive optimizer couplings); two mandatory pre-code gates (arXiv
-novelty + benchmark-rule compliance).
-**Procedure.** Generate candidate mechanisms (residual-corrected Muon, init rescales, polar-disagreement
-splits, commutator corrections, branch-Gram couplings, …); kill at the gate those that reduce to
-known literature or are exact-polar algebraic no-ops; run the survivors; require two-seed
-reproduction and ≥ 2× noise-floor improvement to promote.
-**Expected outcome.** No promotable submission: the best robust result is a reproduced one-bin gain
-below the noise floor; most invented mechanisms are pre-empted by the literature or are no-ops.
-**Evidence.** [../evidence/tables/novelty_outcomes.md](../evidence/tables/novelty_outcomes.md).
-**Run.** novelty wave (`novelty/codex/scratchpad/THREAD.md`, 254 runs in `runs.csv`,
-family-tagged `ngi`/`rsi`/`vfg`/…).
+## E16 — W258 leave-one-out pruning → "nosphere" (v3)
+- **Verifies:** C08, C09
+- **Setup:** Leave-one-out ablation of the W258 stack at step 2949 (11 ablations: nosoft, nocontra,
+  noqkcontrascale, noradial, notailradial, nolacv, nolacvfloor, nosphere, notangentsphere, nosoap,
+  novsoap), plus the combined sphere removal.
+- **Procedure:** Rank by delta; confirm the redundant removal at N=16; test whether two
+  individually-removable terms compose.
+- **Expected outcome:** SOAP and radial are load-bearing; the sphere-lookahead pull is redundant
+  (`nosphere`, viable at N=16) but the two sphere terms do not compose → submitted record bin **2949**.
+- **Evidence:** evidence/figures/v3_pruning.png, evidence/tables/v3_component_pruning.md,
+  evidence/tables/v3_record_seeds.md.
+- **Run:** `family=v3prune-w258loo-nosphere` (16 runs), `v3/codex/scratchpad/w258_2940_leave_one_out_pruning_20260513.md`, codex_v3.

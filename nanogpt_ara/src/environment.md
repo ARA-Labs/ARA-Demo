@@ -1,56 +1,63 @@
-# Environment & Reproducibility
+# Environment & reproducibility
 
 ## Benchmark code
 
-- **Script:** `records/track_3_optimization/train_gpt_simple.py` — "descends from the
-  [NanoGPT speedrun](https://github.com/KellerJordan/modded-nanogpt) … a simplified version of the
-  speedrun for use in neural net optimization research" (run-export `launched_script.py:1-6`). It
-  self-logs its own source into each result log (`with open(sys.argv[0]) as f: code = f.read()`),
-  so every run's exact code is recoverable from its `train.log`.
-- **Model:** ~124M-parameter GPT; sequence length 1024; data is the FineWeb-10B token cache
-  (`cached_fineweb10B`, materialized per wave). Architecture, batch size, and data are **fixed** by
-  the track contract; only `Optimization` and `Init & Optim Hyperparams` may change
-  (`../logic/solution/constraints.md`).
-- **Origin repo (per run metadata):** `/beegfs/elie/modded-nanogpt-agent-codex` (Codex's worktree);
-  the master checkout is `/beegfs/elie/modded-nanogpt`
-  (`data/runs_self_contained/agents/codex_v1/runs/00606-…/metadata.json:52,56`).
+- **Training script:** `records/track_3_optimization/train_gpt_simple.py` from the modded-nanogpt fork
+  (KellerJordan/modded-nanogpt lineage). All submitted variants are this script with changes confined to
+  the **Optimization** and **Init & Optim Hyperparams** sections; the forward/architecture/data/batch
+  code is byte-identical to the workspace baseline (the v2 compliance boundary — C05).
+- **Self-logging:** the script reads its own source via `sys.argv[0]` at startup and writes the full
+  code into the result log, so every run's exact recipe is recoverable from its log. Submitted runs
+  hardcode HPs (no CLI args).
 
-## Hardware & run protocol
+## Model & data (fixed contract)
 
-- **Hardware:** 1 node × 8 GPUs (`{H100, H200}`); ~15 min per run; effectively unlimited wall-clock
-  (this is a step-count, not wall-clock, benchmark) (`../../v1/codex/goal.md:56-59`,
-  `AGENTS.md:209`).
-- **Launch:**
-  `torchrun --standalone --nproc_per_node=8 records/track_3_optimization/train_gpt_simple.py`
-  (`../../v1/codex/AGENTS.md:211-213`). One run at a time on `cluster` (the script grabs all 8
-  GPUs); additional runs fan out into the `preempt` Slurm partition behind an idle-node gate
-  (`AGENTS.md:230-273`).
-- **Determinism:** each submitted cohort uses distinct `--seed N` per run; submitted HPs are
-  hardcoded in the script (no CLI args) (`record_configs/*/README.md`, `AGENTS.md:288`).
+- **Model:** a ~124M-parameter GPT (the `train_gpt_simple.py` architecture), trained on **FineWeb10B**
+  (`cached_fineweb10B`). Architecture, dataset, and batch size are frozen by the benchmark; one
+  forward-backward per step.
+- **Precision:** bf16 forward path. The forward-path precision is load-bearing and rule-bound — a
+  near-equivalent `RMSNorm.forward` / q-k-norm rewrite is an illegal change (C05). cuDNN SDPA is
+  disabled for the compiled causal-attention layout (`torch.backends.cuda.enable_cudnn_sdp(False)`);
+  Flash/mem-efficient/math SDPA remain enabled.
+- **Target:** validation loss ≤ 3.28; the bin is the first step crossing it.
 
-## Software (observed from run exports)
+## Hardware
 
-- Python 3 with PyTorch (`import torch`, `torch.distributed`, `torch.optim.AdamW`); the novelty wave
-  notes a `.venv` with torch 2.10. Imports are "stdlib plus PyTorch only … no third-party optimizer
-  library imports" for the submitted v2 cohort (`../../v2/codex/scratchpad/THREAD.md:810`).
-- Custom Muon-family optimizers live inside the training script itself (logged with the run), not as
-  external packages.
+- **1 node, 8 GPUs** — `8×{H100,H200}` for v1/novelty, `8×H200` for v2/v3. ~15 min per run; effectively
+  unlimited wall-clock (the benchmark is wallclock-irrelevant). One run at a time on the main `cluster`
+  partition (the script grabs all 8 GPUs); parallel fanout via the `preempt` partition behind an
+  idle-node gate. [src: `v1/codex/goal.md:56-59`, `v3/codex/goal.md:106-110`]
 
-## What "counts" — verification protocol
+## Software
 
-- A run counts only if `step_to_3.28` actually fired (a run can dip past 3.28 and back — read the
-  log, not just the final loss) (`AGENTS.md:224-226`).
-- A submission is an n=16 cohort (seeds 0..15) clearing `(3.28 − μ)·√n ≥ 0.004` at the earliest
-  common checkpoint, per [C06](../logic/claims.md). The three submitted records each ship 16 full
-  reproducibility logfiles (`record_configs/*/README.md`).
+- **PyTorch** with CUDA (the novelty wave pinned a repo-local venv at `torch==2.10.0+cu128`); stdlib +
+  PyTorch only in submitted scripts — `AdamW` plus local Muon code, **no third-party optimizer-library
+  imports** (a reproducibility check enforced this at submission). [src: `v2/codex/scratchpad/THREAD.md:810`]
+- **Scheduler:** Slurm (`sbatch`/`sacct`); Codex-owned jobs use a `codex-` name prefix.
 
-## Reproducing this artifact's inputs
+## Run command
 
-- **Run index:** `data/runs_self_contained/runs.csv` (8,224 rows + header) and `runs.jsonl` (same,
-  with nested artifact pointers). See [artifacts.md](artifacts.md) for the schema.
-- **Per-run exports:** `data/runs_self_contained/agents/{codex_v1,codex_novelty,codex_v2,codex_v3}/runs/<export_id>/`
-  each containing `metadata.json`, `launched_script.py`, and `train.log`. (The bulk raw logs under
-  `agents/*/runs/` and `*/codex/scratchpad/runs/` are git-ignored but kept on disk — ~3 GB total;
-  re-clone from the source experiment if absent — `README.md:91-100`.)
-- **Records:** `record_configs/20260515_codex_v{1,2,3}_*/` (READMEs, loss-curve and pruning PNGs,
-  `pruning_data.json`).
+```bash
+cd /beegfs/elie/modded-nanogpt-agent
+torchrun --standalone --nproc_per_node=8 \
+    records/track_3_optimization/train_gpt_simple.py \
+    2>&1 | tee records/track_3_optimization/ai/scratchpad/runs/<run-id>.log
+```
+
+The submitted records hardcode all HPs; the per-seed runs set the seed via the `T3OPT_SEED` /
+`SLURM_JOB_ID` environment variable (`SEED = int(os.environ.get("T3OPT_SEED", os.environ.get("SLURM_JOB_ID","0"))) % 2**31`).
+
+## Reproducibility of the submitted records
+
+Each record validates over **n=16 non-cherry-picked seeds (0..15)** with a distinct `--seed N` per run;
+the result directory contains 16 full reproducibility logfiles per record. The submission gate is the
+cohort z-margin `(3.28 − μ)·√n ≥ 0.004` (σ=0.0013, one-sided p < 0.001). See
+[../evidence/tables/](../evidence/tables/) for the per-seed tables and
+[artifacts.md](artifacts.md) for the run-store pointers.
+
+## Note on the raw run store
+
+The 8,224 exported run directories (`data/runs_self_contained/agents/*/runs/`, ~1.8 GB) and the agents'
+in-worktree raw logs (~1.2 GB) are kept **on disk** so pointers resolve, but are git-ignored to keep the
+tracked tree light (~130 MB). The run **index** (`runs.csv` / `runs.jsonl`), the per-wave journals, and
+the record configs are committed. [src: `README.md:91-100`]
