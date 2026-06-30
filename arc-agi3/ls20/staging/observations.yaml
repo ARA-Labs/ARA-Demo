@@ -1,0 +1,524 @@
+observations:
+- id: O01
+  timestamp: 2026-06-29T10:42
+  provenance: ai-suggested
+  content: "L3 layout (12\xD712 macro): block starts ~R9C1 (left); key-box on the RIGHT (scr rows 49-56, cols 53-59). Panel\
+    \ read from glyphs (L3 panel is color-c N, so an @-only reader shows it blank): panel = 101/001/101, target (key-box @)\
+    \ = 101/100/111 \u2014 they differ in the MIDDLE row (001\u2194100) AND the BOTTOM row (101\u2194111), a 2-row gap (harder\
+    \ than L2).\n"
+  context: L3 reconnaissance after L2 was solved; turns 131-151, budget exhausted before any solve.
+  potential_type: claim
+  bound_to:
+  - N17
+  - N18
+  promoted: false
+  promoted_to: null
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O02
+  timestamp: 2026-06-29T10:44
+  provenance: ai-suggested
+  content: "L3 prime switch suspect: a NEW compound multi-color glyph at scr rows 46-48 cols 30-32 (`@$$ / @ %% / NN%`, colors\
+    \ 9/e/8/c) = macro R9C5. Its transform (toggle vs cycle) is UNKNOWN \u2014 the probe to reach it (N18) failed before any\
+    \ data was gathered. Per C10, sample it several times before planning toggles.\n"
+  context: L3 recon; controls spotted but unverified; pathfind to R9C5 overran and stranded the block.
+  potential_type: heuristic
+  bound_to:
+  - N17
+  - N18
+  - N19
+  promoted: false
+  promoted_to: null
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O03
+  timestamp: 2026-06-29T10:45
+  provenance: ai-suggested
+  content: "L3 has THREE X-boxes (macro R3C6, R6C3, and one in the lower-mid maze) plus a small speck cluster at macro R2C9\
+    \ (scr rows 12-13 cols 50-51). The X-boxes are presumed budget-refill stations (same M8/H08 role as L1/L2) \u2014 not\
+    \ yet verified on L3.\n"
+  context: L3 recon; entities catalogued from a single frame read, none stepped onto.
+  potential_type: heuristic
+  bound_to:
+  - N17
+  promoted: false
+  promoted_to: null
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O04
+  timestamp: 2026-06-29T11:22
+  provenance: ai-executed
+  content: "L3 layout VERIFIED by play (corrects O01): 12\xD712 macro, block starts macro R9C1 (left); key-box on the RIGHT\
+    \ (scr rows 49-56, cols 51-59), its `@` (colour-9) target at scr rows 51-53 cols 55-57 = pattern 101/100/111. The panel\
+    \ is the bottom-left 3\xD73 (scr rows 55-60 cols 3-8), drawn in colour-c N at baseline \u2014 which is why status.py's\
+    \ @-only panel view reads blank; read it from look.py glyphs. BASELINE panel = 111/001/101 in colour N (O01's 101/001/101\
+    \ was a row-1 misread). So the L3 lock has BOTH a pattern axis and a colour axis.\n"
+  context: First clean read after restarting the harness and reaching L3; turns ~58-83.
+  potential_type: claim
+  bound_to:
+  - N22
+  - N24
+  promoted: true
+  promoted_to: logic/solution/recipes.md:R-L3 ; logic/claims.md:C11
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O05
+  timestamp: 2026-06-29T11:24
+  provenance: ai-executed
+  content: "L3 has TWO INDEPENDENT lock controls (unlike L1/L2's single pattern switch). (1) COLOUR SELECTOR at macro R9C5\
+    \ (the compound glyph @$$/@ %%/NN%, colours 9/e/8/c): stepping onto it advances the panel FILL COLOUR through a 4-state\
+    \ cycle N(c)\u2192@(9)\u2192$(e)\u2192%(8)\u2192N (period 4; colour persists after step-off; pattern untouched). Sampled\
+    \ 6\xD7 per C10; one press alone would have falsely read a 'c\u21929 flip'. (2) PATTERN SWITCH at macro R2C9 (a faint\
+    \ colour-0/1 floor speck, approached from R2C10 going LEFT): cycles the panel PATTERN through the SAME 4-state cycle as\
+    \ the L2 switch (H06): 111/001/101 \u2192 101/001/111 \u2192 101/100/111 \u2192 111/100/101 \u2192 (back). Sampled 5\xD7\
+    . To align to the target (101/100/111 @): 1 colour step-on (c\u2192@) + 2 pattern step-ons.\n"
+  context: Sampled both controls deliberately (C10) after re-pathfinding short verified segments.
+  potential_type: heuristic
+  bound_to:
+  - N22
+  - N23
+  promoted: true
+  promoted_to: logic/solution/recipes.md:R-L3
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O06
+  timestamp: 2026-06-29T11:30
+  provenance: ai-executed
+  content: "L3 DELIVERY + MULTI-STAGE mechanic. With the panel aligned (pattern 101/100/111 + colour @), route the block to\
+    \ macro R8C10 (above the RIGHT key-box, reached via col-10 from above) and press DOWN once = a 186-cell DELIVERY: the\
+    \ block is consumed, teleports back to start R9C1, the panel resets to baseline, and budget refills to 42. This is ONE\
+    \ effective push (the L2 two-push H09 does NOT apply here \u2014 the block resets immediately). A bottom-right %%-marker\
+    \ counter (colour-8 cells, +%%+%%+%% = 3 markers \xD74 cells = 12 total) decrements by 4 per successful delivery (12\u2192\
+    8\u21924). X-box refills do NOT touch the %% counter (verified). So L3 requires multiple deliveries, tracked by the %%\
+    \ counter.\n"
+  context: Aligned-and-delivered twice cleanly; probed whether refills move the %% counter (they don't).
+  potential_type: heuristic
+  bound_to:
+  - N24
+  promoted: true
+  promoted_to: trace/exploration_tree.yaml:N35
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O07
+  timestamp: 2026-06-29T11:40
+  provenance: ai-executed
+  content: "L3 UNSOLVED \u2014 the 3rd/final delivery wall (reproduced 3\xD7 deterministically). Deliveries #1 and #2 wedge\
+    \ cleanly (186-cell each, %% 12\u21928\u21924). But the 3rd delivery, with the SAME alignment and SAME R8C10 approach,\
+    \ does NOT wedge: the block slides through R8C10\u2192R9C10 (only 54-cell) and the game goes GAME_OVER with levels_completed\
+    \ STILL 2 (a LOSS). Box geometry / approach corridor look unchanged after 2 deliveries; budget=0-at-push is NOT the cause\
+    \ (#1/#2 also pushed at budget 0 and wedged). Two of three deliveries land with the identical target, so the FINALE needs\
+    \ something different. Open candidates: (a) the 3rd slot wants a DIFFERENT panel target (other pattern/colour) than 101/100/111@;\
+    \ (b) a different box-entry side once two slots are filled; (c) a hidden precondition. RESET cleanly restores L3 (counter\
+    \ 12, budget 42, levels 2) for retry. This keeps the overall L3 solution OPEN/STAGED.\n"
+  context: Final-delivery probe repeated three times across two RESETs; all GAME_OVER.
+  potential_type: unknown
+  bound_to:
+  - N25
+  promoted: true
+  promoted_to: trace/exploration_tree.yaml:N35
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O08
+  timestamp: 2026-06-29T11:34
+  provenance: ai-executed
+  content: "Transferable navigation heuristic for ls20's large mazes: do NOT execute a long pre-planned pathfind action list\
+    \ in one shot \u2014 the macro display and pathfind disagree by ~+1 in the column index, and a press into a wall is a\
+    \ budget-only no-op that strands the block off-plan. Robust method = after each leg, re-run pathfind.py from the CURRENT\
+    \ position and execute the next short segment, verifying the block's actual landing. Sub-fact: a move pressed at budget\
+    \ 0 STILL executes (and an X-box still refills) \u2014 budget 0 is not a hard stop for the next move.\n"
+  context: Two long routes desynced (block stranded at R1C5/R1C6); short re-pathfound segments always landed correctly.
+  potential_type: heuristic
+  bound_to:
+  - N26
+  promoted: true
+  promoted_to: logic/solution/heuristics.md:H10
+  crystallized_via: artifact-commitment
+  stale: false
+- id: O09
+  timestamp: 2026-06-29T12:05
+  provenance: ai-executed
+  content: "ls20 DELIVERY MECHANISM (mapped on L2, deterministic; the multi-stage variant). The delivery is performed AT THE\
+    \ PATTERN SWITCH, not at the key-box: with the block ON the switch and the panel == the key-box target pattern, the FIRST\
+    \ step OFF the switch (any of A1-A4) consumes the block \u2014 it teleports to start, the panel resets to baseline, budget\
+    \ refills, the %% counter decrements by 4, and the frame does a big redraw. The key-box `@` glyph is a TARGET-PATTERN\
+    \ DISPLAY only (it never fills/changes). Stepping off while the panel is NOT aligned is a normal move (no delivery, %%\
+    \ unchanged) and the panel state PERSISTS until the switch is stepped on again. The key-box itself is locked (a push into\
+    \ it returns 0 cells) unless the panel matches \u2014 but an aligned block can NEVER reach the box (catch-22: aligning\
+    \ needs the block on the switch, and any aligned step-off triggers the switch-delivery). This SUPERSEDES the O06 reading\
+    \ that delivery happens by pushing the block into the key-box at R8C10 (that was the L3 framing; the underlying trigger\
+    \ is the switch step-off).\n"
+  context: Fully reverse-engineered the delivery while stuck at L2's 3rd-delivery wall (N29).
+  potential_type: heuristic
+  bound_to:
+  - N29
+  promoted: true
+  promoted_to: trace/exploration_tree.yaml:N35
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O10
+  timestamp: 2026-06-29T12:08
+  provenance: ai-executed
+  content: "The multi-stage %% delivery mechanic is NOT L3-only \u2014 it now also governs L2 (this session's L2 instance).\
+    \ The simple single-push box-delivery R-L2 recipe (N13/C09) NO LONGER WINS: L2 presents a %% counter (3 markers, 12\u2192\
+    8\u21924\u21920) and the same 3rd-delivery GAME_OVER wall as L3. So the wall is a UNIFORM ls20 mechanic, reproducible\
+    \ on L2 (cheaper to study than L3 \u2014 no colour axis, reachable in ~13 moves from L1). CONTRADICTS the trace's prior\
+    \ L2-solved record (see CONFLICT node N31). Implication: cracking the finale on L2 transfers directly to L3.\n"
+  context: Restarted harness landed on a fresh L2 that behaves like L3's multi-stage finale.
+  potential_type: unknown
+  bound_to:
+  - N28
+  - N29
+  - N31
+  promoted: true
+  promoted_to: trace/exploration_tree.yaml:N34, N35
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O11
+  timestamp: 2026-06-29T12:10
+  provenance: ai-executed
+  content: "Robust ls20 navigation, refined (strengthens O08). A reliable block detector = the macro cell containing BOTH\
+    \ color-9 (>=6 cells, body) AND color-c (>=4 cells, cap); color-9-only or color-c-only cells are the panel / UI artifacts\
+    \ and must be excluded (the naive color-9 detector latches onto the bottom-left panel). Combined with O08's single-action-then-re-pathfind\
+    \ loop (scratchpad/step.py), this eliminated the +1 col desync entirely across L1/L2/L3 routes this session \u2014 every\
+    \ leg landed as pathfind predicted. This tool was the enabler for the whole delivery-mechanism investigation.\n"
+  context: Built scratchpad/step.py (N27) after the naive detector mis-located the block.
+  potential_type: heuristic
+  bound_to:
+  - N27
+  promoted: true
+  promoted_to: logic/solution/heuristics.md:H10
+  crystallized_via: artifact-commitment
+  stale: false
+- id: O12
+  timestamp: 2026-06-29T14:30
+  provenance: ai-executed
+  content: "DEATH-RESPAWN mechanic (ls20, all levels). When the move-budget bar reaches 0 and another move is pressed, the\
+    \ block RESPAWNS at the current level's START cell, budget refills 0->42, and the %% marker counter steps down one (12->8->4).\
+    \ Level-start cells: L1~(9,6), L2 (8,5), L3 (9,1), L4 (1,10). This UNIFIES/EXPLAINS the prior \"portal/teleport with direction-dependent\
+    \ destinations\" confusion on L1-L4 \u2014 most were budget deaths, not portals. %% decrements ONLY on an OVERDRAFT refill\
+    \ (refill while budget==0); refills at budget>0 are FREE (no %% cost). Grounded in episode-log turns 173/220/313/359 (REFILL\
+    \ 0->42 with %% -4) and live play.\n"
+  context: Reached L4; repeated 'teleports' turned out to be budget deaths; verified by log correlation.
+  potential_type: claim
+  bound_to:
+  - N38
+  - N40
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O13
+  timestamp: 2026-06-29T14:35
+  provenance: ai-executed
+  content: 'The bottom-right %% markers (color-8; 3 groups x4 = 12) are a finite LIVES/DEATHS counter, NOT a permanent UI
+    fixture and NOT a per-delivery counter. It RESETS to 12 at each level start and ticks down 12->8->4->0 on each death (O12).
+    A death while %%=0 => state=GAME_OVER (turn frozen, actions no-op, levels stuck) and the harness exits. This CORRECTS
+    the prior "permanent UI fixture" reading (N33/N35/N36): those runs kept %%=12 only because they never overdrafted/died.
+    Operating rule: always refill while budget>0 (never overdraft) so %% stays full.
+
+    '
+  context: Hit GAME_OVER twice this turn via chained overdraft deaths on L3; %% never moved on no-death runs.
+  potential_type: claim
+  bound_to:
+  - N39
+  - N40
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O14
+  timestamp: 2026-06-29T14:10
+  provenance: ai-executed
+  content: "RESET restarts the WHOLE GAME to Level 1 (levels_completed 3->0, block back at L1 start) \u2014 it is NOT a level-retry\
+    \ (corrects the task brief). Recovery from GAME_OVER/RESET = restart the harness and re-win L1->L2->L3 via R-L1/R-L2/R-L3\
+    \ with NO RESET (did this successfully to reach L4). Also: X-boxes are CONSUMED on first step-on (color-b glyph disappears,\
+    \ count 8->0); each level has exactly 2, so at most 2 free refills per level-life (a death/respawn restores them). Addendum\
+    \ to H08.\n"
+  context: A stray RESET during L4 probing dropped levels 3->0; later observed X-box single-use during L3 routing.
+  potential_type: heuristic
+  bound_to:
+  - N41
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O15
+  timestamp: 2026-06-29T14:45
+  provenance: ai-executed
+  content: "L4 NEW MECHANIC = a PORTAL/TELEPORTER network on the maze (genuine; observed at budget>0/%%=12, so distinct from\
+    \ death-respawn). Known portals: (4,7)+DOWN->(1,7); (3,6)+DOWN->(4,10); (5,6)+RIGHT->(1,7). Stepping into these floor\
+    \ cells warps the block to a fixed destination; the panel is untouched (portals are navigation, not lock controls). Pathfinding\
+    \ must AVOID portal cells. The 8 color-1 specks ((3,8)(4,5)(5,9)(6,3)(6,7)(7,0)(8,5)(8,9)) are `.....` strips on WALL-cell\
+    \ edges (not steppable) \u2014 likely portal markers/endpoints. Full portal map NOT yet built. This is L4's per-level\
+    \ new addition (vs L1 1-toggle / L2 1-cycle / L3 2-axis).\n"
+  context: Mapped L4 controls + repeatedly hit reproducible warps at budget>0 while routing to the selector.
+  potential_type: claim
+  bound_to:
+  - N42
+  - N44
+  promoted: true
+  promoted_to: logic/claims.md:C13 ; logic/solution/recipes.md:R-L4
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O16
+  timestamp: 2026-06-29T15:00
+  provenance: ai-executed
+  content: 'L4 is a TWO-AXIS lock (pattern + colour), like L3. Target (key-box (1,1) @, rows6-8 cols10-12) = pattern 111/001/101,
+    colour @(9); panel starts 111/111/111 colour e($). The COLOUR axis is SOLVED: colour selector at macro (6,6) cycles fill
+    colour through the SAME 4-state cycle as L3 (N(c)->@(9)->$(e)->%(8)->N); reached colour @ live; colour persists on step-off.
+    The PATTERN axis control is NOT located: the 8 color-1 specks sit on wall edges (not steppable), a color-0 cluster at
+    (6,4) is inside a wall, and portal traversal does NOT toggle the pattern. So L4 = UNSOLVED (pattern source + delivery
+    open). Confirms C11 (multi-axis lock) extends to L4 recon; the recurring 4-state colour cycle re-appears a 4th time (strengthens
+    C10 must-sample-first).
+
+    '
+  context: Sampled the L4 colour selector (every state) and exhaustively scanned the board for a pattern switch.
+  potential_type: claim
+  bound_to:
+  - N43
+  - N44
+  promoted: true
+  promoted_to: logic/solution/recipes.md:R-L4 ; logic/claims.md:C11
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O17
+  timestamp: 2026-06-29T16:45
+  provenance: ai-executed
+  content: 'L4 PANEL DECODER CORRECTION. scratchpad/step.py mis-reads the L4 lock panel (reports pattern 111/111/111). Exact
+    raw decode of the bottom-left panel (macro (11,0), colour-e $ fill; 3x3 of 2x2 cells at rows{55-56,57-58,59-60} x cols{3-4,5-6,7-8})
+    = PANEL 010/110/011 colour e. The key-box (1,1) TARGET is drawn in 1x1 cells (rows6-8 cols10-12) = 111/001/101 colour
+    @ (re-confirmed). So the L4 pattern axis must drive 010/110/011 -> 111/001/101. NOTE: baseline 010/110/011 is OUTSIDE
+    the H06 4-state cycle, so the L4 pattern mechanic may NOT be the H06 cycle. Fix shipped as scratchpad/panel.py; step.py''s
+    panel field is UNRELIABLE on L4 (panel.py is canonical for L4 panel reads).
+
+    '
+  context: Decoded the panel from raw glyph coordinates after step.py's read looked suspect; built panel.py.
+  potential_type: heuristic
+  bound_to:
+  - N46
+  promoted: true
+  promoted_to: logic/solution/recipes.md:R-L4 ; logic/solution/heuristics.md:H10
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O18
+  timestamp: 2026-06-29T16:50
+  provenance: ai-executed
+  content: "L4 PORTALS ARE GENUINE (not budget-deaths) \u2014 re-confirmed by warps at budget>0 with %% UNCHANGED (=8). Direction-specific\
+    \ portal edges mapped this turn (cell + exit-dir -> destination): (4,7)+RIGHT->(9,8); (4,7)+LEFT->(4,10); (4,7)+DOWN->(1,7);\
+    \ (9,8)+UP->(8,6); (8,7)+RIGHT->(8,6); (8,3)+UP->(9,3); (3,6)+DOWN->(4,10) [(3,6)+RIGHT pass-through CLEAN]. (4,7) = a\
+    \ 3-way portal HUB (only UP is non-portal, so it is a TRAP cell). The macro (8-9,7-9) region (incl. speck (8,9)) appears\
+    \ reachable ONLY via the (4,7)+RIGHT portal = a portal-only-reachable POCKET. pathfind.py / the macro lattice are portal-blind,\
+    \ so long pre-planned routes desync constantly; next session needs a portal-aware BFS. Portal traversal does NOT change\
+    \ the panel pattern (re-tested vs the CORRECT baseline 010/110/011).\n"
+  context: Repeatedly warped while routing to the colour selector; logged each (cell,dir)->dest; %% never moved.
+  potential_type: claim
+  bound_to:
+  - N46
+  promoted: true
+  promoted_to: logic/claims.md:C13 ; logic/solution/recipes.md:R-L4
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O19
+  timestamp: 2026-06-29T16:55
+  provenance: ai-suggested
+  content: "WM-QUERY UTILITY (project-thesis evidence). Consulting the ARA as a world model (wm-retrieve + wm-predict over\
+    \ ara-ls20/) MATERIALLY helped the L4 pattern-control hunt: the Retriever surfaced the decisive precedent N23/R-L3 (the\
+    \ L3 pattern switch was itself a faint colour-0/1 floor speck operable only from one specific side) and flagged N44's\
+    \ \"specks not steppable\" as an under-sampled VISUAL verdict (a C10 violation); the Predictor named two concrete branches\
+    \ \u2014 (a) a speck steppable from an untried side, (b) a portal-only-reachable pocket \u2014 with a cheap first probe.\
+    \ This redirected play from \"specks are walls, give up\" (N44) to active testing AND predicted the portal-pocket, which\
+    \ this turn's probing then partly vindicated (a genuine portal-gated pocket exists, O18). The WM did NOT solve L4 (navigation/budget\
+    \ blocked the decisive selector-double-duty test), but it sharpened the search and bounded it (glyph inventory exhausted;\
+    \ 3 candidate branches). Net: a positive data point for the \"ARA-as-world-model directs play\" thesis.\n"
+  context: Invoked the wm-retrieve/wm-predict skills at the start of the turn; compared their hypotheses to play outcomes.
+  potential_type: unknown
+  bound_to:
+  - N45
+  - N46
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O20
+  timestamp: 2026-06-29T18:35
+  provenance: ai-executed
+  content: 'L5 RECON (entered after the L4 win; UNSOLVED). Same two-axis-lock-plus-portals family as L4. Block start macro
+    (8,9) in a portal-heavy RIGHT corridor; key-box top-right (macro ~(0-2,9-10)). Panel BASELINE = pattern 010/110/011 colour-c
+    (N) [panel.py]. TARGET (decoded from the colour-8 3x3 at scr rows6-8 cols55-57 = 8.8/88./.88) = pattern 101/110/011 colour-%
+    (8). Colour selector at macro (5,5). Pattern-speck candidates: (2,3) [4x color-0] and (7,2) [3x color-0 + 2x color-1].
+    THREE X-boxes this level: (1,8), (2,1), (9,2). Portals are heavy in the right corridor and (4,7) is AGAIN a 3-way trap
+    hub; L5 portal edges found so far: (7,9)+UP->(8,9), (9,10)+DOWN->(2,10), (4,7)+DOWN->(1,7), (4,7)+LEFT->(4,8). The portal-blind
+    BFS loops at (4,7); added these to scratchpad/drive.py''s _PORTALS_L5 table (gated on levels_completed==4). One death
+    taken (overdraft at budget 0 in the portal corridor): %% 12->8.
+
+    '
+  context: Characterized L5 immediately after clearing L4; navigation is portal-blocked, one death so far.
+  potential_type: claim
+  bound_to:
+  - N49
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O21
+  timestamp: 2026-06-29T18:36
+  provenance: ai-executed
+  content: "MECHANIC REFINEMENT (all levels): stepping the block ONTO an X-box cell while the budget bar is exactly 0 REFILLS\
+    \ the bar to 42 WITHOUT costing a %% life \u2014 the budget-0 X-box refill takes precedence over the overdraft death-respawn\
+    \ (C12). The overdraft death (respawn to level-start, -1 life) is triggered ONLY by a NON-refill move pressed at budget\
+    \ 0 (a plain step into floor/wall). Verified repeatedly this turn: refills at (6,4)/(6,3) on L3 and (1,8) on L5 all landed\
+    \ budget 0->42 with %% unchanged. This REFINES the earlier H08/C12 wording (\"refilling at budget exactly 0 is an overdraft\"\
+    ); the penalty attaches to the move's outcome being a move, not a refill. Operationally: you MAY coast to budget 0 and\
+    \ land on an X-box to refill life-free \u2014 useful when an X-box is the next cell \u2014 but any non-X-box move at 0\
+    \ still kills.\n"
+  context: Used the budget-0 X-box refill deliberately several times this turn to fund tight routes without dying.
+  potential_type: heuristic
+  bound_to:
+  - N49
+  promoted: true
+  promoted_to: logic/solution/heuristics.md:H08
+  crystallized_via: empirical-resolution
+  stale: false
+- id: O22
+  timestamp: 2026-06-29T20:15
+  provenance: ai-executed
+  content: "L6 RECON (entered after the L5 win; UNSOLVED). Same two-axis-lock family. Block start (10,4). Panel BASELINE =\
+    \ pattern 110/011/101 colour-e ($). Colour selector (compound 9/e/8/c) at macro (6,4). Pattern speck candidates: (2,2)\
+    \ [4x color-0] and (8,6) [3x color-0 + color-1; sampled = a ROTATION-type pattern control, same family as L5's (7,3) Q].\
+    \ X-boxes (1,1),(1,7),(9,1). NEW wrinkle: TWO key-boxes with DISTINCT targets \u2014 upper box = pattern 101/110/011 colour-%\
+    \ (8), lower box = pattern 101/001/111 colour-@ (9); possibly a 2-delivery level. No portals confirmed yet (drive.py is\
+    \ portal-BLIND on levels==5 \u2014 needs a _PORTALS_L6 table gated on levels==5 if L6 has portals). Open threads: decode\
+    \ whether both boxes must be delivered (and whether the panel resets between deliveries), sample selector (6,4) + each\
+    \ speck transform, BFS the pattern word(s).\n"
+  context: Characterized L6 immediately after clearing L5; full-lives (%%=12), no controls fully sampled yet.
+  potential_type: claim
+  bound_to:
+  - N54
+  - N55
+  - N57
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O23
+  timestamp: 2026-06-29T20:12
+  provenance: ai-suggested
+  content: "WM-QUERY UTILITY on L5 (thesis evidence, modest-positive). Consulting the ARA as a world model (wm-predict over\
+    \ ara-ls20/) twice this turn HELPED frame the L5 blocker: it correctly cast the selector as in a portal-only POCKET (L4\
+    \ analogy), pointed the entrance hunt toward the north side / endpoint strips, and correctly predicted (2,3) IS a pattern\
+    \ control. But its SPECIFIC bets were REFUTED \u2014 the (4,7) hub-RIGHT was NOT the gate (the entrance is (2,6)+UP->(5,6)),\
+    \ and the pattern needed a TWO-speck composed word PPQQ, not a single press. The decisive mechanics (entrance cell, the\
+    \ (7,3)=90-deg-rotation insight, the PPQQ BFS) came from LIVE probing + an OFFLINE BFS, not the WM. Net: a MODEST-positive\
+    \ data point \u2014 useful navigation framing, NOT a decisive lock solution (contrast L4/O19/N49 where the WM branch was\
+    \ exactly the win).\n"
+  context: Compared the two wm-predict consults' predictions to the live L5 outcomes; this accrues with O19 on the thesis.
+  potential_type: unknown
+  bound_to:
+  - N53
+  - N51
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O24
+  timestamp: 2026-06-29T21:35
+  provenance: ai-suggested
+  content: "WM-QUERY UTILITY on L6 (thesis evidence, STRONG-positive \u2014 accrues with O19/O23). Consulting the ARA as a\
+    \ world model (wm-predict over ara-ls20/) at the last-life L6 blocker was DECISIVE on the rotation-speck identity: a live\
+    \ orbit of the L6 speck left 8 candidate permutations under-determined, but applying the ARA's OWN precedent \u2014 L5's\
+    \ Q = 90\xB0 CW rotation perm [6,3,0,7,4,1,8,5,2] (C14/R-L5) \u2014 to that orbit pinned it uniquely (the L6 speck IS\
+    \ the same Q) AND revealed the clean win path for the UPPER box (pattern target = Q^2, no BFS). This is the pattern's\
+    \ OWN transfer doing the work: the ARA supplied the prior that collapsed the ambiguity. Comparable to L4/O19/N49 (where\
+    \ the WM branch was exactly the win); stronger than L5/O23 (modest). LIMIT: on the genuinely-novel two-box DELIVERY protocol\
+    \ the ARA had no precedent (L6 is the first two-box level), so the WM could only extrapolate (medium-confidence, flagged)\
+    \ \u2014 i.e. the WM is strong where the ARA has transferable precedent and appropriately hedged where it does not. Net:\
+    \ a strong-positive data point for the \"ARA-as-world-model directs play\" thesis; the run was lost to budget/lives LOGISTICS\
+    \ (N57), not to the lock the WM helped crack.\n"
+  context: Consulted wm-predict at the L6 blocker; the L5-Q prior resolved the speck identity; compared to the unverified
+    two-box extrapolation.
+  potential_type: unknown
+  bound_to:
+  - N55
+  - N56
+  - N57
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O25
+  timestamp: 2026-06-29T23:35
+  provenance: ai-suggested
+  content: "WM-QUERY UTILITY on the L6 two-box DELIVERY PROTOCOL (thesis evidence, modest-to-strong-positive \u2014 accrues\
+    \ with O19/O23/O24). At the genuinely-novel two-box blocker (no in-artifact precedent \u2014 L6 is the first multi-box\
+    \ level) wm-predict over ara-ls20/ was asked: does the shared panel reset after a partial delivery, is there a forced\
+    \ order, how is the LOWER box reached. It answered, separating grounded inference (panel resets only on win-redraw/death\
+    \ per C07/raw) from a NAMED speculative leap (panel PERSISTS after a partial delivery; order UPPER-first; LOWER reached\
+    \ after col-10 unblocks), flagged medium confidence, and gave concrete falsifiers. ALL THREE speculative predictions were\
+    \ then LIVE-CONFIRMED (N62): panel persisted, order is forced UPPER-first, col-10 unblocked. So on a no-precedent question\
+    \ the WM correctly EXTRAPOLATED and hedged \u2014 the value was framing the right experiment + a correct directional bet,\
+    \ not a grounded deduction. Comparable utility to L5/O23 (directional) but on a harder no-precedent question; the honesty\
+    \ envelope (named leap + falsifier) was exactly right. Net: another positive data point for the ARA-as-world-model-directs-play\
+    \ thesis, now spanning grounded-prior cases (L4/O19, L6-speck/O24) AND no-precedent-extrapolation cases (L5/O23, L6-delivery/O25).\n"
+  context: Consulted wm-predict at the L6 two-box delivery blocker; its named-speculative predictions (panel persists / forced
+    order / col unblocks) were all live-confirmed by N62.
+  potential_type: claim
+  bound_to:
+  - N62
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O26
+  timestamp: 2026-06-30T00:30
+  provenance: ai-executed
+  content: 'L7 RECON (entered after the L6 win; UNSOLVED). NEW OBSTACLE CLASS = a PORTAL-and-FOG REVEAL maze: the board is
+    mostly color-5 ''fog'', revealed to floor(3)/wall(4) as the block approaches; the playable area is fragmented into PORTAL-CONNECTED
+    regions (confirmed portal (5,7)+A1->(8,7)). Entry: block (3,3), panel baseline 010/010/111 colour-c, lives 12, budget
+    42, ~1/move. X-boxes (1,1),(4,5),(1,9) [different regions]. NO key-box / lock controls / specks located yet (in unrevealed
+    portal regions). A transient color-8 glyph flashed ~(10,5) (possible colour-% target, unconfirmed). Stopped at budget
+    ~6, no deaths. Needs portal-network mapping to find the box+controls; the standard align->deliver loop presumably still
+    applies.'
+  context: Explored L7 immediately after the L6 win across ~2-3 portal regions; characterized the reveal/portal mechanic.
+  potential_type: claim
+  bound_to:
+  - N66
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O27
+  timestamp: 2026-06-29T23:55
+  provenance: ai-executed
+  content: >
+    L7 RECON (final level; UNSOLVED this turn). Fog-of-war REVEAL maze, large ROTATED diamond; LOCAL fog viewport
+    (~±4 macro cells, deterministic per block-position). Budget 2/move. Block start (3,3); panel baseline 010/010/111
+    colour-c. SIX single-use X-boxes (1,1),(1,7),(1,9),(4,5),(9,2),(10,10). THREE MOBILE controls (C15): P'=period-6
+    cycle speck (left ~row8, shares states with L6 orbit-B), Q=90deg-CW rotation speck (right col10, perm
+    [6,3,0,7,4,1,8,5,2]), COLOUR SELECTOR (8,1) (cycle N->@->$->%; 3 step-ons reach %). Portals all loop within
+    {left,center,right}: (5,7)+A1->(8,7),(5,7)+A2->(6,5),(5,6)+A2->(2,6),(7,7)+A1->(6,5),(4,6)+A4->(8,7),(6,5)+A4->(2,6).
+    Same align(colour+{P',Q}-word)->deliver loop presumed (C10), target colour=% (color-8 marker at (10,5)).
+  context: Attacked L7 after the L6 win; mapped the whole reachable maze + all controls via scratchpad/l7acc.py/l7portal.py/l7try.py; RESET-level-local (N73) gave free retries.
+  potential_type: claim
+  bound_to: [N71, N73]
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false
+- id: O28
+  timestamp: 2026-06-30T00:10
+  provenance: ai-executed
+  content: >
+    L7 BLOCKER: the key-box (lone color-8/% cell at (10,5)) sits in a PORTAL-ISOLATED bottom-center pocket
+    (only adjacent floor (10,4); (9,4)/(9,5)/(10,3)/(10,6) walls) with NO findable entrance — exhaustive 4-dir
+    portal probing of the entire reachable maze found no warp into it, and setting colour-% alone does not open the
+    (9,5)->(10,5) wall. Hypothesis: the pocket opens only after LOCK ALIGNMENT (C07 extended to fog), but the
+    pattern target is unreadable until the box reveals (chicken-and-egg). Untested next-session leads: guessed-target
+    alignment (colour-% + each reachable {P',Q} pattern state) then re-test the pocket walls/portals; the upper-region
+    top `?` cells; whether a P'/Q pattern-set opens the wall. (1,7)-pocket ruled out (no portal).
+  context: Isolated the sole L7 blocker after full recon; the lock controls are all found+typed but the key-box can't be reached/read.
+  potential_type: unknown
+  bound_to: [N72]
+  promoted: false
+  promoted_to: null
+  crystallized_via: null
+  stale: false

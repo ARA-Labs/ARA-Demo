@@ -1,0 +1,1305 @@
+tree:
+  - id: N01
+    type: question
+    title: "What are ls20's mechanics?"
+    provenance: ai-suggested
+    timestamp: "2026-06-29T09:30"
+    description: >
+      No rules given. Discover the forward model, win condition, and a reusable recipe for
+      the ARC-AGI-3 game ls20 purely by pressing directional actions and diffing frames,
+      under a move budget.
+    status: resolved
+
+  - id: N02
+    type: experiment
+    title: "Probe the action set A1-A4 (build the move model)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T09:32"
+    result: >
+      turn 0→1 A1: block rows45–49→40–44, 52 cells changed, budget −1 (cells (61,13)/(62,13)
+      X→-). 1→2 A2: back down. 2→3 A3: cols33–37→~28–32. 3→4 A4: right. Move model complete:
+      A1↑ A2↓ A3← A4→, one 5-cell macro-cell per press, one budget unit per move on L1.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turns 0-4"]
+    status: resolved
+    also_depends_on: [N01]
+
+  - id: N03
+    type: experiment
+    title: "Climb the col-6 corridor to the key-box"
+    provenance: ai-executed
+    timestamp: "2026-06-29T09:36"
+    result: >
+      turns 4→10, A1×5+: block climbed the col-6 corridor to R4C6 then entered R3C6 (box
+      bottom); state stayed NOT_FINISHED. Reaching the box ≠ win.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turns 4-10"]
+    status: resolved
+    also_depends_on: [N02]
+
+  - id: N04
+    type: dead_end
+    title: "DE1 — 'Reach the key-box to win' is FALSE"
+    provenance: ai-executed
+    timestamp: "2026-06-29T09:38"
+    hypothesis: "Navigating the block to / into the key-box completes the level."
+    failure_mode: >
+      turn 10→11 A1 against the box bottom border returned 0 cells changed (a wasted move),
+      state NOT_FINISHED. Being adjacent to / wedged under the box does not win; the box is
+      walled-shut while the lock is unmatched.
+    lesson: >
+      The box is lock-gated, not position-gated (→ C03, C07). A 0-cell move into a border also
+      confirms walls are no-ops that still cost budget (→ C04).
+    status: resolved
+    also_depends_on: [N03]
+
+  - id: N05
+    type: experiment
+    title: "Step the block onto the rare speck (R6C3)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T09:42"
+    result: >
+      turns 11→17 (A2,A2,A3,A3,A3 then A2 onto R6C3): the onto-speck move changed 58 cells
+      (52 block + ~6 speck overwritten); state stayed NOT_FINISHED, levels 0.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turns 11-17"]
+    status: resolved
+    also_depends_on: [N03]
+
+  - id: N06
+    type: dead_end
+    title: "DE2 — 'Cover the speck to win' is FALSE/insufficient"
+    provenance: ai-executed
+    timestamp: "2026-06-29T09:43"
+    hypothesis: "Covering the rare R6C3 speck completes the level."
+    failure_mode: "58-cell move onto the speck, state still NOT_FINISHED, levels 0."
+    lesson: "Covering the switch alone does not win — the switch only changes lock state (→ C06)."
+    status: resolved
+    also_depends_on: [N05]
+
+  - id: N07
+    type: experiment
+    title: "Diff the control panel across the L1 episode"
+    provenance: ai-executed
+    timestamp: "2026-06-29T09:48"
+    result: >
+      Episode-log diff: the bottom-left panel changed EXACTLY ONCE across 18 turns, caused by
+      stepping onto the speck at turn 16→17 (middle row 100→001). Panel now reads 111/001/101 =
+      the key-box target. Speck = a toggle SWITCH (not consumed); panel = current lock pattern;
+      key-box `@` = target pattern.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl panel-diff turns 0-18"]
+    status: resolved
+    also_depends_on: [N05]
+
+  - id: N08
+    type: experiment
+    title: "Deliver the block into the now-matched key-box (L1)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T09:52"
+    result: >
+      turns 17→24: navigate back to the box mouth R4C6, then A1 into the box — 1479 cells
+      changed, levels_completed 0→1. LEVEL 1 SOLVED. Confirms align-lock → deliver (→ C07, R-L1).
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turns 17-24"]
+    status: resolved
+    also_depends_on: [N07]
+
+  - id: N09
+    type: pivot
+    title: "Level 2 begins — same primitives, new maze (transfer test)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:00"
+    from: "L1 solved by the Locksmith loop"
+    to: "Apply the L1 recipe to L2 (block@R8C5, key-box on left, panel/budget reset to 42)"
+    trigger: >
+      turn 24: the L1 win redrew into a new L2 maze presenting the same block/key-box/panel/
+      budget primitives — the curriculum's 'earlier levels teach, later test' thesis.
+    status: resolved
+    also_depends_on: [N08]
+
+  - id: N10
+    type: experiment
+    title: "Step onto the L2 X-boxes (R3C2, R10C7)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:08"
+    result: >
+      R3C2 t53→54: budget 20→42, X-box consumed, panel UNCHANGED. R10C7 t71→72: budget 8→42,
+      panel unchanged. The X-boxes are budget-refill stations, not lock controls.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turns 53-54, 71-72"]
+    status: resolved
+    also_depends_on: [N09]
+
+  - id: N11
+    type: experiment
+    title: "First L2 switch step (R9C9) + budget-rate read"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:12"
+    result: >
+      turn 69 step on R9C9: panel 111/001/101 → 101/001/111 (looked like a top↔bottom flip).
+      Budget decrements ~2 per move over the L2 path (42→…→8). A flip leaves the middle row
+      unchanged, so it appeared unable to reach target 111/100/101 — spawning the false 'hidden
+      2nd control' hunt.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turn 69; L2 budget trace"]
+    status: resolved
+    also_depends_on: [N09]
+
+  - id: N12
+    type: experiment
+    title: "Toggle the R9C9 switch repeatedly (re-sample its transform)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:18"
+    result: >
+      turns 72→85, step off/on R9C9 several times: panel cycles
+      111/001/101 → 101/001/111 → 101/100/111 → 111/100/101 → (back). The middle row DOES
+      change; it is a 4-state CYCLE, and 111/100/101 (the key-box target) is in the cycle —
+      3 step-ons from the fresh start reach it.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turns 72-85"]
+    status: resolved
+    also_depends_on: [N11]
+
+  - id: N13
+    type: experiment
+    title: "L2 clean solve after RESET — deliver into the matched key-box"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:30"
+    result: >
+      turn 86 RESET → fresh L2. start→R9C9 (toggle#1, →8) → R10C7 refill (→42) → R9C9 (toggle#2)
+      → off/on (toggle#3) = panel 111/100/101 matched → R3C2 refill en route → R6C2 above the box.
+      129→130 A2: 54 cells, block wedges on box border, no win. 130→131 A2: 1421 cells redrawn,
+      levels_completed 1→2. LEVEL 2 SOLVED (→ C09, R-L2). Delivery needs 2 pushes (→ DE5/H09).
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turns 86-131"]
+    status: resolved
+    also_depends_on: [N12, N10]
+
+  - id: N14
+    type: dead_end
+    title: "Under-sampling error — the L2 switch is NOT a vertical flip (refutes C08)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:34"
+    hypothesis: >
+      C08: the L2 switch only flips the lock top↔bottom (middle row fixed), so a hidden 2nd
+      control is required; the X-boxes were the prime suspect for it.
+    failure_mode: >
+      A SINGLE step-on of R9C9 happened to look like a flip; the switch is actually a 4-state
+      cycle whose middle row DOES change (N12). The flip reading was an under-sampling artifact;
+      no 2nd control exists (the suspected X-boxes are refills, N10/DE4).
+    lesson: >
+      Sample a switch through several presses before inferring its transform — don't generalize a
+      transform from one observation. This is the transferable correction crystallized as C10.
+    status: resolved
+    also_depends_on: [N11, N12]
+
+  - id: N15
+    type: dead_end
+    title: "DE4 — 'X-boxes are the 2nd lock control' is FALSE"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:35"
+    hypothesis: "The color-b hollow X-boxes (R3C2, R10C7) are the hidden middle-row lock control."
+    failure_mode: "Stepping onto each left the panel UNCHANGED and refilled budget to 42 (N10)."
+    lesson: "The X-boxes are budget-refill stations (→ H08); the prime lead is falsified."
+    status: resolved
+    also_depends_on: [N10]
+
+  - id: N16
+    type: dead_end
+    title: "DE5 — 'One DOWN press delivers the block' is INSUFFICIENT"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:36"
+    hypothesis: "From R6C2 above the matched key-box, a single A2 delivers the block in."
+    failure_mode: "First A2 only wedged the block onto the box's top border (54-cell move, no win)."
+    lesson: "Delivery needs a SECOND A2 (wedge then enter) — budget for 2 pushes (→ H09)."
+    status: resolved
+    also_depends_on: [N13]
+
+  - id: N17
+    type: pivot
+    title: "Level 3 begins — reconnaissance only"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:40"
+    from: "L2 solved (levels_completed=2)"
+    to: "Recon L3 (bigger maze; key-box on RIGHT; 3 X-boxes; new compound control glyph)"
+    trigger: "turn 131: the L2 win redrew into a larger L3 maze."
+    status: open
+
+  - id: N18
+    type: experiment
+    title: "L3 probe attempt to the compound control (R9C5) — FAILED to gather data"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:48"
+    result: >
+      Pathfind to R9C5 (20 moves) overran: the executed move list left the block stranded at
+      R1C5 because the col-5 corridor is walled at R2, so 'down' pressed into walls (no-op,
+      budget-only diffs). Budget hit ~2 and the session stopped. No usable data on the compound
+      control's transform. L3 NOT solved.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turns 131-151"]
+    status: resolved   # superseded this session: N22 sampled the control successfully
+    also_depends_on: [N17]
+
+  - id: N19
+    type: dead_end
+    title: "L3 pathfinding desync — entered the central corridor from the wrong end"
+    provenance: ai-executed
+    timestamp: "2026-06-29T10:50"
+    hypothesis: "The compound control R9C5 is reachable down col-5 from the top R1C5."
+    failure_mode: >
+      The col-5 corridor is walled at R2, so the planned 'down' presses hit walls and the block
+      desynced from the plan, stranding it at R1C5; A1/A2 from there were budget-only no-ops.
+    lesson: >
+      Reach R9C5 from R5C5 going DOWN through R7C5, NOT from the top R1C5; verify each step's
+      actual landing because the block desyncs from the planned path when a press hits a wall.
+      Next session: RESET L3, refill-aware route to R9C5, sample the compound control several
+      times (per C10) before planning toggles.
+    status: resolved   # this session: re-pathfound short segments (N26) and reached R9C5; control sampled (N22)
+    also_depends_on: [N18]
+
+  - id: N20
+    type: pivot
+    title: "Restart the dead harness loop; re-derive L1+L2 from existing recipes to reach L3"
+    provenance: ai-executed
+    timestamp: "2026-06-29T11:10"
+    from: "Prior session's CcRelay harness loop had died (SIGINT at turn 152; live/action.txt left unconsumed; 'Received SIGINT, exiting' in harness.log)."
+    to: "Relaunched `uv run main.py --agent=ccrelay --game=ls20`, which made a fresh scorecard and RESET the game to Level 1 (the ARC API is stateless per-scorecard — no mid-level resume)."
+    trigger: >
+      play.py send blocked forever and macro/status showed turn frozen at 152; ps showed no game
+      loop and a stranded play.py-send waiter. To play L3 at all, the harness had to be restarted.
+    status: resolved
+    also_depends_on: [N17]
+
+  - id: N21
+    type: experiment
+    title: "Speed-run L1 then L2 from the existing R-L1 / R-L2 recipes (transfer re-confirmation)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T11:14"
+    result: >
+      L1: switch R6C3 (3×A3+3×A1) flipped the middle row → panel 111/001/101 = target; deliver UP
+      ×2 into the top-centre key-box = 1459-cell redraw, levels_completed 0→1 at turn 13.
+      L2: switch R9C9 cycled in 3 step-ons to 111/100/101 (X-box refills R10C7/R3C2 funded it);
+      deliver R6C2 DOWN ×2 = 1421-cell redraw, 1→2 at turn 58. Both recipes transferred byte-for-
+      byte; H06's 4-state cycle reproduced exactly on L2.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl (new ccrelay run, turns 0-58)", "ara-ls20/trace/_l3_raw_journal.md"]
+    status: resolved
+    also_depends_on: [N20, N08, N13]
+
+  - id: N22
+    type: experiment
+    title: "Sample the L3 compound control R9C5 six times (C10 discipline)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T11:20"
+    result: >
+      Stepping the block onto R9C5 leaves the panel PATTERN unchanged (stays 111/001/101) but
+      advances its FILL COLOUR through a 4-state cycle N(c)→@(9)→$(e)→%(8)→N, period 4 (6 step-ons
+      observed; #4 returned to baseline c, #5/#6 repeated). The compound glyph @$$/@ %%/NN% encodes
+      exactly these four colours. The colour persists after stepping off. A single press alone would
+      have falsely read a 'c→9 flip' — C10 vindicated. RESOLVES O02's unknown transform.
+    evidence: ["ara-ls20/trace/_l3_raw_journal.md (control-sampling section)", "harness/runs/ls20-9607627b_ccrelay.jsonl turns ~83-94"]
+    status: resolved
+    also_depends_on: [N21, N17]
+
+  - id: N23
+    type: experiment
+    title: "Sample the L3 pattern switch R2C9 five times (C10 discipline)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T11:24"
+    result: >
+      A faint colour-0/1 floor speck at macro R2C9 (approached from R2C10 going LEFT) cycles the
+      panel PATTERN through the SAME 4-state cycle as the L2 switch (H06):
+      111/001/101 → 101/001/111 → 101/100/111 → 111/100/101 → (back), colour untouched. The target
+      pattern 101/100/111 = state #2 → 2 step-ons from baseline. So L3 has TWO independent controls:
+      pattern (R2C9) + colour (R9C5).
+    evidence: ["ara-ls20/trace/_l3_raw_journal.md (pattern-switch section)", "harness/runs/ls20-9607627b_ccrelay.jsonl turns ~110-119"]
+    status: resolved
+    also_depends_on: [N22]
+
+  - id: N24
+    type: experiment
+    title: "Align L3 lock (pattern 101/100/111 + colour @) and deliver — discover multi-stage %% counter"
+    provenance: ai-executed
+    timestamp: "2026-06-29T11:30"
+    result: >
+      With panel set to 101/100/111 in colour @ (1 colour step-on + 2 pattern step-ons, X-box
+      refills R3C6/R6C3 funding the traversal), routing the block to macro R8C10 (above the RIGHT
+      key-box, reached via col-10 from above) and pressing DOWN once = a 186-cell DELIVERY: the
+      block is consumed, teleports back to start R9C1, the panel resets to baseline, budget refills
+      to 42, and the bottom-right %%-marker counter (colour-8 cells, +%%+%%+%% = 3 markers ×4 cells
+      = 12) decrements by 4 (12→8→4 over the first two deliveries). X-box refills do NOT touch the
+      %% counter (verified by probe). L3 is MULTI-STAGE.
+    evidence: ["ara-ls20/trace/_l3_raw_journal.md (multi-stage section)", "harness/runs/ls20-9607627b_ccrelay.jsonl turns ~145-220"]
+    status: resolved
+    also_depends_on: [N23]
+
+  - id: N25
+    type: dead_end
+    title: "L3 unsolved — the 3rd/final delivery slides through to GAME_OVER (reproduced 3×)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T11:40"
+    hypothesis: >
+      L3 is won by repeating the SAME aligned delivery (pattern 101/100/111 + colour @, push DOWN at
+      R8C10) three times, draining the %% counter 12→8→4→0.
+    failure_mode: >
+      Deliveries #1 and #2 wedge cleanly (186-cell each). But the 3rd delivery — same alignment, same
+      R8C10 approach — does NOT wedge: the block SLIDES through R8C10→R9C10 (only a 54-cell change)
+      and the game goes to GAME_OVER with levels_completed STILL 2 (a LOSS). Reproduced 3× and shown
+      deterministic. Box geometry and the approach corridor look unchanged after 2 deliveries, and
+      budget=0-at-push is NOT the cause (deliveries #1/#2 also pushed at budget 0 and wedged fine).
+    lesson: >
+      Two of three deliveries land with the identical target, but the FINALE needs something
+      different that was not determined within budget. Candidate next probes: (a) the 3rd slot wants
+      a DIFFERENT panel target (other pattern and/or colour) than 101/100/111@; (b) a different
+      box-entry side once two slots are filled; (c) a hidden precondition / different last move.
+      RESET cleanly restores L3 (counter 12, budget 42, levels 2) to retry these.
+    status: open
+    also_depends_on: [N24]
+
+  - id: N26
+    type: decision
+    title: "Robust L3 navigation method — re-pathfind short verified segments (offset/desync workaround)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T11:34"
+    choice: >
+      Stop executing long pre-planned pathfind routes in one shot. After every leg, re-run
+      pathfind.py from the CURRENT position and execute the next short segment, verifying the block's
+      actual landing each time.
+    alternatives: ["Execute the full multi-step pathfind action list at once (caused repeat desyncs)"]
+    evidence: >
+      Two long routes desynced: the macro display and pathfind disagree by ~+1 in the column index,
+      and a press into a wall is a budget-only no-op that strands the block off-plan (e.g. block
+      reported at R1C5/R1C6 after an 8-up + 4-right route). Short re-pathfound segments always
+      landed correctly. Also observed: a move pressed at budget 0 STILL executes (and an X-box still
+      refills), so budget 0 is not a hard stop for the next single move.
+    status: resolved
+    also_depends_on: [N25]
+
+  - id: N27
+    type: decision
+    title: "Built a robust single-step navigator (block detector + per-step re-pathfind) — fixes the +1 desync"
+    provenance: ai-executed
+    timestamp: "2026-06-29T11:53"
+    choice: >
+      Wrote scratchpad/step.py: detect the block as the macro cell with BOTH color-9>=6 AND
+      color-c>=4 (uniquely distinguishes the block from the panel/UI, which are color-9-only or
+      color-c-only); then loop {re-run pathfind.py from current frame, send ONLY its first action,
+      verify the block moved (else re-pathfind), stop on arrival/state-change}. Print flushed per line.
+    alternatives: ["Trust pathfind's multi-action list (desynced repeatedly via the +1 col ambiguity and phantom A3 prefixes, stranding the block and even reaching GAME_OVER)"]
+    evidence: >
+      The naive block detector (color-9 only, last-match-wins) latched onto the bottom-left panel /
+      a R11C0 UI artifact, mis-reporting block position; requiring color-9 AND color-c fixed it.
+      With the new navigator every leg landed exactly as pathfind predicted across L1/L2/L3 routes,
+      eliminating the desync that wasted prior sessions. This tool ENABLED the whole investigation.
+    status: resolved
+    also_depends_on: [N26]
+
+  - id: N28
+    type: pivot
+    title: "Harness died again (SIGINT); restarted fresh → re-won L1; STUCK on L2's new %% wall"
+    provenance: ai-executed
+    timestamp: "2026-06-29T11:56"
+    from: "Background CcRelay loop alive at L3 (levels_completed=2) at session start, but it received SIGINT and exited (whole game process died, fresh scorecard)."
+    to: "Relaunched main.py → fresh game at L1; re-won L1 (2-push delivery, levels 0→1); reached L2 — which now exhibits the SAME multi-stage %% delivery wall as L3."
+    trigger: "frame.json stale; restart resets the stateless ARC scorecard to L1. Re-deriving L2 surfaced that the L2 instance no longer matches the simple R-L2 recipe."
+    status: resolved
+    also_depends_on: [N20, N25]
+
+  - id: N29
+    type: experiment
+    title: "Fully map the delivery mechanism on L2 (switch step-off = delivery; 3rd → GAME_OVER)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T12:05"
+    result: >
+      L2 now has ONE pattern switch (R9C9, color-0/1 speck — the ONLY special glyph besides the
+      bottom %% counter at %%=4), ONE block, ONE left key-box (display only). DELIVERY mechanism:
+      block ON switch + panel == target (111/100/101, reached by 3 step-ons via the H06 4-state
+      cycle) + step OFF (ANY of A1-A4) => block teleports to start, panel resets to baseline, budget
+      refills, %% -=4, big redraw. Works for %% 12->8 and 8->4. The block NEVER travels to the left
+      key-box; the box `@` is just the TARGET-PATTERN display (unchanged after deliveries). Step-off
+      while NOT aligned (cycle states 1/2/3) = normal move, no delivery, %% unchanged, panel state
+      PERSISTS. FINAL (%% 4->0): identical align + step-off => only a 54-cell normal move (R9C9->R8C9),
+      NO teleport, panel stays aligned, %%=0, state=GAME_OVER, levels unchanged.
+    evidence: ["ara-ls20/trace/_l3_finale_raw.md", "harness/runs/ls20-9607627b_ccrelay.jsonl (new ccrelay run, turns ~100-470)"]
+    status: resolved
+    also_depends_on: [N28, N25]
+
+  - id: N30
+    type: dead_end
+    title: "The 3rd/final delivery wall: every tested fix fails (re-align, target, slot, direction, budget, box-delivery)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T12:20"
+    hypothesis: >
+      The %%->0 GAME_OVER (same on L2 & L3) is fixable by one of: (H1) re-aligning the panel before
+      each delivery; (H3) a different panel target/colour for the final stage; (H2) a different
+      slot/opening that appears at %%=4; a different final step-off direction; the budget; or doing a
+      real BOX delivery (push the aligned block into the key-box) instead of the switch-delivery.
+    failure_mode: >
+      ALL falsified deterministically. H1: panel DOES reset after each delivery so re-align is
+      NECESSARY, but #3 aligned correctly (111/100/101) and still GAME_OVERed — not sufficient. H3:
+      the box @ target stays 111/100/101 at %%=12/8/4 and a full-board byte-diff between %%=12 and
+      %%=4 is EMPTY (only block & %% differ) — no new target, no new slot/opening. Direction: A1/A2/A3/
+      A4 final step-offs ALL GAME_OVER. Budget: deliveries fire at budget 0 anyway. Box-delivery is a
+      CATCH-22: the key-box is locked unless the panel matches, but the exact target 111/100/101 is
+      UNCARRIABLE to the box — aligning requires the block ON the switch and ANY step-off-while-aligned
+      triggers the switch-delivery (teleport), so an aligned block can never travel to the box; carried
+      non-target states (e.g. 101/100/111) reach the box but it rejects them, and maze topology funnels
+      return routes back through R9C9, resetting the carried panel. The box does NOT remember alignment
+      across a delivery. Only ONE switch exists (whole-board glyph scan at %%=4) — no hidden 2nd control.
+    lesson: >
+      The switch-delivery is the only target-aligned delivery channel and it loses on the %%->0
+      transition; the winning final action is still UNKNOWN. Untested next: (R1) sample the switch >8
+      presses to rule out a hidden 5th/colour state for stage 3; (R2) hunt hardest for a switch-
+      independent way to align the box (or a control that only activates at %%=4 via a sequence, not a
+      static glyph); (R3) try winning WITHOUT emptying %% (box delivery while %%>0) once box-align is
+      cracked; (R4) re-examine whether the win wants the block physically IN the box at the %%->0 instant.
+    status: open
+    also_depends_on: [N29]
+
+  - id: N31
+    type: decision
+    title: "CONTRADICTION (unresolved): L2 now multi-stage (%%) vs the trace's simple single-push R-L2 win"
+    provenance: ai-executed
+    timestamp: "2026-06-29T12:25"
+    choice: >
+      Flag, do not overwrite. N13/C09/R-L2 record L2 as solved by a SINGLE 2-push box delivery with no
+      %% counter; this turn (N29) L2 presents the same multi-stage %% delivery wall as L3, and the
+      simple box-delivery does NOT win (box locked unless aligned; aligned-box unreachable). Either the
+      ARC-AGI-3 server now serves a different L2 variant, or the earlier L2 was a different instance.
+      Adjudication deferred to the researcher.
+    alternatives: ["Silently treat the new L2 as canonical and rewrite R-L2 (rejected — would destroy the verified prior win record)", "Assume a misread (rejected — the %% wall reproduced deterministically across RESETs)"]
+    evidence: ["N13 (prior L2 single-push win, 1421-cell redraw)", "N29 (L2 %% multi-stage delivery this turn)", "ara-ls20/trace/_l3_finale_raw.md"]
+    status: unresolved
+    also_depends_on: [N13, N29]
+
+  - id: N32
+    type: pivot
+    title: "Clean harness restart from levels=0 to verify the level chain (desync diagnostic)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T13:10"
+    from: "Turn-3 stranded on a 'multi-stage %% L2' (N28/N31), L3 unsolved"
+    to: "Fresh harness at turn=0 levels_completed=0; re-create scratchpad/step.py; characterize each level BEFORE solving"
+    trigger: "Researcher ground-truth: ls20 has 7 fixed levels, L1/L2 already solved; the '%% L2' is most likely a LEVEL-TRACKING DESYNC, not a changed level. Verify cheaply, then play the REAL L3."
+    status: resolved
+    also_depends_on: [N31]
+
+  - id: N33
+    type: experiment
+    title: "DIAGNOSTIC: R-L1 and R-L2 cleanly re-win from a fresh start; the real L2 is SIMPLE (single delivery)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T13:20"
+    result: >
+      From turn=0 levels_completed=0: R-L1 re-won L1 (0->1, 1459-cell redraw, ~13 moves; switch R6C3,
+      middle-row toggle, 2-push box delivery). The new level (levels_completed=1) was characterized
+      BEFORE solving: block R8C5, panel 111/001/101 @, key-box on the LEFT (target 111/100/101), ONE
+      pattern switch at R9C9, X-boxes R10C7/R3C2 — IDENTICAL to R-L2. DECISIVE sub-test: with the panel
+      aligned (111/100/101) and the block ON the R9C9 switch, the ALIGNED step-OFF was a NORMAL 54-cell
+      move (no delivery, panel PERSISTED, %% unchanged at 12, no teleport). Carried the free aligned
+      block to R6C2 and pushed DOWN x2 (wedge R7C2 + enter) = 1421-cell redraw, levels_completed 1->2.
+      A SINGLE box-delivery wins L2 — exactly the trace's R-L2/C09 record. The %% counter (12 color-8
+      cells) was present on the fresh L1 at turn 0 and stayed 12 through both L1 and L2 wins — a
+      PERMANENT UI FIXTURE, never decremented by any L1/L2 delivery.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl (this session, turns 0-58)", "ara-ls20/trace/_l3_v2_raw.md"]
+    status: resolved
+    also_depends_on: [N21, N31]
+
+  - id: N34
+    type: decision
+    title: "RESOLVES N31: the 'multi-stage %% L2' was a LEVEL-TRACKING DESYNC, not an L2 variant"
+    provenance: ai-executed
+    timestamp: "2026-06-29T13:25"
+    choice: >
+      Resolve the N31 contradiction in favour of the trace's prior L2-solved record (N13/C09/R-L2).
+      The real L2, reached by a clean L1 win from levels_completed=0, is the SIMPLE single-delivery
+      Locksmith level — re-won deterministically this turn (N33). Turn-3's 'L2 now carries the L3 %%
+      multi-stage wall' (N28/N29/O10) was the result of mis-tracking which level the harness was on
+      after a restart (the agent was actually probing L3-like state, or conflated the persistent %% UI
+      fixture with a per-delivery counter). The %% counter does NOT decrement on L1/L2 deliveries and
+      is not a multi-stage gate. Clear the C09 CONFLICT flag.
+    alternatives: ["Keep N31 unresolved (rejected — R-L2 cleanly re-won, the desync hypothesis is confirmed)", "Treat L2 as a server variant (rejected — no variant observed; the simple L2 reproduced exactly)"]
+    evidence: ["N33 (clean R-L1+R-L2 re-win from levels=0)", "N13 (original L2 win)", "ara-ls20/trace/_l3_v2_raw.md"]
+    status: resolved
+    also_depends_on: [N31, N13, N33]
+
+  - id: N35
+    type: dead_end
+    title: "FALSIFIED: the L3 catch-22 / aligned-step-off-delivery / %% multi-stage finale (O06/O07/O09/O10)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T13:35"
+    hypothesis: >
+      (O09) ls20 delivery fires when an ALIGNED block steps OFF the pattern switch, so an aligned block
+      can never reach the key-box (catch-22); (O06/O07) L3 is MULTI-STAGE — the %% counter decrements 4
+      per delivery and 3 deliveries are required, the 3rd GAME_OVERing; (O10) this %% wall is uniform
+      across L2 & L3.
+    failure_mode: >
+      All falsified by clean single-step sampling this turn. (1) The ALIGNED step-off off BOTH L3 controls
+      (pattern switch R2C9 and colour selector R9C5) is a NORMAL 54-cell move — pattern AND colour PERSIST
+      at the full target, no delivery, no teleport, %% unchanged. There is NO catch-22: a fully-aligned
+      block is free to navigate to the key-box. (2) Clean colour-selector sampling at every state
+      (c/@/$/%) showed NO selector step-off ever delivers — the earlier '%% 12->8 delivery' was a spurious
+      event misattributed during chaotic rapid cycling. (3) The %% counter stayed 12 for the ENTIRE L3
+      solve — NOT a multi-stage gate. L3 wins on ONE genuine box-delivery, identical to L1/L2.
+    lesson: >
+      The desync-era L3 model (catch-22 + %% multi-stage + GAME_OVER finale) was an artifact of (a)
+      level mis-tracking and (b) reading the persistent %% UI fixture as a per-delivery counter. The real
+      L3 is the SAME Locksmith loop as L1/L2 with TWO independent lock axes; align both, then deliver the
+      free aligned block into the box. The two-axis 'break' the task hypothesized works because there was
+      never a catch-22 to break.
+    status: resolved
+    also_depends_on: [N24, N25, N29, N30]
+
+  - id: N36
+    type: experiment
+    title: "SOLVED the REAL Level 3 (levels 2->3): two-axis lock, single box-delivery"
+    provenance: ai-executed
+    timestamp: "2026-06-29T13:45"
+    result: >
+      L3 layout (levels_completed=2): block start R9C1 (LEFT), key-box on the RIGHT (display K at macro
+      R9C10), target @ pattern 101/100/111 colour @(9). Panel baseline pattern 111/001/101 in colour-c
+      (N) — TWO lock axes. TWO independent controls: COLOUR SELECTOR R9C5 (step-on cycles fill colour
+      N(c)->@(9)->$(e)->%(8)->N, period 4; colour persists on step-off; pattern untouched) and PATTERN
+      SWITCH R2C9 (approach from R2C10 left; same H06 4-state cycle 111/001/101->101/001/111->
+      101/100/111->111/100/101; 2 step-ons reach the target; pattern persists on step-off). SOLVE: set
+      colour @ at R9C5 (1 step-on), carry to R2C9 and set pattern 101/100/111 (2 step-ons) — block now
+      FULLY ALIGNED. Aligned step-off both controls = normal move (no catch-22). Carried the free aligned
+      block down col-10 to R8C10 (above key-box R9C10) and pushed DOWN x2 (wedge R9C10 + enter) =
+      1425-cell full-screen redraw, levels_completed 2->3. SINGLE delivery wins. X-box refills (R3C6,
+      R6C3) funded the route (H08). %% stayed 12 throughout. RESET reliably restores L3 clean.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl (this session, turns 58-141)", "ara-ls20/trace/_l3_v2_raw.md"]
+    status: resolved
+    also_depends_on: [N22, N23, N34, N35]
+
+  # ===== Turn 5 (2026-06-29) — reach & characterize Level 4 =====
+
+  - id: N37
+    type: pivot
+    title: "Level 4 begins — reached at levels_completed=3 (the live target)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T13:50"
+    from: "L3 solved (levels_completed=3) at the start of this turn"
+    to: "Characterize and attempt L4 (block start macro (1,10); key-box top-left (1,1); panel 111/111/111 colour e($); colour selector (6,6); X-boxes (3,3),(10,6); 8 color-1 specks)"
+    trigger: "Task: reach and SOLVE Level 4. Mapped the L4 board with macro.py/look.py/step.py."
+    status: resolved
+    also_depends_on: [N36]
+
+  - id: N38
+    type: experiment
+    title: "MAJOR: budget-0 'death-respawn' — the block respawns at level-start, %% decrements (unifies the 'portal' confusion)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T14:30"
+    result: >
+      From full-game-log correlation (runs/ls20-9607627b_ccrelay.jsonl, turns 173/220/313/359 lvl=2;
+      and live this turn): when the move-budget bar reaches 0 and you take ANOTHER move, the block
+      RESPAWNS at the CURRENT level's START cell, budget refills 0->42, and the bottom-right %% marker
+      counter decrements one step (12->8->4). Level-start respawn cells observed: L1~(9,6), L2 (8,5),
+      L3 (9,1), L4 (1,10). This single mechanic EXPLAINS AWAY most of the apparent "teleport/portal with
+      direction-dependent destinations" seen on L1-L4 this and prior turns — they were budget deaths,
+      not portals: e.g. a sequence pressed past budget 0 snaps the block to start, which looked like a
+      far "warp". The %% decrement ONLY occurs on an OVERDRAFT refill (a refill while budget is exactly
+      0); refills at budget>0 are FREE (12->12), confirmed at log turns where budget 20->42/4->42 left %%
+      unchanged.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl turns 173,220,313,359 (REFILL 0->42 with %% -4)", "harness/runs/ls20-9607627b_ccrelay.jsonl (free refills budget>0, %% unchanged)", "ara-ls20/trace/_l4_raw.md"]
+    status: resolved
+    also_depends_on: [N37]
+
+  - id: N39
+    type: experiment
+    title: "%% markers are a finite LIVES/DEATHS counter (resets to 12 per level); GAME_OVER = death at %%=0"
+    provenance: ai-executed
+    timestamp: "2026-06-29T14:35"
+    result: >
+      The bottom-right %% markers (color-8, 3 groups x4 cells = 12) are a LIVES counter, not decoration.
+      It RESETS to 12 at the start of each level (observed 12 fresh at L1/L2/L3/L4 starts this turn) and
+      steps down 12->8->4->0 with each death (N38). When a death occurs while %%=0 (no life left), the
+      episode goes state=GAME_OVER (turn frozen, actions no-op, levels stuck) and the harness then EXITS
+      (writes a scorecard). Hit GAME_OVER twice this turn by chained overdraft deaths on L3. Operating
+      rule that prevents it: ALWAYS refill at an X-box while budget is still POSITIVE (never reach 0).
+    evidence: ["ara-ls20/trace/_l4_raw.md", "harness/runs/ls20-9607627b_ccrelay.jsonl (GAME_OVER at %%=0)", "harness/live/harness.log (Finishing/SIGINT after GAME_OVER)"]
+    status: resolved
+    also_depends_on: [N38]
+
+  - id: N40
+    type: decision
+    title: "CONTRADICTION→RESOLVED: %% is a real depleting LIVES counter, NOT the 'permanent UI fixture' of N33/N35/N36"
+    provenance: ai-executed
+    timestamp: "2026-06-29T14:38"
+    choice: >
+      Resolve in favour of the new evidence: %% IS dynamic (a lives/deaths counter, N38/N39). The prior
+      turns' "permanent UI fixture, stays 12 throughout" reading (N33/N35/N36, O06/O07 falsification) was
+      itself only PARTIALLY right: %% stayed 12 in those runs because they happened never to overdraft
+      (always refilled before budget 0) and never died — so %% never had a reason to move. It is NOT
+      decoration and NOT a per-delivery counter either (the session-#3 "per-delivery %%" reading was also
+      wrong). Both prior readings are reconciled by: %% = lives, ticks only on death (overdraft), resets
+      per level. Flag the prior nodes; do NOT delete them; keep the L1/L2/L3 wins intact (they are
+      unaffected — those solves never died).
+    alternatives: ["Keep 'permanent UI fixture' (rejected — falsified by GAME_OVER-at-%%=0 + log-grounded death decrements)", "Re-open the session-#3 'per-delivery %% multi-stage' model (rejected — that was a separate desync-era misread; %% ticks on death, not on delivery)"]
+    evidence: ["N38", "N39", "N36 (the 'stays 12' observation, now explained as 'never died')", "harness/runs/ls20-9607627b_ccrelay.jsonl turns 173/220/313/359"]
+    status: resolved
+    also_depends_on: [N36, N38, N39]
+
+  - id: N41
+    type: dead_end
+    title: "CORRECTION: RESET restarts the WHOLE GAME to Level 1 (NOT a level-retry); X-boxes are single-use per level"
+    provenance: ai-executed
+    timestamp: "2026-06-29T14:10"
+    hypothesis: >
+      (per task brief) RESET re-starts the CURRENT level to retry it after understanding the solution;
+      and X-boxes are reusable refill stations.
+    failure_mode: >
+      BOTH false. (1) A RESET dropped levels_completed 3->0 (harness.log count 214) and put the block at
+      the L1 start — RESET restarts the ENTIRE game at Level 1, it is NOT a level retry. Pressing RESET to
+      "retry L4" cost L1-L3. (2) X-boxes are CONSUMED on first step-on (the color-b glyph disappears,
+      count 8->0); each level has exactly 2, so at most 2 free refills per level-life (a death/respawn
+      restores them).
+    lesson: >
+      Never RESET to retry a level (recover from GAME_OVER by restarting the harness and re-winning
+      L1->L2->L3 via R-L1/R-L2/R-L3, no RESET). Plan routes around exactly 2 single-use X-boxes per level
+      and refill while budget>0. (Updates H08; corrects the task brief's RESET/refill assumptions.)
+    status: resolved
+    also_depends_on: [N37, N39]
+
+  - id: N42
+    type: experiment
+    title: "L4 NEW MECHANIC = a PORTAL/TELEPORTER network (genuine, distinct from death-respawn)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T14:45"
+    result: >
+      L4 overlays real teleporter cells on the maze: stepping into certain floor cells warps the block to
+      a fixed destination, observed at budget>0 / %%=12 (so NOT a death-respawn): (4,7)+DOWN -> (1,7);
+      (3,6)+DOWN -> (4,10); (5,6)+RIGHT -> (1,7) (live, reproduced). The panel never changed across these
+      warps, so portals are pure navigation, not lock controls. Pathfinding must AVOID portal cells (a BFS
+      with the known portals blocked yields valid routes around them). The 8 color-1 specks
+      ((3,8)(4,5)(5,9)(6,3)(6,7)(7,0)(8,5)(8,9)) are `.....` strips on the EDGES of WALL macro-cells
+      (not steppable floor) — likely portal markers/endpoints (full portal map NOT yet built). This is L4's
+      new-mechanic-per-level addition (vs L1 1-toggle / L2 1-cycle / L3 2-axis).
+    evidence: ["ara-ls20/trace/_l4_raw.md (L4 clean characterization)"]
+    status: resolved
+    also_depends_on: [N37, N38]
+
+  - id: N43
+    type: experiment
+    title: "L4 is a TWO-AXIS lock; COLOUR axis SOLVED (selector (6,6), same 4-state cycle as L3)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T15:00"
+    result: >
+      L4 target (key-box (1,1) @, rows6-8 cols10-12): pattern 111/001/101, colour @(9). Panel starts
+      111/111/111 colour e($). So L4 = two-axis lock (pattern + colour), like L3 (confirms C11 extends).
+      The COLOUR axis is solved: the colour selector at macro (6,6) (compound glyph @$$/@ %/NN%) cycles
+      the panel FILL COLOUR through the SAME 4-state cycle as L3 (H06-analogue): N(c)->@(9)->$(e)->%(8)->N;
+      stepped it live through every state and set colour to @ (the target). Colour persists on step-off.
+      So the recurring 4-state cycle motif (H06 for pattern; the colour cycle) re-appears a 4th time —
+      strengthens C10's must-sample-first discipline.
+    evidence: ["ara-ls20/trace/_l4_raw.md (colour-selector sampling)"]
+    status: resolved
+    also_depends_on: [N42]
+
+  - id: N44
+    type: dead_end
+    title: "L4 PATTERN-axis control NOT located → L4 UNSOLVED this turn"
+    provenance: ai-executed
+    timestamp: "2026-06-29T15:10"
+    hypothesis: >
+      The L4 pattern axis (need panel 111/111/111 -> 111/001/101) is set by a steppable switch like L1/L3
+      — likely one of the 8 color-1 specks or a separate switch glyph.
+    failure_mode: >
+      The 8 color-1 specks are `.....` strips on WALL-cell edges, NOT steppable floor switches; a color-0
+      cluster at (6,4) sits INSIDE a wall macro (R6C4=#), also not steppable; and riding a portal traversal
+      ((4,7)+DOWN) did NOT change the panel pattern. A whole-board glyph scan found only the colour selector
+      (6,6), two X-boxes, the key-box, and the wall-edge specks — no standalone pattern switch on open floor.
+      So the pattern-axis source is UNLOCATED; the lock was never aligned and no delivery into key-box (1,1)
+      was attempted. L4 = UNSOLVED.
+    lesson: >
+      Open hypotheses for next session: (a) a pattern switch reachable ONLY by riding a specific portal into
+      an otherwise-walled pocket; (b) a speck steppable from a side not yet tried; (c) the pattern is set by
+      a portal-traversal pattern or a delivery-coupled mechanism. First fully MAP the portal network
+      (each portal cell -> destination), then look for controls in portal-only-reachable regions. Keep
+      budget>0 (never overdraft) and route around portals; only 2 single-use X-boxes per life.
+    status: open
+    also_depends_on: [N42, N43]
+
+  - id: N45
+    type: decision
+    title: "Consult the ARA as a WORLD MODEL (wm-retrieve + wm-predict) to direct the L4 pattern-control hunt"
+    provenance: ai-suggested
+    timestamp: "2026-06-29T16:30"
+    choice: >
+      Before blind-sweeping for L4's unlocated pattern control, queried the accumulated ARA via the
+      wm-retrieve and wm-predict skills (ara_dir=ara-ls20/). The WM surfaced the decisive precedent N23/R-L3
+      (the L3 PATTERN switch was ITSELF a faint colour-0/1 floor speck operable only from ONE specific side)
+      and flagged N44's "specks not steppable" as an UNDER-SAMPLED VISUAL verdict (a C10 violation). The
+      Predictor returned: pattern control is most likely (a) a speck steppable from an untried side, else
+      (b) in a portal-only-reachable pocket; confidence medium; concrete probe = step each speck from its
+      open-floor side and read the panel.
+    alternatives: ["blind board-sweep for a pattern switch (what N44 already exhausted visually)", "immediately re-climb for fresh lives without a directed hypothesis"]
+    evidence: ["ara-ls20/trace/_l4_v2_raw.md (WM QUERY section)", "ara-ls20/logic/claims.md#C10", "ara-ls20/trace:N23"]
+    status: resolved
+    also_depends_on: [N44]
+
+  - id: N46
+    type: experiment
+    title: "WM-DIRECTED L4 probing: panel decoder correction, portals-are-genuine, glyph inventory exhausted"
+    provenance: ai-executed
+    timestamp: "2026-06-29T16:45"
+    result: >
+      Acting on N45's WM hypotheses on the live L4 (levels_completed=3, %%=8, budget 35→10), three grounded results:
+      (1) PANEL DECODER CORRECTION: scratchpad/step.py MIS-READS the L4 panel (reports 111/111/111). Exact
+      color-e ($) cell decode (rows55-60, 3x3 of 2x2 cells at cols{3-4,5-6,7-8}) = PANEL 010/110/011 colour e.
+      Wrote scratchpad/panel.py (correct reader). Target re-confirmed from key-box (1,1) @ (1x1 cells) =
+      111/001/101 colour @. Baseline 010/110/011 is OUTSIDE the H06 4-state cycle, so L4's pattern mechanic
+      may differ from L1/L2/L3.
+      (2) PORTALS ARE GENUINE (overturns the _l4_raw "all warps were budget deaths"): reproduced many warps
+      at budget>0 with %% UNCHANGED (=8 throughout) — not deaths. Mapped 7 direction-specific portal edges:
+      (4,7)+RIGHT->(9,8); (4,7)+LEFT->(4,10); (4,7)+DOWN->(1,7); (9,8)+UP->(8,6); (8,7)+RIGHT->(8,6);
+      (8,3)+UP->(9,3); (3,6)+DOWN->(4,10) [(3,6)+RIGHT pass-through is CLEAN]. (4,7) is a 3-way portal HUB
+      (only UP non-portal). The macro (8-9,7-9) region (incl. speck (8,9)) appears reachable ONLY via the
+      (4,7)+RIGHT portal (a portal-only-reachable POCKET = WM branch b is LIVE). pathfind.py is portal-blind
+      so long plans desync; portals confirmed NOT to change the pattern (re-tested vs the CORRECT baseline).
+      (3) SPECK NEGATIVE: speck (3,8) stepped from the LEFT = WALL NO-OP (block didn't move, panel unchanged).
+      Other sides/specks untested (navigation/budget).
+      (4) WHOLE-BOARD GLYPH INVENTORY EXHAUSTED: the only non-wall/floor/frame glyphs are block, key-box @,
+      the 2 X-boxes, panel $, lives %, the 8 color-1 specks (40 cells), and 5 color-0 cells inside the
+      selector/(6,4) walls. NO standalone pattern-switch glyph on open floor. X-box (10,6) reconfirmed as a
+      pure refill (panel unchanged). L4 STILL UNSOLVED; ended budget 10, block@(5,10), %%=8 (no death this turn).
+    evidence: ["ara-ls20/trace/_l4_v2_raw.md", "harness/scratchpad/panel.py"]
+    status: resolved
+    also_depends_on: [N42, N43, N44, N45]
+
+  - id: N47
+    type: dead_end
+    title: "L4 pattern-control hunt NARROWED to 3 candidates; could not reach the colour selector to test double-duty"
+    provenance: ai-executed
+    timestamp: "2026-06-29T16:55"
+    hypothesis: >
+      The L4 pattern control is (per the exhausted glyph inventory + WM) one of: (a) a color-1 speck
+      steppable from its strip-facing side; (b) a control in the (4,7)-portal-only pocket; (c) the colour
+      selector (6,6) doing DOUBLE duty (colour + pattern), testable by stepping it and reading panel.py.
+    failure_mode: >
+      The colour selector (6,6) is reachable ONLY from (5,6)+DOWN, and (5,6)/(5,7) sit behind the (4,7)
+      portal hub; every floor-lattice route pathfind proposed desynced on a portal, and the budget ran down
+      (35→10) before a portal-free route to (5,6) was found. So branch (c) — the single cheapest decisive
+      test — was NOT executed. Branch (a) has one negative (speck (3,8) from LEFT); branch (b)'s pocket was
+      entered once ((9,8)) but its interior cells ((8,8)(8,9)(9,9)) were not catalogued for a control.
+    lesson: >
+      Next session, in priority order: (1) build a PORTAL-AWARE BFS (block discovered (cell,dir) portal edges
+      as walls/teleports) so navigation stops desyncing — this is the true blocker, not the lock. (2) Use it
+      to reach the colour selector (6,6) and step it while reading panel.py before/after — if pattern changes,
+      the selector is the pattern control too (L4 = single dual-axis control). (3) Else ride (4,7)+RIGHT into
+      the pocket and catalogue (8,8)(8,9)(9,9) + probe speck (8,9) from its open side. (4) Else probe each
+      remaining speck from its STRIP-facing side. Use the CORRECT panel reader (scratchpad/panel.py), not
+      step.py, for all L4 panel reads. Keep budget>0; %%=8 = 2 lives.
+    status: open
+    also_depends_on: [N46]
+
+  - id: N48
+    type: decision
+    title: "CONTRADICTION (deferred): L4 panel baseline — O16 '111/111/111' vs O17 '010/110/011'"
+    provenance: ai-executed
+    timestamp: "2026-06-29T16:58"
+    choice: >
+      O16 (turn 5) recorded the L4 panel baseline as 111/111/111 (from scratchpad/step.py). O17 (turn 6)
+      decodes the raw panel glyphs as 010/110/011 colour e and attributes O16's read to a step.py panel-decoder
+      bug. Both are STAGED observations (append-only), so per the contradiction rule neither is overwritten:
+      flagged both (CONFLICT comments on O16 and O17) and recording this unresolved decision node. The
+      010/110/011 read is the better-grounded one (exact per-cell coordinate decode + a dedicated reader
+      scratchpad/panel.py), and the TARGET (111/001/101 colour @) and colour-axis-solved findings are
+      unaffected. Adjudication = next session: confirm 010/110/011 against panel.py on a fresh frame and,
+      if it holds, fold the correction into the eventual R-L4 / L4 layout record. Until then use panel.py for
+      L4 panel reads, not step.py.
+    alternatives: ["silently overwrite O16's baseline (forbidden by the contradiction rule)", "trust step.py's 111/111/111 (rejected — raw-coordinate decode contradicts it)"]
+    evidence: ["ara-ls20/staging/observations.yaml#O16", "ara-ls20/staging/observations.yaml#O17", "harness/scratchpad/panel.py", "ara-ls20/trace/_l4_v2_raw.md"]
+    status: resolved   # RESOLVED 2026-06-29 (#7, N50): the L4 win exercised baseline 010/110/011 → target 111/001/101; O17/panel.py correct, step.py's 111/111/111 = decoder bug.
+    also_depends_on: [N46]
+
+  - id: N49
+    type: experiment
+    title: "L4 SOLVED (3→4): pattern control = the (6,4) speck from the SOUTH; colour-selector double-duty REFUTED"
+    provenance: ai-executed
+    timestamp: "2026-06-29T18:30"
+    description: >
+      Turn 7. After a fresh harness restart + clean re-climb L1→L2→L3 (recipes R-L1/R-L2/R-L3, no RESET),
+      reached L4 with %%=12, budget 42. Executed the turn-6 priority plan with a PORTAL-AWARE BFS.
+    result: >
+      L4 CLEARED, levels_completed 3→4, no death (%% stayed 12). Two findings settle the open L4 threads:
+      (1) DECISIVE TEST — colour-selector double-duty (branch c) REFUTED: navigated portal-aware to the
+      colour selector (6,6) and sampled it 6× (C10, step off UP to (5,6) and back DOWN); panel.py showed the
+      COLOUR cycling %→N→@→$ (8→c→9→e, 4-state) while the PATTERN stayed 010/110/011 EVERY sample. The selector
+      is colour-ONLY. (2) PATTERN AXIS FOUND (branch a vindicated): the color-0 floor speck at macro (6,4),
+      stepped from the SOUTH ((7,4)+UP→(6,4)) — the untried side the WM predicted (O19/N45) — drove the panel
+      010/110/011 → 111/001/101 in ONE step-on = exactly the target pattern. O16/N44's "(6,4) inside a wall /
+      not steppable" was an under-sampled VISUAL verdict (a C10 violation), exactly as the WM flagged.
+      Alignment PERSISTS on step-off + through navigation (like L3, C11). Colour was already @ from the
+      selector sampling, so both axes aligned. DELIVERY: routed portal-aware to (1,3) (right of the key-box at
+      macro (1,1)); 2-push LEFT (A3 wedge into (1,2), A3 enter (1,1)) = WIN (H09). The colour-cycle re-appears
+      a 4th time (strengthens C10 must-sample-first). PORTAL-AWARE BFS (scratchpad/pathfind_portal.py) +
+      consolidated driver (scratchpad/drive.py, O11 detector + H10 re-pathfind + portal table gated per level)
+      were the enablers; the O18 portal map was confirmed but PARTIAL — 3 more L4 edges found live
+      ((4,9)+A3→(9,8), (5,6)+A1→(4,10), (6,8)+A1→(5,6)); drive.py's re-pathfind-each-leg absorbed the gaps.
+    evidence: ["harness/runs/ls20-9607627b_ccrelay.jsonl (current session, turn 167 levels 3→4)", "ara-ls20/trace/_l4plus_raw.md", "harness/scratchpad/pathfind_portal.py", "harness/scratchpad/drive.py", "harness/scratchpad/panel.py"]
+    status: resolved
+    also_depends_on: [N45, N46, N47, N48]
+
+  - id: N50
+    type: decision
+    title: "N48 RESOLVED: L4 panel baseline = 010/110/011 colour-e (panel.py/O17 correct; step.py 111/111/111 was a decoder bug)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T18:32"
+    choice: >
+      The N48 contradiction (O16 '111/111/111' vs O17 '010/110/011') is now SETTLED in favour of O17/panel.py:
+      on a fresh L4 frame this turn, panel.py read 010/110/011 colour-e at baseline, and stepping the (6,4)
+      speck drove it to the target 111/001/101 — a transform that only makes sense from the 010/110/011 baseline.
+      O16's 111/111/111 is confirmed a scratchpad/step.py panel-decoder bug. step.py's panel field stays
+      UNRELIABLE on L4; panel.py is canonical. N48 status → resolved.
+    alternatives: ["leave N48 unresolved (rejected — the L4 win exercised the baseline→target transform, resolving it empirically)"]
+    evidence: ["harness/scratchpad/panel.py", "ara-ls20/staging/observations.yaml#O17", "ara-ls20/trace/_l4plus_raw.md", "N49"]
+    status: resolved
+    also_depends_on: [N48, N49]
+
+  - id: N51
+    type: experiment
+    title: "L5 SOLVED (levels_completed 4→5): portal-pocket colour selector + TWO-SPECK composed pattern lock (word PPQQ) + south-arm delivery"
+    provenance: ai-executed
+    timestamp: "2026-06-29T20:10"
+    result: >
+      L5 cleared on the LAST life (%%=4) after re-climbing L1→L4 by replay. Same two-axis lock (pattern+colour)
+      over a portal maze (C10/C11/C13) with TWO new wrinkles. (A) POCKET ENTRANCE: the colour selector (5,5) sat
+      in a portal-only pocket = EXACTLY the 4 unreachable floor cells {(4,6),(5,5),(5,6),(5,7)}; all 4 natural
+      floor entrances are portals; the entrance is (2,6)+A1(UP)->(5,6) (a warp landing inside). The (4,7) trap
+      hub was REFUTED as the gate (its RIGHT/UP are plain floor; only LEFT/DOWN portal). Inside, (5,6)<->(5,5)
+      oscillator sets colour via the SAME 4-state cycle N→@→$→% (5th occurrence); exit (5,6)+A1->(4,8). (B)
+      PATTERN axis = TWO composing specks: (2,3)=transform P (period-6) and (7,3)=transform Q (a FIXED 90-deg
+      grid ROTATION, perm [6,3,0,7,4,1,8,5,2]). Neither speck's own orbit contains the target; an offline BFS
+      over {P,Q} gives the FORCED word PPQQ: 010/110/011 --PP--> 110/011/101 --QQ--> 101/110/011 (target), VERIFIED
+      live. DELIVERY: key-box = a PLUS at (0,10)/(1,9)/(1,10)/(1,11)/(2,10); WEST arm (1,9) is a WALL (push from
+      (1,8) = no-op); the enterable arm is the SOUTH (2,10) — deliver by A1(UP) twice from (3,10): wedge (2,10),
+      enter center (1,10) → full redraw, levels_completed 4→5, advanced to L6. Hazards learned: stepping a speck
+      IN PASSING re-applies its transform (route speck-free after aligning); and %%=4 is the LAST life (overdraft
+      = GAME_OVER, not respawn). Alignment PERSISTED across portals + navigation (strong C11 confirmation).
+    evidence: ["harness/runs (live, turn 361 levels 4→5)", "ara-ls20/trace/_l5plus_raw.md", "harness/scratchpad/drive.py", "harness/scratchpad/l5_pocket.py", "harness/scratchpad/portal_hunt.py", "harness/scratchpad/panel.py"]
+    status: resolved
+    also_depends_on: [N49, N52, N53]
+
+  - id: N52
+    type: dead_end
+    title: "L5: three failed deliveries on BUDGET/LIVES discipline (lock aligned each time) before the win"
+    provenance: ai-executed
+    timestamp: "2026-06-29T19:55"
+    hypothesis: >
+      With both axes aligned, the block can be carried to the delivery cell and pushed in within the available
+      budget/lives.
+    failure_mode: >
+      Three separate aligned attempts failed at delivery — NOT on the lock, on resource management: (1) the
+      pocket-entrance HUNT itself burned a life + X-boxes, then an overdraft at %%=4 = GAME_OVER (corrected the
+      lives reading: 4→0 is terminal, no respawn); (2)/(3) the block stranded at budget 0 away from any
+      UNCONSUMED X-box (the only remaining X-box required crossing speck (2,3), which re-toggles the pattern and
+      breaks alignment), forcing an overdraft that reset the alignment. X-boxes are single-use per life (reset on
+      respawn). drive.py's refill logic also mis-handled consumed/unreachable X-boxes and stranded the block.
+    lesson: >
+      The decisive constraints for the L5 win: (i) PPQQ order is FORCED (P before Q); (ii) refill at the (9,2)
+      X-box AFTER QQ (not before) so a FULL bar covers the ~14-step delivery corridor + 2 pushes (~32 budget);
+      (iii) avoid re-crossing specks once aligned; (iv) at %%=4 NEVER plain-overdraft (it is GAME_OVER). The
+      lock was the easy part; the budget/lives/X-box logistics over a long portal maze were the real difficulty.
+    status: resolved
+    also_depends_on: [N51]
+
+  - id: N53
+    type: decision
+    title: "WM consulted twice for the L5 pocket-entrance + lock; directionally helpful, not decisive (thesis data point)"
+    provenance: ai-suggested
+    timestamp: "2026-06-29T19:00"
+    choice: >
+      Consulted the ARA as a world model (wm-predict over ara-ls20/) twice this turn for the L5 blocker. The WM
+      framed the selector as in a portal-only pocket (L4 analogy) and pointed the entrance hunt at the north side
+      / endpoint strips, and correctly predicted (2,3) IS a pattern control. MIXED: its specific bets — the (4,7)
+      hub-RIGHT as the gate, and a SINGLE-PRESS speck — were REFUTED (the real entrance is (2,6)+UP; the pattern
+      needed the 2-speck composed word PPQQ). The decisive mechanics (entrance cell, Q=90-deg-rotation insight,
+      the PPQQ BFS) came from LIVE probing + an OFFLINE BFS, not the WM. Net: a MODEST-positive data point for the
+      "ARA-as-world-model directs play" thesis — useful navigation framing, not a decisive lock solution (unlike
+      L4 where the WM's branch was exactly the win, O19/N49).
+    alternatives: ["pure live probing with no WM consult (the WM did sharpen the pocket framing, so consulting was net-positive)"]
+    evidence: ["ara-ls20/trace/_l5plus_raw.md", "N51"]
+    status: resolved
+    also_depends_on: [N51]
+
+  - id: N54
+    type: question
+    title: "L6 entered (UNSOLVED): same two-axis family but TWO key-boxes/targets + rotation-type specks"
+    provenance: ai-executed
+    timestamp: "2026-06-29T20:15"
+    description: >
+      L6 reached (levels_completed 5, %%=12, budget 42, block start (10,4)). Recon: panel baseline 110/011/101
+      colour-e; colour selector (compound 9/e/8/c) at (6,4); pattern speck candidates (2,2)[4x color-0] and
+      (8,6)[3x color-0, sampled = a ROTATION-type pattern control]; X-boxes (1,1),(1,7),(9,1). NEW wrinkle = TWO
+      key-boxes with DISTINCT targets: upper = pattern 101/110/011 colour-% (8), lower = pattern 101/001/111
+      colour-@ (9) — possibly a 2-delivery level. Open: decode whether both must be delivered, sample selector
+      (6,4) + each speck's transform, BFS the pattern word(s), and check if L6 has portals (drive.py is
+      portal-blind on levels==5 — needs a _PORTALS_L6 table if so). No portals confirmed yet. STAGED, not solved.
+    status: open
+    also_depends_on: [N51]
+
+  - id: N55
+    type: experiment
+    title: "L6 controls sampled: colour selector cycle mapped, rotation speck CONFIRMED = L5's Q (90° CW rotation)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T21:30"
+    description: >
+      Sampled the L6 lock controls live (block start (10,4), panel baseline 110/011/101 colour-e). (1) COLOUR
+      SELECTOR (rendered at (5,5), drifts to (4,4) in some frames): cycles fill colour %→N→@→$ (8→c→9→e), period
+      4, colour-only (pattern untouched) — a 5th occurrence of the recurring 4-state colour cycle (C10/C11). From
+      baseline-e: 1 press→% (UPPER box colour), 3→@ (LOWER box colour). (2) ROTATION SPECK (8,4): observed orbit
+      110/011/101 → 101/011/110 → 101/110/011 → 011/110/101 → (back). An OFFLINE check showed L5's Q perm
+      [6,3,0,7,4,1,8,5,2] (90° CW grid rotation) reproduces this orbit EXACTLY — so the L6 rotation speck IS the
+      same Q as L5's (7,3). A 2nd independent rotation-control instance (strong C14 transfer). LIVE-VERIFIED: from
+      baseline, 1 clean application (A1-on, A2-off, ≥3 NEUTRAL settle moves, then read — the protocol that defeats
+      the ~1-turn on-cell read LAG) → 101/011/110 = Q^1. KEY UNLOCK: the UPPER box pattern target 101/110/011 = Q^2,
+      reachable by the rotation speck ALONE (2 presses, NO BFS, NO 2nd speck). The LOWER box target 101/001/111 is
+      NOT in Q's orbit → needs the pure speck (2,4) [transform UNSAMPLED] composed with Q (an L5-style word).
+    result: "selector cycle + speck=Q both confirmed live; UPPER pattern = Q^2; both key-box targets decoded from raw glyphs (upper 101/110/011 colour-%, lower 101/001/111 colour-@)"
+    evidence: ["ara-ls20/trace/_l6plus_raw.md", "ara-ls20/staging/observations.yaml#O22"]
+    status: resolved
+    also_depends_on: [N54, N51]
+
+  - id: N56
+    type: decision
+    title: "WM consulted on L6 rotation-speck identity + two-box protocol; DECISIVE on the speck=Q identity (thesis data point)"
+    provenance: ai-suggested
+    timestamp: "2026-06-29T21:35"
+    choice: >
+      Consulted the ARA as a world model (wm-predict over ara-ls20/) at the last-life L6 blocker. DECISIVE on the
+      rotation-speck identity: applying L5's Q prior to the observed L6 orbit resolved an 8-candidate permutation
+      ambiguity to a unique answer (speck = Q, 90° CW rotation) and revealed UPPER pattern = Q^2 — a clean win
+      path for the upper box. This is a STRONG-positive thesis point (like L4/O19/N49, where the WM branch was the
+      win), in contrast to L5/N53 (modest). On the two-box DELIVERY protocol the WM had NO ARA precedent (L6 is the
+      first two-box level) and extrapolated (deliver each box separately, panel resets between, do upper first) —
+      flagged medium-confidence / speculative; UNVERIFIED this session (budget-trapped before delivery).
+    alternatives: ["pure offline BFS without the L5-Q prior (would have left 8 candidate perms unresolved without more costly live samples)"]
+    evidence: ["ara-ls20/trace/_l6plus_raw.md", "N55"]
+    status: resolved
+    also_depends_on: [N55]
+
+  - id: N57
+    type: dead_end
+    title: "L6 budget/lives co-depletion corner — forced GAME_OVER + full restart (logistics, not lock)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T21:40"
+    description: >
+      After mapping the controls, the run reached an UNRECOVERABLE corner: block (8,1), budget 3 (L6 rate = 1/move,
+      measured 4→3), %%=4 (LAST life). Both surviving X-boxes ((1,1),(1,7)) were 7 moves away; the (9,1) X-box was
+      already consumed (single-use, H08). At %%=4 an overdraft is TERMINAL GAME_OVER (C12 — no respawn), so no
+      death-recovery was available and no refill was reachable within budget.
+    failure_mode: >
+      Spent 2 lives EARLY on careless overdraft deaths during control sampling (the on-cell read LAG made the
+      rotation speck expensive to sample, and I coasted budget to 0 twice away from any X-box), dropping %% 12→8→4.
+      Then consumed the (9,1) X-box and drifted budget down far from the only 2 surviving (top-row) X-boxes.
+      Compounded by being at the last life — the exact failure R-L5/N52 warned about (budget/lives logistics over a
+      large maze are the real difficulty, not the lock).
+    lesson: >
+      (i) On a level whose X-boxes are spatially clustered (L6: two at the TOP + one bottom), plan the whole route
+      so no leg can run the bar toward 0 without a reachable UNCONSUMED X-box — especially before descending to the
+      bottom controls/delivery corridor. (ii) Sample the read-LAGGED rotation speck with the cheap neutral-settle
+      protocol but REFILL between sampling bursts; never sample lives down to %%=4. (iii) At %%=4, treat the run as
+      zero-margin: every move must keep a guaranteed refill path. The L6 LOCK is essentially solved on paper (UPPER =
+      Q^2 + 1 selector press; LOWER pending one P sample + BFS); only logistics defeated this run. Re-attack from a
+      fresh game with the banked plan and a refill-first route.
+    status: resolved
+    also_depends_on: [N55, N57]
+
+  - id: N58
+    type: discovery
+    title: "L6 lock controls are MOBILE — they patrol/oscillate one step per displacement move (new mechanic)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T22:30"
+    description: >
+      L6 introduces a genuinely new mechanic vs L1-L5's stationary controls: the lock controls MOVE. Tracked over
+      consecutive turns — the ROTATION speck (=Q, 90° CW rotation) patrols ROW 8 cols 2↔6 (triangle bounce), the
+      PURE speck patrols ROW 2 cols 2↔6, and the COLOUR SELECTOR roams rows 4-6 cols 3-5. Each advances ONE step per
+      the player's DISPLACEMENT move (a wall-bounce no-op consumes a turn+budget but does NOT advance the specks;
+      with no action the specks are frozen). Consequence: catching a control is a PURSUIT/timing problem, and a
+      hard PARITY law holds — on row 9, block_col + speck_col is invariant ODD, so the block can NEVER share a
+      column with the row-8 speck from row 9 (the naive "stand below, press up" catch is impossible). The WORKING
+      catch: step the block ONTO the speck's row (A1 onto row 8) and cross it horizontally — the catch fires as the
+      moving speck and block coincide/cross. The selector (2D roam) has no parity trap and is caught by simple
+      pursuit (step toward its cell). This explains all the earlier "drift"/"stuck"/"missed press" confusion.
+    result: "mobile-control catch methods established (row-cross for specks, pursuit for selector); Q-transform unchanged (+1 per catch)"
+    evidence: ["ara-ls20/trace/_l6plus_raw.md"]
+    status: resolved
+    also_depends_on: [N55]
+
+  - id: N59
+    type: experiment
+    title: "L6 UPPER box delivered (frame dissolves) via mobile-catch alignment + portal-pocket route; level not yet won (two-box)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T23:10"
+    description: >
+      Achieved full UPPER-box alignment live: pattern Q² (101/110/011, by catching the row-8 rotation speck) +
+      colour % (8, by pursuing the selector), both persisting through navigation (avoid speck rows 2,8) and an
+      X-box refill. The box column (cols 9-10) is a PORTAL-ISOLATED pocket (walls on col 9; every top approach
+      portals back to (4,7)); the only entrance is the warp (2,9)+A1 → (5,9). Routed there, warped in, and pushed
+      the aligned block into the upper key-box (7,10): the box FRAME DISSOLVED, (7,10) became floor, color-9 marked
+      it = the upper box DELIVERED. BUT levels_completed stayed 5: the LOWER box (10,10, target 101/001/111
+      colour-@) must ALSO be delivered. CRITICAL: an overdraft death RESTORED both boxes (the delivered upper box
+      came back) → BOTH deliveries must occur within ONE LIFE (refills ok, a death is not). The LOWER pattern is
+      NOT in Q's orbit → it needs the pure speck P composed with Q (an L5-style word, C14); P was partially sampled
+      (the lower target 101/001/111 does appear in P's confounded orbit, so the lower lock is solvable) but P's exact
+      transform is not yet cleanly pinned.
+    result: "UPPER box delivered (proven); L6 win blocked on: pin P's transform → BFS lower word → one-life double-delivery"
+    evidence: ["ara-ls20/trace/_l6plus_raw.md", "N58", "N55"]
+    status: open
+    also_depends_on: [N58, N55, N54]
+
+  - id: N60
+    type: discovery
+    title: "RESET on L6 refreshes the LEVEL's resources (%%→12, budget→42, X-boxes restored) WITHOUT dropping levels_completed"
+    provenance: ai-executed
+    timestamp: "2026-06-29T21:00"
+    description: >
+      Contrary to O14/C02's 'RESET restarts the WHOLE game to L1', issuing `play.py send RESET` while on L6
+      (levels_completed=5) RESTARTED ONLY THE CURRENT LEVEL: block back to L6 start (10,4), %% restored to 12,
+      budget to 42, all X-boxes restored, panel reset to baseline — and levels_completed STAYED 5 (L1-L5 progress
+      preserved, no replay needed). Used repeatedly this session as a clean full-resource refresh between
+      experiments. (Open question whether this differs by context from the earlier observed whole-game RESET, or
+      the earlier N41 reading was itself a desync; flag for reconciliation — do NOT silently overwrite C02.)
+    result: "RESET = per-level resource refresh on L6 (huge for iteration); contradicts the earlier whole-game-reset reading (N41/C02) — needs reconciliation"
+    evidence: ["ara-ls20/trace/_l6plus_raw.md"]
+    status: open
+    also_depends_on: [N41]
+
+  - id: N61
+    type: experiment
+    title: "Phase 1: replay L1→L4 clean + L5 re-cleared and CAPTURED to replay/L5.txt"
+    provenance: ai-executed
+    timestamp: "2026-06-29T22:10"
+    result: >
+      replay/replay.py L1 L2 L3 L4 = all four CLEARED clean (levels_completed 0→4), turn-advancing throughout
+      (harness alive). L5 had NO replay file; re-cleared via R-L5 and captured the verbatim 56-action winning
+      sequence to replay/L5.txt. L5 LOGISTICS confirmed hard AGAIN (N52): two controlled overdraft deaths during
+      the QQ phase (%% 12→8→4) before a clean run on the LAST life. Two sharpened lessons: (a) do COLOUR FIRST
+      (the pocket leg never needs the row-2/row-7 specks) then set pattern PP@(2,3)+QQ@(7,3) LAST, routing
+      speck-avoiding — routing to X-boxes/pocket through a speck re-applies its transform and corrupts the pattern;
+      (b) READ-LAG on the rotation speck makes mid-sequence reads overshoot — count APPLICATIONS (one on→off = one Q),
+      don't re-read between steps, verify only at the end. L5.txt is valid from the fresh L5 start (recorded from the
+      death-respawn start cell (8,9) = the fresh-entry cell).
+    evidence: ["harness/replay/L5.txt", "harness/replay/replay.py", "ara-ls20/trace/_l6plus_raw.md"]
+    status: resolved
+    also_depends_on: [N51, N52]
+
+  - id: N62
+    type: experiment
+    title: "L6 UPPER box DELIVERED live + the two-box delivery PROTOCOL cracked (panel persists; UPPER-before-LOWER forced; col-10 unblocks)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T23:30"
+    result: >
+      From a fresh %%=8 L6 life: aligned UPPER (pattern Q²=101/110/011 + colour % — NOTE the selector pursuit on
+      rows 4-6 crosses the rotation-speck row and corrupts Q²→Q¹, so re-set Q² AFTER colour), refilled (1,7)
+      preserving alignment (avoid_rows=(2,8)), entered the pocket (2,9)+A1→(5,9)→(5,10)→(6,10), pushed A2 DOWN:
+      (6,10)→(7,10)→(8,10). The UPPER box (7,10) DISSOLVED to plain floor (color-3); levels stayed 5. THREE
+      empirical resolutions of the previously-speculative two-box protocol: (1) the shared PANEL PERSISTS after the
+      partial delivery (stayed 101/110/011 colour-%; only a win-redraw or a death resets it) — confirms the
+      WM-predict answer; (2) delivering UPPER UNBLOCKS COL-10 — with (7,10) dissolved, BFS from (8,10) reaches 68
+      cells incl. (9,10) [the LOWER-box approach] and the pocket exit, whereas (8,10)/(9,10) were portal-isolated
+      BEFORE; (3) therefore DELIVERY ORDER IS FORCED: UPPER must be delivered before LOWER (the LOWER box (10,10) is
+      reached only from (9,10)+A2, and (9,10) is only reachable once (7,10) dissolves). Then set colour @ live
+      (selector cycle %→N→@, colour-only, pattern untouched). LOWER STILL unsolved — forced budget-corner death
+      pending (stranded budget 0 at (2,2), only (9,1) X-box left 8 moves away, %% 8→4).
+    evidence: ["ara-ls20/trace/_l6plus_raw.md", "harness/scratchpad/l6solve.py", "N59", "N15"]
+    status: resolved
+    also_depends_on: [N59, N58]
+
+  - id: N63
+    type: experiment
+    title: "Pure speck P — CLEAN catch method found (oscillate (2,1)↔(2,2)); P partially mapped, period-6 NON-permutation, LOWER target in its orbit"
+    provenance: ai-executed
+    timestamp: "2026-06-29T23:50"
+    result: >
+      Defeated the mobility+read-lag confound on the pure row-2 speck P: park the block oscillating (2,1)↔(2,2)
+      [A4 right at (2,1) / A3 left at (2,2)]; each time P (patrolling row 2 cols 2-6, triangle) walks INTO (2,2)
+      while the block sits there the catch fires = ONE P application (panel changes, `pure` reads None that step).
+      Refill at (1,1) (directly above row 2) keeps it funded. Observed clean P transition chain
+      010/101/011→010/111/100→101/001/111→101/011/110→100/111/100 (+ a contaminated 110/011/010→101/100/111). So the
+      LOWER target 101/001/111 IS a P-orbit state (reachable as the P-successor of 010/111/100); P is NOT a
+      position-permutation (on-bit count varies 5,5,6,6,5) — a genuine period-6 state map, not a geometry. OPEN: P's
+      full closed 6-cycle (one transition still missing) for an exact offline BFS catch-count; practical workaround =
+      oscillate-catch live and STOP the instant the panel reads the target.
+    evidence: ["ara-ls20/trace/_l6plus_raw.md", "harness/scratchpad/l6.py"]
+    status: open
+    also_depends_on: [N62, N55]
+
+  - id: N64
+    type: discovery
+    title: "Pure speck P has MULTIPLE disjoint period-6 orbits → LOWER pattern NEEDS a {P,Q} word (Q bridges orbits), not a single P-catch"
+    provenance: ai-executed
+    timestamp: "2026-06-30T00:10"
+    description: >
+      Live-mapped TWO disjoint P-cycles on L6: ORBIT A (contains the LOWER target) 010/101/011→010/111/100→
+      101/001/111→101/011/110→100/111/100→(…); ORBIT B 111/101/101→010/101/110→110/011/010→101/100/111→(…). The
+      post-UPPER panel 101/110/011 lands in ORBIT B under P, NOT the target orbit A — so pure P-catching from it can
+      never reach 101/001/111. Reaching the LOWER target therefore requires a {P,Q} WORD: apply Q (rotation speck) to
+      bridge into orbit A, then P-catches to the target (exactly the C14 composed-controls mechanic). This is
+      budget-heavier than a single-orbit P-catch and is the proximate cause of the one-life budget overrun.
+    result: "LOWER pattern needs a {P,Q} word (multiple P-orbits, Q bridges); precompute it OFFLINE next session before playing"
+    evidence: ["ara-ls20/trace/_l6plus_raw.md", "logic/claims.md#C14"]
+    status: open
+    also_depends_on: [C14, N63, N62]
+
+  - id: N65
+    type: dead_end
+    title: "L6 one-life double-delivery LOST to budget on the LOWER realign (last life, %%=4) → GAME_OVER"
+    provenance: ai-executed
+    timestamp: "2026-06-30T00:20"
+    hypothesis: "Align+deliver UPPER, then realign+deliver LOWER, all in one life with the 3 single-use X-boxes."
+    failure_mode: >
+      Delivered UPPER cleanly on the last life (%%=4); but the LOWER realign turned out to need a {P,Q} word (N64),
+      and the mid-run exploratory P-mapping (to discover that) consumed the budget the LOWER delivery needed. Burned
+      (1,1)+(1,7) on UPPER-align + colour-@ + P-exploration, leaving only (9,1) (8 moves away) unreachable at budget 6.
+      Stranded → forced overdraft at %%=4 → terminal GAME_OVER (C12), levels stayed 5. Same N57-class logistics wall.
+    lesson: >
+      Precompute the LOWER {P,Q} word OFFLINE before the live run (map P's two orbits to closure first), so the one-life
+      execution spends ZERO budget exploring. Sequence: UPPER align(colour-first,Q²-last)→deliver via pocket→Q-bridge+
+      P-word to LOWER target + colour @→route down the now-open col-10→(9,10)+A2,A2 into (10,10); save the (9,1) X-box
+      for that final col-10 leg. The lock + delivery geometry are fully solved; only the precomputed-word + budget
+      discipline remain.
+    evidence: ["ara-ls20/trace/_l6plus_raw.md", "N62", "N64", "N57"]
+    status: resolved
+    also_depends_on: [N62, N64, N57, C15]
+  - id: N66
+    type: experiment
+    title: "L6 SOLVED — two-box one-life double-delivery (levels 5->6), zero deaths"
+    provenance: ai-executed
+    timestamp: "2026-06-29T23:55"
+    result: >
+      L6 CLEARED, levels_completed 5->6, lives stayed 12 (ZERO deaths). Executed the precomputed route:
+      UPPER (pattern Q^2 + colour % via selector pursuit + re-catch Q to undo selector corruption; refill (1,7);
+      deliver via pocket warp (2,9)+A1->(5,9)->(5,10)->(6,10)->A2,A2; box (7,10) DISSOLVES, panel persists at
+      101/110/011 colour-%, col-10 unblocks). LOWER (colour @ FIRST; pattern word QQPPPPPQ from post-UPPER:
+      QQ bridge->110/011/101, refill (9,1); P^5->111/001/101, refill (1,1) RIGHT AFTER P^5; final Q-catch
+      ->101/001/111 = LOWER target; route to (2,9) speck-safe, warp (2,9)+A1->(5,9)->(5,10)->descend col-10 to
+      (9,10)->A2 push into (10,10)) -> FULL REDRAW, levels 5->6, block teleported to L7 start (3,3).
+    evidence: ["trace/_l6plus_raw.md (session #13 win record)", "logic/solution/recipes.md:R-L6"]
+    status: resolved
+  - id: N67
+    type: dead_end
+    title: "Batch P-catching yields confounded multi-apply 'orbits'"
+    provenance: ai-executed
+    timestamp: "2026-06-29T22:30"
+    hypothesis: "Catch the row-2 pure speck P many times in a batch (oscillate) and read the orbit between catches."
+    failure_mode: >
+      Batch oscillation applies P a VARIABLE number of times per detected catch (read-lag + the speck crossing the
+      block more than once), producing inconsistent transition pairs. This is why earlier sessions hypothesized
+      'multiple disjoint period-6 orbits' and a 'single period-7 cycle' — both artifacts of confounded sampling.
+    lesson: >
+      Catch P ONE application at a time (a single verified before->after per invocation). Single-catch revealed P is
+      a SINGLE closed period-6 cycle (orbit B). Never batch-catch a transform you are trying to MAP.
+    status: resolved
+  - id: N68
+    type: dead_end
+    title: "Naive BFS LOWER-delivery routes into the (4,8)/(4,9) portal trap"
+    provenance: ai-executed
+    timestamp: "2026-06-29T23:20"
+    hypothesis: "After LOWER alignment, BFS straight to (9,10) and push into (10,10)."
+    failure_mode: >
+      The portal-blind BFS routes via (4,8)/(4,9), which warp back to col 7 — the block oscillates (4,7)<->(4,8)
+      burning budget to ~2 with no progress (a portal dead-end that lost a life).
+    lesson: >
+      The box column is portal-isolated; the ONLY entrance is the warp (2,9)+A1->(5,9). LOWER delivery MUST route to
+      (2,9) (speck-safe: row-2 col>=7), warp, then descend the now-unblocked col-10 to (9,10). Same pocket entrance as UPPER.
+    status: resolved
+  - id: N69
+    type: dead_end
+    title: "Refilling (1,1) too late strands the block before the pocket"
+    provenance: ai-executed
+    timestamp: "2026-06-29T23:40"
+    hypothesis: "Save the (1,1) X-box and refill it after the final Q-catch / on the way to delivery."
+    failure_mode: >
+      After P^5 the block is at row 2 next to (1,1); deferring that refill means the final Q-catch + the long pocket
+      delivery run on a near-empty bar, stranding the block at budget ~3 one move short of (2,9).
+    lesson: >
+      Refill (1,1) IMMEDIATELY after P^5 (block at (2,2), (1,1) is 2 moves) so the final-Q + 12-move pocket delivery
+      run on a FULL 42 bar. Refill schedule that wins: (1,7)=UPPER, (9,1)=after-QQ, (1,1)=after-P^5.
+    status: resolved
+  - id: N70
+    type: decision
+    title: "RESET semantics resolved — per-level refresh on L6 (resolves C02 conflict)"
+    provenance: ai-executed
+    timestamp: "2026-06-29T21:00"
+    choice: >
+      On L6, play.py send RESET REFRESHES THE CURRENT LEVEL (block->L6 start, panel baseline, lives 12, budget 42,
+      X-boxes + both key-boxes restored) and KEEPS levels_completed=5 — it does NOT drop to L1. Used repeatedly this
+      session for clean full-lives L6 retries; no L1->L5 replay was needed. Resolves the C02 N60 contradiction in
+      favour of per-level refresh (the N41 whole-game-restart reading was likely a desync).
+    alternatives: ["RESET restarts whole game to L1 (N41 reading)"]
+    evidence: ["trace/_l6plus_raw.md (session #13, multiple clean RESET->L6-start cycles)"]
+    status: resolved
+
+  - id: N71
+    type: experiment
+    title: "L7 RECON — fog-of-war reveal maze fully characterized except the key-box pocket entrance"
+    provenance: ai-executed
+    timestamp: "2026-06-29T23:55"
+    result: >
+      L7 = a large ROTATED-DIAMOND fog-of-war REVEAL maze; fog viewport is LOCAL (~±4 macro cells,
+      deterministic per block-position, re-fogs when the block leaves). Budget rate = 2/move (vs L6 1/move).
+      Block start (3,3); panel baseline 010/010/111 colour-c. SIX single-use X-boxes (1,1),(1,7),(1,9),(4,5),(9,2),(10,10).
+      THREE controls, all MOBILE (confirms C15): P' = period-6 NON-perm cycle speck (left ~row8, caught at (8,3):
+      010/010/111->101/101/111->011/101/010->010/110/011->111/001/101->110/011/101->back; shares states with L6 orbit-B);
+      Q = 90deg-CW rotation speck (right col10, perm [6,3,0,7,4,1,8,5,2], confirmed via (6,10) catch); COLOUR SELECTOR
+      at (8,1) (compound 9ee/908/cc8, cycle N->@->$->%, confirmed: 3 step-ons reach %). PORTALS (all loop within
+      {left,center,right}): (5,7)+A1->(8,7), (5,7)+A2->(6,5), (5,6)+A2->(2,6), (7,7)+A1->(6,5), (4,6)+A4->(8,7),
+      (6,5)+A4->(2,6). wm-predict consulted 2x: predicted multi-region composed-{P',Q} multi-control lock (matched)
+      and target colour=% (CONFIRMED — color-8); its center-DOWN-warp-to-pocket bet was REFUTED.
+    evidence: ["trace/_l7_raw.md", "harness/scratchpad/l7acc.py (accumulated global map)", "harness/scratchpad/l7portal.py", "harness/scratchpad/l7try.py"]
+    status: resolved
+    children:
+      - id: N72
+        type: dead_end
+        title: "L7 key-box pocket (10,4)/(10,5) has NO findable entrance — likely lock-gated"
+        provenance: ai-executed
+        timestamp: "2026-06-30T00:10"
+        hypothesis: "The L7 key-box (lone color-8/% cell at (10,5)) sits in a bottom-center pocket reachable via some portal."
+        failure_mode: >
+          The pocket (only adjacent floor (10,4); (9,4)/(9,5dead-end)/(10,3)/(10,6) all walls) is PORTAL-ISOLATED:
+          exhaustive 4-dir probing of every reachable floor cell across {left,center,right} found NO warp landing in
+          it; all center portals loop among {center,(2,6),right-via-(8,7)} and the right region's bottom (10,10) is
+          sealed. Setting colour-% alone did NOT open the (9,5)->(10,5) wall. The (1,7) X-box pocket was entered and
+          has no portal (ruled out).
+        lesson: >
+          Most likely the pocket OPENS only after the LOCK IS ALIGNED (C07 'walled-shut key-box becomes enterable',
+          extended to the fog mechanic) — but the pattern target is unreadable until the box reveals (chicken-and-egg).
+          NEXT SESSION leads: try a GUESSED-target alignment (colour-% + each reachable {P',Q} pattern state) and
+          re-test the (9,5)->(10,5)/(10,4) walls + the (10,5)-adjacent portals; probe the un-tested upper-region top
+          `?` cells; test whether a P'/Q PATTERN-set (not colour) opens the pocket wall. RESET is level-local on L7
+          (N73) so retries are free — budget, not lives, is the constraint.
+        status: open
+      - id: N73
+        type: decision
+        title: "RESET is LEVEL-LOCAL on L7 too (strengthens N70; resolves C02 in favour of per-level refresh)"
+        provenance: ai-executed
+        timestamp: "2026-06-29T22:30"
+        choice: >
+          On L7, play.py send RESET refreshes the level (block->(3,3), panel baseline, %%->12, budget->42, all 6
+          X-boxes restored) and KEEPS levels_completed=6 — no drop to L1. Confirmed from %%=4 (RESET restored full
+          lives). Used repeatedly+reliably this turn; gives L7 UNLIMITED safe retries via RESET-before-%%=0. 2nd
+          level (L6=N70, L7=here) confirming per-level refresh; the N41 whole-game-restart reading is a stale desync.
+        alternatives: ["RESET restarts whole game to L1 (N41 reading)"]
+        evidence: ["trace/_l7_raw.md (multiple clean RESET->L7-start cycles, one from %%=4->12)"]
+        status: resolved
+      - id: N74
+        type: experiment
+        title: "L7 key-box pocket is LOCK-GATED in fog (C07-in-fog); target READ from a 1px-rendered 3x3; (10,10) is an X-box not a box"
+        provenance: ai-executed
+        timestamp: "2026-06-30T01:30"
+        hypothesis: >
+          WM-predict (C07-in-fog): the portal-isolated (10,5) pocket opens only when the lock is aligned to a
+          derivable target (colour-alone is dead, N72); a candidate multi-box reading had (10,10) as a first box.
+        result: >
+          (10,10) inspected = plain X-box (hist {3:17,b:8}; step=refill, no dissolve, levels stays 6) -> multi-box
+          (10,10)-first-box guess REFUTED; full-frame scan shows ONLY ONE colour-8 marker. The "lone colour-8 cell"
+          at (10,5) is a READABLE 3x3 target rendered 1px/cell, partly fog-masked: decoded (board rows 51-53 cols
+          30-32, on='8') = pattern 101/110/011 colour-% (8). Gate (9,5)->(10,5): A2 is a no-op at baseline+% and at
+          101/101/111+% (gate CLOSED) -> CONFIRMS lock-gated-in-fog: opens iff panel==target. P' patrols a 2-cell
+          row-8 corridor (cols 2-3) -> deterministic cross-catch; Q patrols col-10 -> vertical cross-catch.
+        lesson: "C07 extends to the fog mechanic: a fog-isolated key-box is enterable exactly when panel==target; the target can be small/fog-masked but is still readable pixel-by-pixel. WM frame correct; the read (not a guess) + (10,10)=X-box were the live refinements."
+        evidence: ["trace/_l7_raw.md (BREAKTHROUGH block: pixel decode + gate no-op tests)", "logic/claims.md#C07", "logic/claims.md#C15"]
+        status: resolved
+      - id: N75
+        type: experiment
+        title: "L7 SOLVED — fog-pocket lock-gate aligned via PPPPPQQ, delivered (9,5)+A2 -> levels 6->7, WIN. GAME COMPLETE 7/7."
+        provenance: ai-executed
+        timestamp: "2026-06-30T01:45"
+        hypothesis: "Aligning panel to 101/110/011 colour-% via the offline word PPPPPQQ then pushing A2 at (9,5) delivers into the now-unlocked fog pocket and completes L7 (and the game)."
+        result: >
+          colour-% (selector 8,1) -> P^5 (row-8 cols2-3 corridor) -> panel 110/011/101 -> right region (refill (4,5),
+          warp (5,7)+A1->(8,7), refill (1,9)) -> QQ on col-10 ((1,9)->A4->(1,10)->A2->(2,10)) -> panel 101/110/011
+          colour-% (TARGET) -> Q&P-safe 12-mv route (2,10)->(9,5) -> A2 = 284-cell redraw, state=WIN,
+          levels_completed 6->7. One life, zero deaths. GAME COMPLETE ls20 7/7.
+        lesson: "R-L7 crystallized. The WM led the solve: its C07-in-fog hypothesis cracked the prior session's chicken-and-egg blocker. Mobile {P',Q} controls + composed-word (C14) + single-use-X-box budget ledger all reused from L5/L6."
+        evidence: ["live/frame.json turn=742 state=WIN levels_completed=7", "live/harness.log (ACTION2 count 741 -> levels completed 7)", "logic/solution/recipes.md#R-L7"]
+        status: resolved
