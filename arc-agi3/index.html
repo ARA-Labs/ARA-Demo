@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Locksmith That Wrote Its Own Manual</title>
+<style>
+  :root{
+    --bg:#fcfcfb; --ink:#16161a; --mut:#71717a; --faint:#a1a1aa;
+    --line:#ececea; --line2:#e4e4e1; --accent:#1f4fd6; --panel:#f6f6f4; --panel2:#efefec;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",system-ui,sans-serif;
+    font-size:18px;line-height:1.68;font-weight:400;letter-spacing:-0.003em}
+  body.lang-zh{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Inter",system-ui,sans-serif;letter-spacing:0;line-height:1.8}
+  .wrap{max-width:672px;margin:0 auto;padding:0 24px 160px}
+  ::selection{background:#dfe6ff}
+
+  /* language toggle */
+  .langtoggle{position:fixed;top:16px;right:16px;z-index:50;display:flex;gap:2px;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border:1px solid var(--line2);border-radius:999px;padding:3px;box-shadow:0 4px 16px -8px rgba(0,0,0,.18)}
+  .langtoggle button{border:0;background:none;font:600 12.5px -apple-system,ui-sans-serif;padding:5px 13px;border-radius:999px;cursor:pointer;color:var(--mut)}
+  .langtoggle button.on{background:var(--ink);color:#fff}
+  body.lang-en [lang="zh"]{display:none}
+  body.lang-zh [lang="en"]{display:none}
+
+  header{padding:116px 0 20px}
+  .eyebrow{font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin:0 0 26px}
+  body.lang-zh .eyebrow{letter-spacing:.02em}
+  h1{font-size:47px;line-height:1.05;letter-spacing:-0.029em;font-weight:680;margin:0 0 22px}
+  body.lang-zh h1{letter-spacing:-0.01em}
+  .dek{font-size:21px;line-height:1.5;color:#3f3f46;font-weight:400;margin:0 0 30px;letter-spacing:-0.01em}
+  body.lang-zh .dek{line-height:1.7}
+  .meta{font-size:14px;color:var(--mut);border-top:1px solid var(--line);padding-top:20px}
+  .meta a,a.ln{color:var(--accent);text-decoration:none}
+  .meta a:hover,a.ln:hover{text-decoration:underline}
+
+  section{margin-top:96px}
+  .lab{font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:0 0 14px}
+  h2{font-size:30px;line-height:1.14;letter-spacing:-0.021em;font-weight:660;margin:0 0 18px}
+  h3{font-size:20px;line-height:1.3;letter-spacing:-0.01em;font-weight:640;margin:38px 0 4px}
+  p{margin:20px 0;letter-spacing:-0.003em}
+  .lede{font-size:20px;line-height:1.6;color:#33333a}
+  body.lang-zh .lede{line-height:1.8}
+  em{font-style:italic}
+  body.lang-zh em{font-style:normal;font-weight:600;color:var(--ink)}
+  strong{font-weight:640}
+  code{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:0.84em;background:var(--panel);
+    padding:2px 6px;border-radius:5px;color:#3a3a42;letter-spacing:0}
+
+  .tldr{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:34px 0}
+  .tldr .h{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+  .tldr ul{margin:0;padding-left:20px}.tldr li{margin:8px 0;font-size:16px;line-height:1.55;color:#33333a}
+  body.lang-zh .tldr li{line-height:1.75}
+
+  figure{margin:44px 0;text-align:center}
+  figure.wide{margin:52px 0}
+  .arc{display:block;margin:0 auto;max-width:500px;border-radius:12px;overflow:hidden;border:1px solid var(--line2);
+    box-shadow:0 1px 2px rgba(20,20,30,.04),0 14px 40px -12px rgba(20,20,40,.13);background:#8a93a0}
+  .arc img,.arc canvas{display:block;width:100%;height:auto;image-rendering:pixelated;background:#8a93a0}
+  .arc.md{max-width:440px}
+  figure.wide .arc{max-width:600px}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .duo figure{margin:0}.duo .arc{max-width:none;width:100%}
+  @media(max-width:560px){.duo{grid-template-columns:1fr}}
+  .film{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;margin:34px 0 0}
+  @media(max-width:560px){.film{grid-template-columns:repeat(4,1fr)}}
+  .film .cell{text-align:center}
+  .film .fr{border-radius:7px;overflow:hidden;border:1px solid var(--line2);background:#8a93a0;box-shadow:0 6px 18px -10px rgba(20,20,40,.28)}
+  .film .fr img{display:block;width:100%;height:auto;image-rendering:pixelated}
+  .film .lb{font-size:11.5px;font-weight:600;color:var(--mut);margin-top:7px;letter-spacing:.02em}
+  figcaption{font-size:14px;line-height:1.55;color:var(--mut);margin-top:16px;max-width:540px;margin-left:auto;margin-right:auto}
+  body.lang-zh figcaption{line-height:1.7}
+  figcaption b{color:var(--ink);font-weight:600}
+
+  .stats{display:flex;gap:40px;flex-wrap:wrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:28px 0;margin:40px 0}
+  .stat .num{font-size:33px;font-weight:680;letter-spacing:-0.03em;line-height:1}
+  .stat .cap{font-size:13.5px;color:var(--mut);margin-top:8px;letter-spacing:-0.005em}
+
+  blockquote{margin:32px 0;font-size:21px;line-height:1.44;letter-spacing:-0.014em;color:#26262c;
+    font-weight:440;padding-left:22px;border-left:2px solid var(--ink)}
+  body.lang-zh blockquote{line-height:1.7}
+  blockquote .src{display:block;font-size:13.5px;font-weight:400;color:var(--mut);margin-top:13px;letter-spacing:0}
+
+  .algebra{background:#16161a;border-radius:14px;padding:24px 22px;margin:32px 0;overflow-x:auto}
+  .algebra .cap{font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#8a8a95;margin-bottom:16px}
+  .word{font-family:"SF Mono",ui-monospace,Menlo,monospace;display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13px}
+  .g3{display:inline-grid;grid-template-columns:repeat(3,11px);grid-template-rows:repeat(3,11px);gap:1.5px}
+  .g3 i{width:11px;height:11px;border-radius:1px;background:#2a2a33}
+  .g3 i.on{background:#5ad0e0}.g3.tgt i.on{background:#e0c14a}
+  .arw{color:#6a6a76;font-weight:700}.arw b{color:#8fa6ff}.arw.q b{color:#e08a5a}
+  .algebra .note{color:#a8a8b2;font-size:13px;line-height:1.6;margin:16px 0 0;font-family:inherit}
+  .algebra .note code{background:#26262e;color:#d6d6dc}
+
+  table.tbl{width:100%;border-collapse:collapse;font-size:14.5px;line-height:1.45;margin:26px 0}
+  table.tbl th,table.tbl td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.tbl thead th{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:600;border-bottom-color:var(--line2)}
+  table.tbl td.k{font-weight:640;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  .exhibit{border:1px solid var(--line2);border-radius:14px;overflow:hidden;margin:32px 0;background:#fff}
+  .exhibit .row{display:grid;grid-template-columns:1fr}
+  @media(min-width:600px){.exhibit .row{grid-template-columns:1fr 1fr}}
+  .exhibit .cell{padding:22px 24px;font-size:14.5px;line-height:1.55}
+  .exhibit .cell.l{border-bottom:1px solid var(--line)}
+  @media(min-width:600px){.exhibit .cell.l{border-bottom:none;border-right:1px solid var(--line)}}
+  .exhibit .hd{font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+  .qq{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:14px;background:var(--panel);border-radius:8px;padding:12px 14px;color:#2a2a30;line-height:1.5}
+  .exhibit p{margin:12px 0;font-size:14px;line-height:1.5}
+  .k2{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-right:6px}
+  .tag{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;margin:0 5px 5px 0}
+  .tag.ok{background:#e7f4ee;color:#1f7a53}.tag.no{background:#fbeae4;color:#b4532a}.tag.rf{background:#eaeeff;color:#2f4fc0}
+
+  .dip{display:grid;grid-template-columns:1fr;gap:16px;margin:32px 0}
+  @media(min-width:600px){.dip{grid-template-columns:1fr 1fr}}
+  .dip .cd{border:1px solid var(--line2);border-radius:14px;padding:20px 22px;font-size:14px;line-height:1.6}
+  .dip .tg{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+  .dip .human{background:#fff;color:#3a3a42;font-style:italic}
+  body.lang-zh .dip .human{font-style:normal}
+  .dip .agent{background:#16161a;color:#d6d6dc;font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:12.5px;font-style:normal;line-height:1.7;border-color:#16161a}
+  .dip .agent .ky{color:#8fa6ff}.dip .agent .vl{color:#fff}.dip .agent .rf{color:#5fd3a8}
+
+  .callout{border-left:2px solid var(--accent);background:var(--panel);border-radius:0 10px 10px 0;padding:16px 20px;margin:30px 0;font-size:15.5px;line-height:1.58;color:#33333a}
+  body.lang-zh .callout{line-height:1.75}
+  .callout b{color:var(--ink)}
+
+  .recipe{border:1px solid var(--line2);border-radius:14px;padding:8px 24px;margin:30px 0;background:#fff}
+  .recipe .it{padding:18px 0;border-bottom:1px solid var(--line)}
+  .recipe .it:last-child{border-bottom:none}
+  .recipe .n{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.02em}
+  .recipe h4{margin:6px 0 6px;font-size:16.5px;font-weight:640;letter-spacing:-0.01em}
+  .recipe p{margin:0;font-size:15px;color:#48484f;line-height:1.55}
+  body.lang-zh .recipe p{line-height:1.7}
+
+  .coda{font-size:22px;line-height:1.46;letter-spacing:-0.016em;color:#1c1c22;font-weight:440;
+    border-top:1px solid var(--line);padding-top:40px;margin-top:76px}
+  body.lang-zh .coda{line-height:1.7}
+  .coda strong{font-weight:660}
+  footer{margin-top:60px;font-size:14px;color:var(--faint);line-height:1.7}
+  footer a{color:var(--mut);text-decoration:none;border-bottom:1px solid var(--line2)}
+
+  /* data charts (evidence, real numbers) */
+  .chart{border:1px solid var(--line2);border-radius:14px;padding:22px 24px 16px;margin:30px 0;background:#fff}
+  .chart .ct{font-size:13.5px;font-weight:640;letter-spacing:-0.01em;margin-bottom:20px}
+  .bars{display:flex;align-items:flex-end;gap:10px;height:172px}
+  .bars .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+  .bars .col .v{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:5px;font-variant-numeric:tabular-nums}
+  .bars .col .bar{width:100%;max-width:52px;background:linear-gradient(180deg,#b3bce1,#cdd4ea);border-radius:5px 5px 0 0;transition:height .3s}
+  .bars .col .bar.hi{background:linear-gradient(180deg,#3aa06a,#7ed39a)}
+  .bars .col .l{font-size:11.5px;color:var(--mut);margin-top:8px}
+  .chart .cn{font-size:13.5px;color:#52525b;line-height:1.6;margin-top:16px}
+  body.lang-zh .chart .cn{line-height:1.75}
+  .chart .cn b{color:var(--ink)}
+  /* grouped failures */
+  .gb{display:flex;align-items:flex-end;gap:14px;height:150px}
+  .gb .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+  .gb .pair{display:flex;align-items:flex-end;gap:4px;height:100%;width:100%;justify-content:center}
+  .gb .d{width:15px;background:#d1613f;border-radius:3px 3px 0 0}
+  .gb .r{width:15px;border:1.5px dashed #b78a2a;border-bottom:none;border-radius:3px 3px 0 0}
+  .gb .l{font-size:11.5px;color:var(--mut);margin-top:8px}
+  .lgd{display:flex;gap:18px;font-size:12.5px;color:var(--mut);margin-top:6px}
+  .lgd i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  /* WM consult scorecard */
+  .score{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:6px 0}
+  .score .c{text-align:center;border-radius:9px;padding:12px 4px;border:1px solid var(--line2)}
+  .score .c .lv{font-size:12px;font-weight:640;color:var(--ink)}
+  .score .c .vd{font-size:10.5px;font-weight:600;margin-top:5px;letter-spacing:.02em}
+  .score .c.dec{background:#e7f4ee;border-color:#bfe3d2}.score .c.dec .vd{color:#1f7a53}
+  .score .c.par{background:#fbf4e4;border-color:#ecdcae}.score .c.par .vd{color:#a6791e}
+  .score .c.non .vd{color:var(--faint)}
+  /* signature-bias before/after */
+  .sig{display:grid;grid-template-columns:1fr;gap:12px;margin:26px 0}
+  @media(min-width:620px){.sig{grid-template-columns:repeat(3,1fr)}}
+  .sig .cd{border:1px solid var(--line2);border-radius:12px;overflow:hidden}
+  .sig .lv{font-size:11.5px;font-weight:700;letter-spacing:.04em;color:var(--accent);padding:10px 14px 0}
+  .sig .th{padding:8px 14px;font-size:13.5px;color:#8a5a3a;background:#fdf3ee;line-height:1.4}
+  .sig .tr{padding:8px 14px 14px;font-size:13.5px;color:#1f7a53;line-height:1.4}
+  .sig .th b,.sig .tr b{font-weight:700}
+  .sig .tag{display:block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+</style>
+</head>
+<body class="lang-en">
+
+<div class="langtoggle">
+  <button id="btn-en" class="on" onclick="setLang('en')">EN</button>
+  <button id="btn-zh" onclick="setLang('zh')">中文</button>
+</div>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow"><span lang="en">A companion to “The Second Half of AI for Science”</span><span lang="zh">《AI for Science 的下半场》姊妹篇</span></p>
+  <h1><span lang="en">The Locksmith That Wrote Its Own Manual</span><span lang="zh">自己写说明书的锁匠</span></h1>
+  <p class="dek"><span lang="en">An AI agent was dropped into a game with no instructions. It didn’t just win — it wrote down what it learned, in a notation meant for itself, and that writing is what beat the level brute force couldn’t.</span><span lang="zh">一个 AI agent 被扔进一个没有任何说明的游戏。它不只是通关了——它把学到的东西写了下来,用一种为自己而设的记号;而正是那份"写下来的东西",攻破了纯试错攻不下的那一关。</span></p>
+  <p class="meta"><span lang="en">A worked, watchable instance of the <a href="https://amberljc.github.io/blog/2026-06-10-second-half-of-ai-for-science.html">Agent-Native Research Artifact</a>. Every frame, number, and quote below is real — pulled from the run’s own artifact, <code>ara-ls20/</code>.</span><span lang="zh">一个看得见、可复核的 <a href="https://amberljc.github.io/blog/2026-06-10-second-half-of-ai-for-science.html">Agent-Native Research Artifact</a> 实例。下文每一帧、每个数字、每句引文都是真实的,取自这次运行自己的 artifact <code>ara-ls20/</code>。</span></p>
+</header>
+
+<figure class="wide">
+  <span class="arc"><canvas id="pv_solve" width="64" height="64"></canvas></span>
+  <figcaption><span lang="en"><b>The solve, played out frame by frame.</b> Level 7 of ARC-AGI-3’s <code>ls20</code> (“Locksmith”) — the agent aligning a hidden lock and delivering the block into the key-box, ending on the win. 7 / 7 cleared, no tutorial ever given. <em>(Real recording frames, looping.)</em></span><span lang="zh"><b>通关过程,逐帧回放。</b> ARC-AGI-3 的 <code>ls20</code>(“Locksmith” 锁匠)第 7 关——agent 对齐一把隐藏的锁,把方块送进 key-box,收在通关那一刻。7/7 全通,全程无教程。<em>(真实录像帧,循环播放。)</em></span></figcaption>
+</figure>
+
+<p class="lede"><span lang="en">The <a class="ln" href="https://amberljc.github.io/blog/2026-06-10-second-half-of-ai-for-science.html">manifesto</a> argued that the bottleneck in AI-for-science isn’t how smart one agent is — it’s the <em>ecosystem</em> it works in, and the missing piece is a research artifact written for agents, not papers written for humans. This is the smallest honest test of that bet I could build: one game, played end to end, where you can watch an AI <em>do science</em> — infer a world’s rules from nothing — and then measure whether the artifact it wrote made it a better scientist.</span><span lang="zh">那篇<a class="ln" href="https://amberljc.github.io/blog/2026-06-10-second-half-of-ai-for-science.html">宣言</a>提出:AI for science 的瓶颈不在于单个 agent 有多聪明,而在于它所处的<em>生态</em>;缺失的那一块,是一种为 agent 而写、而非为人而写的研究产物(research artifact)。这篇是我能搭出的、对这个赌注最小的诚实检验:一个游戏,端到端玩完,你可以亲眼看一个 AI <em>做科学</em>——从零推断一个世界的规则——然后量一量:它写下的那份产物,有没有让它成为更好的科学家。</span></p>
+
+<div class="tldr">
+  <div class="h"><span lang="en">The short version</span><span lang="zh">一句话版</span></div>
+  <ul>
+    <li><span lang="en">Claude (Opus), via a thin relay, played the ARC-AGI-3 game <code>ls20</code> with <b>no tutorial</b> and cleared all <b>7 levels</b> — writing a world-model artifact (an ARA) <em>as it played</em>.</span><span lang="zh">Claude(Opus)通过一个轻量中继玩 ARC-AGI-3 的 <code>ls20</code>,<b>没有教程</b>,通关全部 <b>7 关</b>——并<em>边玩边写</em>出一份世界模型 artifact(ARA)。</span></li>
+    <li><span lang="en">A control agent, handed the exact winning routes for Levels 1–6 and the same budget but <b>no world model</b>, thrashed on the final level and stopped after 181 of 914 steps, never finding the lock.</span><span lang="zh">一个对照 agent 拿到了第 1–6 关一模一样的通关路线和同样的预算,但<b>没有世界模型</b>:它在最后一关瞎撞,181/914 步就停了,始终没找到那把锁。</span></li>
+    <li><span lang="en">The agent that carried the <b>ARA</b> solved the levels cold exploration couldn’t (L4, L6, L7) by <em>querying its own writing</em>. The format — a queryable world model, not a log of correct moves — is what conferred the capability.</span><span lang="zh">带着 <b>ARA</b> 的那个 agent,靠<em>查询自己写的东西</em>,攻下了冷探索攻不下的关卡(L4、L6、L7)。是这个格式——一个可查询的世界模型,而非一串正确动作的日志——赋予了能力。</span></li>
+    <li><span lang="en">Then, on principle, it <b>refused to write down</b> the very claim this whole run is evidence for. One game isn’t enough for a law.</span><span lang="zh">而最后,出于原则,它<b>拒绝把</b>这整场运行所佐证的那条主张<b>写下来</b>。单个游戏还不足以立一条定律。</span></li>
+  </ul>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="num">7 / 7</div><div class="cap"><span lang="en">levels cleared, no tutorial</span><span lang="zh">全通,无教程</span></div></div>
+  <div class="stat"><div class="num">15</div><div class="cap"><span lang="en">claims it wrote while playing</span><span lang="zh">边玩边写下的 claim</span></div></div>
+  <div class="stat"><div class="num">181 / 914</div><div class="cap"><span lang="en">where the control agent gave up</span><span lang="zh">对照 agent 放弃的地方</span></div></div>
+</div>
+
+<!-- 1 -->
+<section>
+  <p class="lab"><span lang="en">01 · The comparison that matters</span><span lang="zh">01 · 最关键的那个对比</span></p>
+  <h2><span lang="en">It ran out of ideas, not steps</span><span lang="zh">它耗尽的是想法,不是步数</span></h2>
+  <p><span lang="en">A demo where an agent wins is easy to fake and hard to trust. So the load-bearing part of this whole post is a control. Two copies of the same model reach Level 7 identically — both replay the winning routes for Levels 1–6. The only difference is what they carry into the final level: one has the full artifact it wrote (claims, heuristics, and the ability to <em>query</em> them); the other has only <code>recipes.md</code>, a list of the correct moves. Same budget, same model, same starting point.</span><span lang="zh">"agent 通关了"这种 demo 好造、也难取信。所以这整篇的承重部分是一个对照。同一个模型的两份拷贝以完全相同的方式抵达第 7 关——都重放第 1–6 关的通关路线。唯一的区别是它们带进最后一关的东西:一个带着它写的完整 artifact(claims、heuristics,以及<em>查询</em>它们的能力);另一个只有 <code>recipes.md</code>,一串正确动作的清单。同样的预算、同样的模型、同样的起点。</span></p>
+  <div class="duo">
+    <figure>
+      <span class="arc"><canvas id="pv_recipes" width="64" height="64"></canvas></span>
+      <figcaption><span lang="en"><b>Recipes only.</b> Watch it thrash. The lock never leaves baseline; it dies twice at the same cell, repeating one fatal move.</span><span lang="zh"><b>只有 recipes。</b> 看它瞎撞。锁始终停在基线;它在同一格死了两次,反复犯同一个致命动作。</span></figcaption>
+    </figure>
+    <figure>
+      <span class="arc"><canvas id="pv_wm" width="64" height="64"></canvas></span>
+      <figcaption><span lang="en"><b>With the world model.</b> The same level — the lock aligns, the gate opens, the level clears.</span><span lang="zh"><b>带着世界模型。</b> 同一关——锁对齐,门打开,通关。</span></figcaption>
+    </figure>
+  </div>
+  <p><span lang="en">The recipes-only agent narrates its own ceiling, and it’s worth hearing verbatim:</span><span lang="zh">只有 recipes 的那个 agent 亲口说出了自己的天花板,值得逐字一听:</span></p>
+  <blockquote><span lang="en">“This is the ablation gap: I have the Locksmith family and the L1–L6 routes, but not the distilled L7 mechanics.”<span class="src">— the recipes-only agent, from its own step log</span></span><span lang="zh">“这就是消融差距(ablation gap):我有 Locksmith 这一套和 L1–L6 的路线,但没有蒸馏出来的 L7 机制。”<span class="src">——只有 recipes 的 agent,出自它自己的 step 日志</span></span></blockquote>
+  <p><span lang="en">Here is the sharp version of the gap. Level 7 <em>has</em> a lock — a 3×3 pattern plus a colour, driven by controls scattered across a fog-covered maze. Both agents know the <em>shape</em> of a Locksmith level: read the target, align the lock, deliver. But <strong>where L7’s controls are, what its target is, and which sequence opens it all live in the world model — none of it is in a list of correct moves.</strong> So the world-model agent found the lock and opened it. The recipes-only agent never found it at all. It even logged “control operated” at one point — but that was a false alarm, a fog-of-war viewport shifting as the block moved (286 cells changing, not the handful a real toggle moves). It mistook the fog for progress. It didn’t run out of budget; it ran out of any idea where the lock <em>was</em>.</span><span lang="zh">把这个差距说透。第 7 关<em>是有</em>一把锁的——一个 3×3 图案加一个颜色,由散布在迷雾迷宫里的若干控制驱动。两个 agent 都知道 Locksmith 关卡的<em>套路</em>:读目标、对齐锁、交付。但<strong>L7 的控制在哪、目标是什么、哪个序列能打开——这些全在世界模型里,正确动作清单里一点都没有。</strong>于是带世界模型的 agent 找到了锁并打开了它;只有 recipes 的 agent 压根没找到。它甚至一度在日志里记下"操作了控制"——但那是误报:方块移动引起的战争迷雾视口变化(286 个 cell 在变,而不是真正翻转所改变的那几个)。它把迷雾错当成了进展。它不是预算用完了,而是<em>压根不知道锁在哪</em>。</span></p>
+  <div class="callout"><span lang="en"><b>The manifesto’s bet, made empirical.</b> Same trajectories, same compute — a queryable world model beat a list of right answers. Knowledge <em>representation</em>, not more data, is what conferred the capability.</span><span lang="zh"><b>宣言的赌注,被实证了。</b> 同样的轨迹、同样的算力——一个可查询的世界模型胜过了一串正确答案。是知识的<em>表示</em>,而非更多数据,赋予了能力。</span></div>
+</section>
+
+<!-- 2 -->
+<section>
+  <p class="lab"><span lang="en">02 · A test of doing science</span><span lang="zh">02 · 一场"做科学"的考试</span></p>
+  <h2><span lang="en">No manual is the scientific condition</span><span lang="zh">没有说明书,正是科学的处境</span></h2>
+  <p><span lang="en">“No tutorial” isn’t a gimmick — it’s the condition of real science. Nature ships no rulebook and no overview. To clear <code>ls20</code> the agent has to do, in miniature, what a scientist does: run experiments by pressing actions and diffing frames, form hypotheses, get refuted, build a theory, and carry it to the next phenomenon. The capabilities the game exercises — system identification, refusing to over-generalize from too few samples, building compositional theories, searching a solution space, transferring across problems — are a scientist’s toolkit. <code>ls20</code> is a model organism for “can an AI do science,” small enough to watch end to end.</span><span lang="zh">"没有教程"不是噱头——它就是真实科学的处境。大自然不发规则书,也不给全景。要通关 <code>ls20</code>,agent 必须以微缩的方式做科学家做的事:按动作、比对帧来做实验,提出假设,被证伪,建立理论,再把它带到下一个现象。这个游戏考察的能力——系统辨识、拒绝从太少的样本过度泛化、建立组合式理论、在解空间中搜索、跨问题迁移——正是科学家的工具箱。<code>ls20</code> 是"AI 能不能做科学"的一个模式生物,小到可以端到端地看完。</span></p>
+  <p><span lang="en">And every level is a new phenomenon. The solution <em>loop</em> never changes; the mechanism does.</span><span lang="zh">而每一关都是一个新现象。解题的<em>循环</em>从不变;变的是机制。</span></p>
+  <figure class="wide">
+    <div class="film">
+      <div class="cell"><div class="fr"><img src="assets/lv1.png" width="512" height="512" alt="Level 1"></div><div class="lb">L1</div></div>
+      <div class="cell"><div class="fr"><img src="assets/lv2.png" width="512" height="512" alt="Level 2"></div><div class="lb">L2</div></div>
+      <div class="cell"><div class="fr"><img src="assets/lv3.png" width="512" height="512" alt="Level 3"></div><div class="lb">L3</div></div>
+      <div class="cell"><div class="fr"><img src="assets/lv4.png" width="512" height="512" alt="Level 4"></div><div class="lb">L4</div></div>
+      <div class="cell"><div class="fr"><img src="assets/lv5.png" width="512" height="512" alt="Level 5"></div><div class="lb">L5</div></div>
+      <div class="cell"><div class="fr"><img src="assets/lv6.png" width="512" height="512" alt="Level 6"></div><div class="lb">L6</div></div>
+      <div class="cell"><div class="fr"><img src="assets/lv7.png" width="512" height="512" alt="Level 7"></div><div class="lb">L7</div></div>
+    </div>
+    <figcaption><span lang="en"><b>Seven worlds, one recipe.</b> A real frame from each level. The maze, the lock, and the obstacle class change every time — the solution loop (read target → align → deliver) never does. That invariant <em>is</em> the agent’s transferable theory.</span><span lang="zh"><b>七个世界,一套配方。</b> 每关一帧真实画面。迷宫、锁、障碍类型每关都在变——而解题循环(读目标 → 对齐 → 交付)从不变。那条不变量,<em>就是</em> agent 可迁移的理论。</span></figcaption>
+  </figure>
+  <table class="tbl">
+    <thead><tr><th><span lang="en">Level</span><span lang="zh">关卡</span></th><th><span lang="en">New mechanic it had to discover</span><span lang="zh">它必须自行发现的新机制</span></th><th><span lang="en">Clear</span><span lang="zh">步数</span></th></tr></thead>
+    <tbody>
+      <tr><td class="k">L1</td><td><span lang="en">the lock itself: a switch toggles a 3×3 pattern to the key-box target</span><span lang="zh">锁本身:开关把 3×3 图案切到 key-box 目标</span></td><td class="k">13</td></tr>
+      <tr><td class="k">L2</td><td><span lang="en">the switch is a 4-state cycle, not a flip</span><span lang="zh">开关是 4 态循环,不是翻转</span></td><td class="k">45</td></tr>
+      <tr><td class="k">L3</td><td><span lang="en">two independent axes — pattern <em>and</em> colour</span><span lang="zh">两个独立轴——图案<em>和</em>颜色</span></td><td class="k">49</td></tr>
+      <tr><td class="k">L4</td><td><span lang="en">a portal / teleporter maze laid over the lock</span><span lang="zh">在锁之上叠了一层传送门迷宫</span></td><td class="k">60</td></tr>
+      <tr><td class="k">L5</td><td><span lang="en">a portal-only selector pocket + a two-control composed word</span><span lang="zh">只能靠传送门到达的选择器口袋 + 双控制的组合词</span></td><td class="k">56</td></tr>
+      <tr><td class="k">L6</td><td><span lang="en">mobile controls + two boxes delivered in one life</span><span lang="zh">移动的控制 + 一条命内交付两个 box</span></td><td class="k">120</td></tr>
+      <tr><td class="k">L7</td><td><span lang="en">fog-of-war; the key-box lock-gated inside a hidden pocket</span><span lang="zh">战争迷雾;key-box 被锁门封在隐藏口袋里</span></td><td class="k">63</td></tr>
+    </tbody>
+  </table>
+  <p class="lede"><span lang="en">Look at L6 and L7. Cost climbs into the hard middle and peaks at L6 — a 120-step grind — then L7, harder still, clears in <em>about half</em> that. By then the world model had the mechanism, so execution was short. The hard part is discovery, not execution.</span><span lang="zh">看 L6 和 L7。成本爬进最难的中段,在 L6 见顶——120 步的苦磨——而更难的 L7,只用了<em>大约一半</em>。那时世界模型已经掌握了机制,所以执行很短。难的是发现,不是执行。</span></p>
+  <div class="chart">
+    <div class="ct"><span lang="en">Two cost curves — steps and tokens per level</span><span lang="zh">两条成本曲线——每关步数与 token</span></div>
+    <div class="bars" id="stepbars"></div>
+    <div class="cn" style="margin-top:10px;margin-bottom:22px"><span lang="en"><b>Steps.</b> 13 · 45 · 49 · 60 · 56 · 120 · <b style="color:#1f7a53">63</b> — the L6 grind (120), then L7 back down to <b style="color:#1f7a53">63</b> despite being the hardest level.</span><span lang="zh"><b>步数。</b> 13 · 45 · 49 · 60 · 56 · 120 · <b style="color:#1f7a53">63</b> —— L6 苦磨到 120,而更难的 L7 又降回 <b style="color:#1f7a53">63</b>。</span></div>
+    <div class="bars" id="tokbars"></div>
+    <div class="cn"><span lang="en"><b>Tokens (thinking cost, ≈).</b> Same shape: cost concentrates in the discovery-heavy middle (L3–L6), peaks at L6’s 467k, and L7 costs <b>less than L4 or L6</b> even though it’s harder. Both curves say the same thing — <b>the cost is discovery, and the world model amortizes it.</b> ls20 gameplay ≈ 1.57 M tokens total.</span><span lang="zh"><b>Token(思考成本,约)。</b> 同样的形状:成本集中在发现最重的中段(L3–L6),在 L6 的 467k 见顶,而更难的 L7 花费<b>比 L4 和 L6 都少</b>。两条曲线说的是同一件事——<b>成本在发现,而世界模型把它摊薄了。</b> ls20 游玩共约 157 万 token。</span></div>
+  </div>
+
+  <h3><span lang="en">Nobody taught it group theory</span><span lang="zh">没人教过它群论</span></h3>
+  <p><span lang="en">The most striking thing in the run is what the lock’s controls turned out to be. They aren’t buttons — they’re <em>transforms</em>. One, <code>Q</code>, is literally a 90° rotation of the 3×3 lock (the position-permutation <code>[6,3,0,7,4,1,8,5,2]</code>). Another, <code>P</code>, is a six-step cycle. No single control’s orbit reaches the target, so the alignment is a <em>word</em> over the controls, found by offline search — and the agent discovered that <code>Q</code> is the only bridge between the disconnected orbits of <code>P</code>, so the word is forced. Nobody handed it any of this. The problem had algebraic structure, and the structure pressed the agent into algebraic notation — the same move that produced human mathematics.</span><span lang="zh">这次运行里最惊人的,是那把锁的控制到底是什么。它们不是按钮——是<em>变换</em>。其中一个 <code>Q</code>,字面上就是 3×3 锁的 90° 旋转(位置置换 <code>[6,3,0,7,4,1,8,5,2]</code>)。另一个 <code>P</code>,是一个六步循环。没有任何单个控制的轨道能到达目标,所以对齐是控制上的一个<em>词</em>,靠离线搜索找到——而 agent 发现 <code>Q</code> 是 <code>P</code> 两个不连通轨道之间唯一的桥,于是这个词是被逼出来的。这些没人教过它。问题带有代数结构,而结构把 agent 逼向了代数记号——正是当年催生人类数学的那一步。</span></p>
+  <div class="algebra">
+    <div class="cap"><span lang="en">Level 7 · the forced word <span style="color:#fff">PPPPPQQ</span>, baseline → target</span><span lang="zh">第 7 关 · 被逼出的词 <span style="color:#fff">PPPPPQQ</span>,基线 → 目标</span></div>
+    <div class="word" id="algword"></div>
+    <p class="note"><span lang="en"><b style="color:#8fa6ff">P</b> = a period-6 cycle &nbsp;·&nbsp; <b style="color:#e08a5a">Q</b> = 90° rotation <code>[6,3,0,7,4,1,8,5,2]</code>. Five <code>P</code>-steps walk the pattern around its cycle; two <code>Q</code>-rotations cross onto the target (gold). Found by BFS over 24 reachable states — the agent’s “equation” for opening the gate.</span><span lang="zh"><b style="color:#8fa6ff">P</b> = 周期为 6 的循环 &nbsp;·&nbsp; <b style="color:#e08a5a">Q</b> = 90° 旋转 <code>[6,3,0,7,4,1,8,5,2]</code>。五步 <code>P</code> 沿循环走动图案,两次 <code>Q</code> 旋转跨到目标(金色)。在 24 个可达状态上用 BFS 找到——这是 agent 开门用的"方程"。</span></p>
+  </div>
+
+  <p><span lang="en">And it does all of this half-blind. Level 7 is fog-of-war: the agent only ever sees a small window around itself, and the window moves as it travels. It has to build a map of a world it can’t survey, from moving glimpses — which is, again, exactly the condition of doing science.</span><span lang="zh">而这一切,它是半盲着做的。第 7 关是战争迷雾:agent 永远只看到自己周围一小块窗口,窗口随它移动。它必须从这些移动的一瞥中,拼出一个自己无法俯瞰的世界的地图——这,又一次,正是做科学的处境。</span></p>
+  <figure>
+    <span class="arc md"><canvas id="pv_fog" width="64" height="64"></canvas></span>
+    <figcaption><span lang="en"><b>What the agent actually sees.</b> A sliver of maze revealed around the block; the rest grey and unknown, and the window travels with it. No god’s-eye view was ever available.</span><span lang="zh"><b>agent 真正看到的。</b> 方块周围揭示出一小条迷宫;其余一片灰、未知,而窗口随它移动。从来没有过上帝视角。</span></figcaption>
+  </figure>
+</section>
+
+<!-- 3 -->
+<section>
+  <p class="lab"><span lang="en">03 · How it builds and breaks its models</span><span lang="zh">03 · 它如何建立又打破自己的模型</span></p>
+  <h2><span lang="en">Confidently wrong, then it catches itself</span><span lang="zh">先自信地错,再自己抓住</span></h2>
+  <p><span lang="en">Watching the artifact grow, the striking thing isn’t that the agent is right — it’s how <em>often it’s wrong</em>, and what it does about it. Self-correcting a confident, internally consistent, wrong theory is the scientific method in miniature. On Level 4 it discovered teleporters, then “unified” them away as a measurement artifact — and was wrong about being wrong:</span><span lang="zh">看着这份 artifact 长大,惊人的不是 agent 对,而是它<em>错得多频繁</em>,以及它对此做了什么。自我纠正一个自信、自洽、却错误的理论,就是微缩版的科学方法。第 4 关它发现了传送门,又把它们"统一"解释成测量假象抹掉了——结果它连"自己错了"这件事都判断错了:</span></p>
+  <blockquote><span lang="en">“UNIFYING DISCOVERY: the ‘teleports/portals’ were budget-death respawns — no portals exist. … THERE ARE NO PORTALS.”<span class="src">— its raw notes, two paragraphs before it reversed: “L4 ALSO HAS REAL PORTALS … reproducible teleporters, NOT deaths.”</span></span><span lang="zh">“统一性发现:那些'传送/传送门'其实是预算耗尽后的重生——根本没有传送门。……根本没有传送门。”<span class="src">——它的原始笔记,两段之后它就翻案了:“L4 确实有真正的传送门……可复现的传送器,不是死亡。”</span></span></blockquote>
+  <p><span lang="en">The failure always has the same shape: <em>under-sample, then over-generalize</em>. It read a 4-state cycle as a “flip” on L2 from one press; it declared a reachable control “not steppable” on L4; it inferred the wrong group structure on L6 from batch sampling. What makes the artifact a world model rather than a diary is that the agent wrote the antidote down as a rule — <em>sample a control several times before you plan</em> — and that rule later caught its own L4 mistake. The agent’s past self debugged its present self, through the writing.</span><span lang="zh">这个失败总是同一个形状:<em>采样不足,然后过度泛化</em>。在 L2,它凭一次踩踏就把 4 态循环读成了"翻转";在 L4,它把一个够得着的控制断定为"踩不上去";在 L6,它凭批量采样推出了错误的群结构。让这份 artifact 成为世界模型而非日记的,是 agent 把解药写成了一条规则——<em>规划之前先把一个控制多采样几次</em>——而这条规则后来抓住了它自己在 L4 犯的错。agent 的过去,透过那份写下来的东西,调试了它的现在。</span></p>
+  <div class="sig">
+    <div class="cd">
+      <div class="lv">L2</div>
+      <div class="th"><span class="tag"><span lang="en">it thought</span><span lang="zh">它以为</span></span><span lang="en">one press → the switch is a <b>flip</b></span><span lang="zh">一次踩踏 → 开关是<b>翻转</b></span></div>
+      <div class="tr"><span class="tag"><span lang="en">actually</span><span lang="zh">实际</span></span><span lang="en">a <b>4-state cycle</b> (C08 refuted)</span><span lang="zh">是<b>4 态循环</b>(C08 被证伪)</span></div>
+    </div>
+    <div class="cd">
+      <div class="lv">L4</div>
+      <div class="th"><span class="tag"><span lang="en">it thought</span><span lang="zh">它以为</span></span><span lang="en">the control is <b>not steppable</b> — level unsolved</span><span lang="zh">控制<b>踩不上去</b>——本关无解</span></div>
+      <div class="tr"><span class="tag"><span lang="en">its own rule caught it</span><span lang="zh">它自己的规则抓住了它</span></span><span lang="en">steppable from an <b>untried side</b> — one step wins</span><span lang="zh">从<b>没试过的一侧</b>能踩——一步通关</span></div>
+    </div>
+    <div class="cd">
+      <div class="lv">L6</div>
+      <div class="th"><span class="tag"><span lang="en">it thought</span><span lang="zh">它以为</span></span><span lang="en">batch sampling → <b>disjoint orbits</b></span><span lang="zh">批量采样 → <b>不相交的轨道</b></span></div>
+      <div class="tr"><span class="tag"><span lang="en">actually</span><span lang="zh">实际</span></span><span lang="en">a single <b>period-6 cycle</b> (single-catch)</span><span lang="zh">是单一<b>周期-6 循环</b>(单次捕获)</span></div>
+    </div>
+  </div>
+  <p class="meta" style="border:0;padding:0;text-align:center"><span lang="en">The same bug, three times, at rising subtlety — and the rule it wrote after the first caught the third-from-last live.</span><span lang="zh">同一个 bug,犯了三次、一次比一次隐蔽——而它在第一次之后写下的规则,当场抓住了 L4 那次。</span></p>
+  <p><span lang="en">Some of its corrections are subtle enough to be worth their own line. For most of the run a small counter, <code>%%</code>, sat at 12 and never moved, so the agent filed it as decorative UI. It was <em>empirically right and causally wrong</em>: <code>%%</code> is a lives counter — it stayed at 12 only because the agent hadn’t died yet. The moment it did, the reading corrected itself. The artifact keeps that whole arc, refuted reading and all.</span><span lang="zh">有些纠正微妙到值得单独说一句。大半场运行里,一个小计数器 <code>%%</code> 一直停在 12、从不动,于是 agent 把它归档为装饰性 UI。这是<em>经验上对、因果上错</em>:<code>%%</code> 其实是命数——它停在 12,只是因为 agent 还没死过。它一死,这个读法就自我纠正了。artifact 把这整段弧线都留着,连被推翻的读法一起。</span></p>
+  <p><span lang="en">None of this is hidden. The exploration graph keeps every wrong turn as a first-class node — 19 dead-ends, each recorded as hypothesis → failure → lesson. And the honesty runs down to the metrics: those 19 dead-ends are not “failures.” Only 7 were adjacent to a real in-game death; the other 12 were the agent ruling theories out. When it <em>did</em> die on L7, the recipes-only arm died twice at the pixel-identical cell — repeating one fatal move, blind to its own lack of progress.</span><span lang="zh">这些一样都没藏。探索图把每个走错的岔路都当作一等节点保留——19 个死胡同(dead-end),每个都记成"假设 → 失败 → 教训"。而这份诚实一直贯到指标:这 19 个死胡同不是"失败"。只有 7 个与真正的游戏内死亡相邻;另外 12 个是 agent 在排除理论。而它在 L7 真死的时候,只有 recipes 的那条臂在像素级完全相同的一格死了两次——反复犯同一个致命动作,对自己的毫无进展浑然不觉。</span></p>
+  <div class="duo" style="margin-top:34px">
+    <figure><span class="arc"><img src="assets/death_a.png" width="512" height="512" alt="recipes-only death 1"></span><figcaption><span lang="en"><b>death #1</b> · step 66</span><span lang="zh"><b>第 1 次死亡</b> · 第 66 步</span></figcaption></figure>
+    <figure><span class="arc"><img src="assets/death_b.png" width="512" height="512" alt="recipes-only death 2"></span><figcaption><span lang="en"><b>death #2</b> · step 158</span><span lang="zh"><b>第 2 次死亡</b> · 第 158 步</span></figcaption></figure>
+  </div>
+  <p class="meta" style="border:0;padding:0;text-align:center;max-width:540px;margin-left:auto;margin-right:auto"><span lang="en">The recipes-only arm’s two Level-7 deaths — <b>pixel-identical frames, 92 steps apart</b>. Blind to its own non-progress, it walked into the exact same fatal move twice.</span><span lang="zh">只有 recipes 的那条臂在第 7 关的两次死亡——<b>像素级完全相同的两帧,相隔 92 步</b>。对自己的毫无进展浑然不觉,它两次走进了一模一样的致命局面。</span></p>
+
+  <div class="chart">
+    <div class="ct"><span lang="en">Real in-game deaths vs research dead-ends, per level</span><span lang="zh">逐关:真实游戏内死亡 vs 研究死胡同</span></div>
+    <div class="gb" id="failbars"></div>
+    <div class="lgd"><span><i style="background:#d1613f"></i><span lang="en">real deaths (GAME_OVER)</span><span lang="zh">真实死亡(GAME_OVER)</span></span><span><i style="border:1.5px dashed #b78a2a;background:none"></i><span lang="en">research dead-ends</span><span lang="zh">研究死胡同</span></span></div>
+    <div class="cn"><span lang="en">Of 19 dead-ends, only <b>7</b> were adjacent to a real death; the other <b>12</b> were the agent ruling theories out — epistemic progress, not failure. The whole point of the honest metric.</span><span lang="zh">19 个死胡同里,只有 <b>7</b> 个与真实死亡相邻;另外 <b>12</b> 个是 agent 在排除理论——是认识论进展,不是失败。诚实指标的意义正在于此。</span></div>
+  </div>
+  <div class="chart">
+    <div class="ct"><span lang="en">Did the world model help? Consult verdict, per level</span><span lang="zh">世界模型帮上忙了吗?逐关 consult 判定</span></div>
+    <div class="score" id="score"></div>
+    <div class="cn"><span lang="en">The agent graded every consult of its own world model. <b>Decisive</b> on the three levels cold exploration couldn’t crack (L4, L6, L7); <b>partial</b> on L5; not needed on L1–L3. The world model earned its keep exactly where the problem was hardest.</span><span lang="zh">agent 给自己每次查询世界模型都打了分。在冷探索攻不下的三关(L4、L6、L7)上是<b>决定性</b>的;L5 <b>部分</b>有用;L1–L3 不需要。世界模型恰恰在问题最难处证明了自己的价值。</span></div>
+  </div>
+  <p class="meta" style="border:0;padding:0"><a class="ln" href="ls20/trajectory.html"><span lang="en">Walk the whole exploration — branches, dead ends, and all →</span><span lang="zh">走一遍完整的探索图——分支、死胡同,一个不落 →</span></a></p>
+</section>
+
+<!-- 4 -->
+<section>
+  <p class="lab"><span lang="en">04 · Agent language vs human language</span><span lang="zh">04 · Agent 语言 vs 人类语言</span></p>
+  <h2><span lang="en">It writes in a notation meant for itself</span><span lang="zh">它用一种为自己而设的记号书写</span></h2>
+  <p><span lang="en">Open the artifact and much of it is barely readable: <code>%%</code> for lives, <code>PPPPPQQ</code> for a solution, <code>101/110/011</code> for a lock state, <code>[6,3,0,7,4,1,8,5,2]</code> for a rotation. It looks like line-noise — but it’s compressed, precise, and executable, and the strangeness is the point. When a mind meets a structured domain it invents notation a layperson can’t read, exactly as chemistry invented formulae and physics invented its symbols. Agent language isn’t obfuscation; it’s the same compression-under-structure pressure, run again by a different kind of mind.</span><span lang="zh">打开这份 artifact,大半几乎读不懂:<code>%%</code> 是命数,<code>PPPPPQQ</code> 是一个解,<code>101/110/011</code> 是一个锁状态,<code>[6,3,0,7,4,1,8,5,2]</code> 是一个旋转。它看着像乱码——但它压缩、精确、可执行,而这份陌生感正是重点。当一个心智遇到有结构的领域,它会发明外行读不懂的记号,就像化学发明了分子式、物理发明了它的符号。Agent 语言不是故弄玄虚;它是同一种"结构下的压缩"压力,被一个不同种类的心智又跑了一遍。</span></p>
+  <p><span lang="en">The clearest window into it is the moment the agent <em>queried its own writing</em>. Stuck on L7’s chicken-and-egg — a gate that opens only when a lock is aligned to a target you can’t read until the gate opens — it asked the world model a question and got a graded, falsifiable answer. The honest part is that the answer was <em>half right in a useful way</em>:</span><span lang="zh">看清它最好的窗口,是 agent <em>查询自己写的东西</em>的那一刻。卡在 L7 的鸡生蛋——一扇门只有在锁对齐到某个目标时才开,而这个目标在门开之前又读不到——它向世界模型问了一个问题,得到一个分级的、可证伪的回答。诚实的地方在于:这个回答是<em>一半对、且以有用的方式对</em>:</span></p>
+  <div class="exhibit">
+    <div class="row">
+      <div class="cell l">
+        <div class="hd"><span lang="en">The agent asks its world model</span><span lang="zh">agent 问自己的世界模型</span></div>
+        <div class="qq">“how does the portal-isolated key-box pocket open?”</div>
+        <p><span lang="en"><span class="k2">answer</span> the pocket is lock-gated — it opens only when the panel matches a derivable target; colour alone is dead.</span><span lang="zh"><span class="k2">回答</span> 这个口袋是锁门控制的——只有面板匹配一个可推导的目标时才开;单靠颜色是死路。</span></p>
+        <p><span lang="en"><span class="k2">speculative leap</span> named as such: the marker might be a second box.</span><span lang="zh"><span class="k2">推测性跳跃</span> 明确标注为此:那个标记也许是第二个 box。</span></p>
+        <p><span lang="en"><span class="k2">confidence</span> med-high on the mechanism, medium on the leap. <span class="k2">falsifier</span> given.</span><span lang="zh"><span class="k2">置信度</span> 机制中高,跳跃中等。<span class="k2">证伪条件</span> 已给出。</span></p>
+      </div>
+      <div class="cell">
+        <div class="hd"><span lang="en">What actually happened</span><span lang="zh">实际发生了什么</span></div>
+        <p><span class="tag ok">✓ <span lang="en">decisive</span><span lang="zh">决定性</span></span> <span lang="en">The core frame was right, and it cracked the deadlock that had blocked the previous session.</span><span lang="zh">核心框架是对的,它破了上一节卡住的死局。</span></p>
+        <p><span class="tag no">✗ <span lang="en">refuted live</span><span lang="zh">当场被证伪</span></span> <span lang="en">The named leap was wrong — the agent caught its own model’s guess and dropped it.</span><span lang="zh">那个被点名的跳跃错了——agent 抓住了自己模型的猜测并丢掉了它。</span></p>
+        <p><span class="tag rf">↻ <span lang="en">refined</span><span lang="zh">被修正</span></span> <span lang="en">The real target wasn’t guessed, it was <em>read</em>: a 3×3 pattern hidden one pixel per cell. Lock aligned → gate opened → win.</span><span lang="zh">真正的目标不是猜的,是<em>读</em>出来的:一个每格一像素藏着的 3×3 图案。锁对齐 → 门开 → 通关。</span></p>
+      </div>
+    </div>
+  </div>
+  <p><span lang="en">This is what “Agent-Native” means in practice: the artifact isn’t a log the agent reads back — it’s a world model it <em>queries</em>, and it keeps its own refuted guesses instead of quietly deleting them. That’s exactly why it can be trusted.</span><span lang="zh">这就是"Agent-Native"落到实处的含义:artifact 不是 agent 回头读的日志——是它<em>查询</em>的世界模型,而且它保留自己被证伪的猜测,而不是悄悄删掉。这恰恰是它可被信任的原因。</span></p>
+
+  <h3><span lang="en">So can a human still read it? Dual-encode.</span><span lang="zh">那人还能读吗?双编码。</span></h3>
+  <p><span lang="en">If AI science is written in agent language, can a person still review it? The artifact’s answer isn’t “pick one.” Every finding lives in two forms at once — a paragraph a human can follow, and a schema a model can match, filter, and check. Here is one claim, before and after the agent migrated its notes into the artifact’s format. Same content, two readers.</span><span lang="zh">如果 AI 科学是用 agent 语言写的,人还能审阅吗?这份 artifact 的答案不是"二选一"。每个发现都同时以两种形态存在——一段人能读的散文,和一套模型能匹配、筛选、核查的 schema。下面是同一个 claim,在 agent 把笔记迁进 artifact 格式前后的样子。内容相同,面向两种读者。</span></p>
+  <div class="dip">
+    <div class="cd human">
+      <div class="tg"><span lang="en">Human draft — for a person</span><span lang="zh">人类草稿 — 给人读</span></div>
+      <span lang="en">“The panel changed exactly once, when the block stepped onto the switch. The switch is a toggle. The <code>@</code> inside the key-box is the target pattern <code>111/001/101</code>; stepping the switch flipped the middle row so the panel now matches it. The lock is satisfied — yet a delivery step remains.”</span><span lang="zh">“面板只变了一次,就在方块踩上开关时。开关是个切换。key-box 里的 <code>@</code> 是目标图案 <code>111/001/101</code>;踩开关翻转了中间那行,于是面板现在与它匹配。锁满足了——但还剩一步交付。”</span>
+    </div>
+    <div class="cd agent">
+      <div class="tg"><span lang="en">Agent-native — for a model</span><span lang="zh">Agent 原生 — 给模型读</span></div>
+      <span class="ky">Statement:</span> <span class="vl">key-box @ = target; panel = current; a switch toggles it; lock satisfied when panel == target.</span><br><br>
+      <span class="ky">Status:</span> supported<br>
+      <span class="ky">Provenance:</span> ai-executed<br>
+      <span class="ky">Falsification:</span> stepping the switch leaves the panel unchanged.<br>
+      <span class="ky">Sources:</span> <span class="rf">trace:N07</span><br>
+      <span class="ky">Depends:</span> C05 &nbsp;→&nbsp; delivery split into C07
+    </div>
+  </div>
+  <p class="lede"><span lang="en">Agent-native isn’t human-excluding. It’s machine-first, human still served.</span><span lang="zh">Agent 原生并不排斥人。它是机器优先,人依然被照顾到。</span></p>
+</section>
+
+<!-- 5 -->
+<section>
+  <p class="lab"><span lang="en">05 · The discipline underneath</span><span lang="zh">05 · 底层的那份纪律</span></p>
+  <h2><span lang="en">It refused to write down its own headline</span><span lang="zh">它拒绝把自己的头条写下来</span></h2>
+  <p><span lang="en">The reason the artifact is a world model and not a scrapbook is a discipline the agent held throughout: a finding sits in <em>staging</em> until it reaches closure, and only then crystallizes into a claim. The default is <em>not</em> to write a law down yet. That restraint is visible, and it repeatedly paid off. A robust navigator the agent built — the tool that won two levels — was deliberately held un-promoted for three turns, until a clean win gave it a closure signal. And when it once considered crystallizing “<code>%%</code> is decorative UI,” it declined; one turn later that reading was falsified. Its own words:</span><span lang="zh">这份 artifact 之所以是世界模型而非剪贴簿,靠的是 agent 自始至终守住的一条纪律:一个发现先待在<em>暂存区(staging)</em>,直到抵达闭合(closure),才结晶成一条 claim。默认是<em>先不</em>把定律写下来。这份克制看得见,而且屡屡奏效。agent 造的一个稳健导航器——赢下两关的那件工具——被刻意压着不提拔了三个回合,直到一次干净的通关给了它闭合信号。而当它一度考虑把"<code>%%</code> 是装饰性 UI"结晶下来时,它没有;一个回合后那个读法就被证伪了。它自己的话:</span></p>
+  <blockquote><span lang="en">“Vindicated near-miss: I explicitly rejected making ‘%% is a permanent UI fixture’ its own claim. That conservatism paid off — the fixture reading was wrong; had it been crystallized I’d be refuting a claim now instead of cleanly authoring the correct one.”<span class="src">— the run’s process log</span></span><span lang="zh">“被证明正确的一次擦肩:我明确拒绝了把'%% 是永久 UI 固件'立成一条 claim。那份保守得到了回报——固件读法是错的;要是当时结晶了,我现在就得去推翻一条 claim,而不是干干净净地写下正确那条。”<span class="src">——本次运行的过程日志</span></span></blockquote>
+  <p><span lang="en">Which brings us to the most disciplined move of all. By the end, the agent had watched its world model help on five separate occasions — decisively cracking L4, L6, and L7. It had overwhelming evidence for the very claim this post is built on. And it refused to write it down:</span><span lang="zh">这就引出了最有纪律的一步。到最后,agent 已经在五个不同场合看着它的世界模型帮上忙——决定性地破了 L4、L6、L7。它手握压倒性的证据,足以支持这整篇所依赖的那条主张。而它拒绝把它写下来:</span></p>
+  <blockquote><span lang="en">“Did NOT crystallize a world-model-thesis claim yet — strong temptation given five positive instances, but held to conservatism. The thesis is cross-game, not yet warranted from one game.”<span class="src">— the run’s process log</span></span><span lang="zh">“尚未结晶'世界模型论题'那条 claim——五个正例之下诱惑很强,但守住了保守。这条论题是跨游戏的,单个游戏还不足以担保。”<span class="src">——本次运行的过程日志</span></span></blockquote>
+</section>
+
+<!-- 6 -->
+<section>
+  <p class="lab"><span lang="en">06 · If you want to do this yourself</span><span lang="zh">06 · 如果你也想这样做</span></p>
+  <h2><span lang="en">The ARA format, in four rules</span><span lang="zh">ARA 格式,四条规则</span></h2>
+  <p><span lang="en">None of this is specific to a puzzle game. The discipline you just watched is a way to run any long-horizon research an AI does — the concrete “second-half” infrastructure the manifesto asks for. Four rules carried the whole run:</span><span lang="zh">这一切都不是某个益智游戏特有的。你刚看到的那份纪律,是运行任何 AI 长程研究的一种方式——正是宣言所要的、那份具体的"下半场"基础设施。四条规则撑起了整场运行:</span></p>
+  <div class="recipe">
+    <div class="it"><div class="n">01</div><h4><span lang="en">Separate belief from journey</span><span lang="zh">把"信念"和"历程"分开</span></h4><p><span lang="en">A mutable <code>logic/</code> layer holds the current best theory; an append-only <code>trace/</code> holds the history. One agent reads the answer; another debugs the contradiction. Neither overwrites the other.</span><span lang="zh">一个可变的 <code>logic/</code> 层放当前最佳理论;一个只追加的 <code>trace/</code> 放历史。一个 agent 读答案,另一个调试矛盾。谁都不覆盖谁。</span></p></div>
+    <div class="it"><div class="n">02</div><h4><span lang="en">Crystallize at closure, not in batch</span><span lang="zh">在闭合时结晶,而非批量结晶</span></h4><p><span lang="en">Keep a finding in staging until a closure signal fires — a win, an empirical resolution, an affirmation. Default to <em>not</em> promoting. The navigator held for three turns is why a wrong reading never became a claim.</span><span lang="zh">让发现待在暂存区,直到闭合信号触发——一次通关、一次经验裁定、一次确认。默认<em>不</em>提拔。那个被压了三回合的导航器,正是"错误读法从未变成 claim"的原因。</span></p></div>
+    <div class="it"><div class="n">03</div><h4><span lang="en">Keep your refutations</span><span lang="zh">留住你的否证</span></h4><p><span lang="en">Refuted claims and dead-ends stay in the artifact, tagged. They’re what let the world model warn the next query away from a known trap — the negative space is half the map.</span><span lang="zh">被证伪的 claim 和死胡同留在 artifact 里,打上标记。正是它们,让世界模型能把下一次查询从一个已知的陷阱旁引开——负空间是地图的一半。</span></p></div>
+    <div class="it"><div class="n">04</div><h4><span lang="en">Stamp provenance, and make it queryable</span><span lang="zh">盖上来源戳,并让它可查询</span></h4><p><span lang="en">Tag every line observed (<code>ai-executed</code>) vs inferred (<code>ai-suggested</code>), give each a falsifier, and wire dependencies — so the artifact can be <em>asked questions</em>, not just read. That query loop is where the capability came from.</span><span lang="zh">给每一行标上是观测(<code>ai-executed</code>)还是推断(<code>ai-suggested</code>),各配一个证伪条件,再接好依赖——这样 artifact 就能被<em>提问</em>,而不只是被读。那个查询回路,正是能力的来源。</span></p></div>
+  </div>
+  <p><span lang="en">Everything above is inspectable. The full artifact, the step-by-step replays, and the exploration graph are all open:</span><span lang="zh">上面的一切都可查验。完整的 artifact、逐帧回放、探索图,全部开放:</span></p>
+  <p class="meta" style="border:0;padding:0">
+    <a class="ln" href="l7_showcase.html"><span lang="en">Watch the full solve + the ablation, frame by frame →</span><span lang="zh">逐帧看完整通关 + 消融对比 →</span></a><br>
+    <a class="ln" href="ls20/trajectory.html"><span lang="en">Walk the 75-node exploration graph →</span><span lang="zh">走一遍 75 节点的探索图 →</span></a>
+  </p>
+</section>
+
+<p class="coda"><span lang="en">The agent built overwhelming evidence that the artifact-as-world-model works — and then, on principle, refused to call it a law. One game is not enough. This post is me saying, on its behalf, the thing it wouldn’t: <strong>the format itself confers capability.</strong> The agent that could query its own writing beat the agent that only had the right answers. Now go falsify it on your own science.</span><span lang="zh">agent 攒下了压倒性的证据,证明"artifact 即世界模型"是有效的——然后,出于原则,它拒绝把它称为定律。单个游戏还不够。这篇,是我替它说出它不肯说的那句:<strong>格式本身就赋予能力。</strong> 那个能查询自己所写之物的 agent,胜过了那个只有正确答案的 agent。现在,去在你自己的科学里证伪它。</span></p>
+
+<footer>
+  <span lang="en"><code>ls20</code> · game <code>9607627b</code> · played by Claude (Opus) via a file relay, world model built live by the <code>research-manager</code> skill.<br>All frames, quotes, and numbers are real, from <code>ara-ls20/</code> and the run’s recordings.</span><span lang="zh"><code>ls20</code> · 游戏 <code>9607627b</code> · 由 Claude(Opus)经文件中继游玩,世界模型由 <code>research-manager</code> skill 实时构建。<br>所有帧、引文与数字均为真实,取自 <code>ara-ls20/</code> 及本次运行的录像。</span>
+</footer>
+
+</div>
+
+<script>
+function setLang(l){
+  document.body.className='lang-'+l;
+  document.documentElement.lang = (l==='zh')?'zh':'en';
+  var e=document.getElementById('btn-en'),z=document.getElementById('btn-zh');
+  if(e&&z){e.classList.toggle('on',l==='en');z.classList.toggle('on',l==='zh');}
+  try{localStorage.setItem('ls20lang',l);}catch(_){}
+}
+(function(){var s;try{s=localStorage.getItem('ls20lang');}catch(_){}
+  if(!s){var n=(navigator.language||'').toLowerCase();s=n.indexOf('zh')===0?'zh':'en';}
+  setLang(s==='zh'?'zh':'en');})();
+</script>
+
+<script src="assets/frames.js"></script>
+<script>
+(function(){
+  var FR=window.FR;
+  var PAL=["#0a0a0a","#1f6feb","#e0655a","#46c25a","#e0c14a","#8a93a0","#d44ba0","#e08a5a",
+           "#5ad0e0","#7e57e0","#3aa06a","#b07a3a","#9aa6b4","#c0c8d2","#7a3a3a","#ffffff"];
+  var RGB=PAL.map(function(h){return [parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)];});
+  if(FR){
+    var W=FR.dims.w,H=FR.dims.h;
+    var inflate=function(rle){var o=new Uint8Array(H*W),k=0;for(var i=0;i<rle.length;i+=2){var v=rle[i],c=rle[i+1];for(var j=0;j<c;j++)o[k++]=v;}return o;};
+    var draw=function(ctx,img,rle){var f=inflate(rle);for(var p=0;p<f.length;p++){var c=RGB[f[p]]||RGB[0],o=p*4;img.data[o]=c[0];img.data[o+1]=c[1];img.data[o+2]=c[2];img.data[o+3]=255;}ctx.putImageData(img,0,0);};
+    var loop=function(id,frames,ms,hold){var cv=document.getElementById(id);if(!cv||!frames||!frames.length)return;var ctx=cv.getContext('2d'),img=ctx.createImageData(W,H),i=0,n=frames.length;(function s(){var last=(i===n-1);draw(ctx,img,frames[i]);i=(i+1)%n;setTimeout(s,last?(hold||1500):ms);})();};
+    loop('pv_solve',FR.solve.r,80,1800); loop('pv_wm',(FR.wmwork||FR.solve).r,80,1000);
+    loop('pv_recipes',FR.recipes.r,80,900); loop('pv_fog',FR.fog.r,95,700);
+  }
+  (function(){
+    var host=document.getElementById('algword'); if(!host) return;
+    var states=["010010111","101101111","011101010","010110011","111001101","110011101","101011110","101110011"];
+    var ops="PPPPPQQ";
+    function g(b,t){var s='<span class="g3'+(t?' tgt':'')+'">';for(var i=0;i<9;i++)s+='<i class="'+(b[i]==="1"?"on":"")+'"></i>';return s+'</span>';}
+    var html='';
+    for(var i=0;i<states.length;i++){html+=g(states[i],i===states.length-1);if(i<ops.length){var q=(ops[i]==='Q');html+='<span class="arw'+(q?' q':'')+'">→<b>'+ops[i]+'</b></span>';}}
+    host.innerHTML=html;
+  })();
+  /* data charts — real numbers from demo-l7/metrics.json */
+  (function(){
+    var el;
+    var steps=[["L1",13,0],["L2",45,0],["L3",49,0],["L4",60,0],["L5",56,0],["L6",120,0],["L7",63,1]];
+    if((el=document.getElementById('stepbars'))){steps.forEach(function(s){var d=document.createElement('div');d.className='col';
+      d.innerHTML='<div class="v">'+s[1]+'</div><div class="bar'+(s[2]?' hi':'')+'" style="height:'+(s[1]/120*100).toFixed(1)+'%"></div><div class="l">'+s[0]+'</div>';el.appendChild(d);});}
+    var tok=[["L1",0,0],["L2",54,0],["L3",300,0],["L4",341,0],["L5",155,0],["L6",467,0],["L7",251,1]];
+    if((el=document.getElementById('tokbars'))){tok.forEach(function(t){var d=document.createElement('div');d.className='col';
+      d.innerHTML='<div class="v">'+(t[1]?t[1]+'k':'0')+'</div><div class="bar'+(t[2]?' hi':'')+'" style="height:'+(t[1]/467*100).toFixed(1)+'%"></div><div class="l">'+t[0]+'</div>';el.appendChild(d);});}
+    var fail=[["L1",0,1],["L2",5,3],["L3",8,3],["L4",0,3],["L5",1,0],["L6",2,4],["L7",2,0]];
+    if((el=document.getElementById('failbars'))){fail.forEach(function(f){var d=document.createElement('div');d.className='col';
+      d.innerHTML='<div class="pair"><div class="d" style="height:'+(f[1]/8*100).toFixed(1)+'%"></div><div class="r" style="height:'+(f[2]/8*100).toFixed(1)+'%"></div></div><div class="l">'+f[0]+'</div>';el.appendChild(d);});}
+    var sc=[["L1","non","—","—"],["L2","non","—","—"],["L3","non","—","—"],["L4","dec","decisive","决定性"],["L5","par","partial","部分"],["L6","dec","decisive","决定性"],["L7","dec","decisive","决定性"]];
+    if((el=document.getElementById('score'))){sc.forEach(function(c){var d=document.createElement('div');d.className='c '+c[1];
+      d.innerHTML='<div class="lv">'+c[0]+'</div><div class="vd"><span lang="en">'+c[2]+'</span><span lang="zh">'+c[3]+'</span></div>';el.appendChild(d);});}
+  })();
+})();
+</script>
+</body>
+</html>
