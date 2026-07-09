@@ -46,19 +46,17 @@ hard-isolated novelty-constrained wave.
 
 ## How to explore
 
-Everything is static — no build step, no server.
+Browse everything online on the [ARA Hub page for this repo](https://www.agenticresearch.sh/ara/ARA-Labs/ARA-Demo):
 
-```bash
-git clone https://github.com/ARA-Labs/ARA-Demo.git
-cd ARA-Demo
-open arc-agi3/index.html               # macOS; or just double-click in a file browser
-open arc-agi3/ls20/trajectory.html
-open nanogpt_ara/trajectory.html
-```
+- [Locksmith showcase — *The Locksmith That Wrote Its Own Manual*](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/index.html)
+- [Locksmith `ls20` trajectory viewer](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/ls20/trajectory.html)
+- [L7 world-model-vs-recipes ablation](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/l7_showcase.html)
+- [nanoGPT speedrun trajectory viewer](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/nanogpt_ara/trajectory.html)
 
-The HTML files are fully self-contained. Alternatively, browse the ARAs as plain Markdown:
-start with a demo's `PAPER.md`, then dig into `logic/` (what is known), `trace/` (how it was
-learned, dead ends and all), and `evidence/` (the proof).
+Everything is also static and self-contained — you can clone the repo and open the same HTML
+files directly in a browser, or read the ARAs as plain Markdown: start with a demo's
+`PAPER.md`, then dig into `logic/` (what is known), `trace/` (how it was learned, dead ends
+and all), and `evidence/` (the proof).
 
 ## Anatomy of an ARA
 
@@ -77,6 +75,5 @@ learned, dead ends and all), and `evidence/` (the proof).
   visualize ARAs
 - [*The Last Human-Written Paper: Agent-Native Research Artifacts*](https://arxiv.org/abs/2604.24658)
   — the paper introducing ARAs
-- [ara-ls20](https://github.com/ARA-Labs/ara-ls20) — standalone repository of the `ls20`
-  world-model ARA
+- [ARA Hub](https://www.agenticresearch.sh/) — browse published ARAs online
 - [aracommons.com](https://aracommons.com) — ARA Commons
