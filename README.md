@@ -33,12 +33,10 @@ could not solve cold (L4, L6, L7). An ablation on the unseen L7 showed a recipes
 never operated a single lock control, while the world-model agent characterized the whole
 lock: the ARA earns its keep as a world model, not a trajectory cache.
 
-| | |
-|---|---|
-| 📖 Showcase | [*The Locksmith That Wrote Its Own Manual*](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/index.html) (English / 中文) |
-| 🗺️ Trajectory viewer | [75-node exploration tree, 19 dead ends, per-step evidence](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/ls20/trajectory.html) |
-| ⚔️ L7 ablation | [world-model agent vs recipes-only agent](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/l7_showcase.html) |
-| 📄 Write-up | [`arc-agi3/ls20/PAPER.md`](arc-agi3/ls20/PAPER.md) |
+- 📖 Showcase: [*The Locksmith That Wrote Its Own Manual*](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/index.html) (English / 中文)
+- 🗺️ Trajectory viewer: [75-node exploration tree, 19 dead ends, per-step evidence](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/ls20/trajectory.html)
+- ⚔️ L7 ablation: [world-model agent vs recipes-only agent](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/l7_showcase.html)
+- 📄 Write-up: [`arc-agi3/ls20/PAPER.md`](arc-agi3/ls20/PAPER.md)
 
 ---
 
@@ -54,11 +52,9 @@ An ARA compiled from an autonomous agent's optimizer search on the fixed-archite
 **3205 → 3037 → 2949 steps** (v1/v2/v3), plus a documented terminal negative result from a
 hard-isolated novelty-constrained wave.
 
-| | |
-|---|---|
-| 🗺️ Trajectory viewer | [interactive process map of the search](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/nanogpt_ara/trajectory.html) |
-| 📄 Write-up | [`nanogpt_ara/PAPER.md`](nanogpt_ara/PAPER.md) |
-| 📊 Evidence | [loss curves, pruning figures, record-seed tables](nanogpt_ara/evidence/) |
+- 🗺️ Trajectory viewer: [interactive process map of the search](https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/nanogpt_ara/trajectory.html)
+- 📄 Write-up: [`nanogpt_ara/PAPER.md`](nanogpt_ara/PAPER.md)
+- 📊 Evidence: [loss curves, pruning figures, record-seed tables](nanogpt_ara/evidence/)
 
 ---
 
