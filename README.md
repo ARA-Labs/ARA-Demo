@@ -17,14 +17,11 @@
 ## 🎮 Demo 1 — `arc-agi3/`: an agent plays Locksmith and writes its own manual
 
 <p align="center">
-  <img src="arc-agi3/assets/lv1.png" alt="Level 1" width="13%"/>
-  <img src="arc-agi3/assets/lv2.png" alt="Level 2" width="13%"/>
-  <img src="arc-agi3/assets/lv3.png" alt="Level 3" width="13%"/>
-  <img src="arc-agi3/assets/lv4.png" alt="Level 4" width="13%"/>
-  <img src="arc-agi3/assets/lv5.png" alt="Level 5" width="13%"/>
-  <img src="arc-agi3/assets/lv6.png" alt="Level 6" width="13%"/>
-  <img src="arc-agi3/assets/lv7.png" alt="Level 7" width="13%"/>
+  <a href="https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/arc-agi3/ls20/trajectory.html">
+    <img src="docs/ls20-trajectory.png" alt="Interactive trajectory viewer for the ls20 Locksmith run — exploration tree with dead ends on the left, per-step drill-down on the right" width="100%"/>
+  </a>
 </p>
+<p align="center"><em>Click the image to open the interactive trajectory viewer.</em></p>
 
 An AI agent (Claude Code / Opus) played the ARC-AGI-3 game **`ls20` (Locksmith)** with no
 tutorial and cleared **all 7 levels**. The ARA in [`arc-agi3/ls20/`](arc-agi3/ls20/) was built
@@ -38,8 +35,11 @@ lock: the ARA earns its keep as a world model, not a trajectory cache.
 ## 🚀 Demo 2 — `nanogpt_ara/`: an autonomous optimizer-search speedrun
 
 <p align="center">
-  <img src="nanogpt_ara/evidence/figures/v3_loss_curves.png" alt="v3 record validation — controlled-seed mean crossing the 3.28 threshold before step 2949" width="85%"/>
+  <a href="https://www.agenticresearch.sh/raw/ARA-Labs/ARA-Demo/nanogpt_ara/trajectory.html">
+    <img src="docs/nanogpt-trajectory.png" alt="Interactive trajectory viewer for the nanoGPT optimizer-search speedrun — exploration tree on the left, per-step reasoning, results, and recipes on the right" width="100%"/>
+  </a>
 </p>
+<p align="center"><em>Click the image to open the interactive trajectory viewer.</em></p>
 
 An ARA compiled from an autonomous agent's optimizer search on the fixed-architecture
 **modded-nanogpt `track_3_optimization`** benchmark. Starting from the Muon baseline
